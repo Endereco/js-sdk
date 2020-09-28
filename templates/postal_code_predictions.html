@@ -1,0 +1,9 @@
+<div endereco-predictions data-id="{{ExtendableObject.id}}" class="endereco-predictions-wrapper endereco-predictions-wrapper--direction-{{direction}}" style="top: {{offsetTop}}px; left: {{offsetLeft}}px; width: {{width}}px;">
+	<div class="endereco-predictions-wrapper-inner">
+		<ul class="endereco-predictions">
+			{{#predictions}}
+			<li class="endereco-predictions__item {{#isActive}}active{{/isActive}}" endereco-postal-code-prediction data-prediction-index="{{index}}" data-prediction-type="postalCode">{{{postalCodeDiff}}}{{#locality}}, {{{locality}}}{{/locality}}</li>
+			{{/predictions}}
+		</ul>
+	</div>
+</div>
