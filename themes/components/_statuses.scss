@@ -1,0 +1,47 @@
+.endereco-s {
+	&--customer_verified,
+	&--salutation_correct,
+	&--email_correct,
+	&--address_correct,
+	&--postal_code_correct,
+	&--locality_correct,
+	&--street_name_correct,
+	&--street_full_correct,
+	&--building_number_correct,
+	&--additional_info_correct,
+	&--country_code_correct{
+		input,
+		select,
+		.form-control,
+		.btn {
+			border-color: rgb(76, 175, 80);
+			background-color: #f8fcf8;
+		}
+	}
+
+
+	&--salutation_not_correct,
+	&--email_not_correct,
+	&--address_needs_correction,
+	&--address_multiple_variants,
+	&--address_not_found,
+	&--postal_code_needs_correction,
+	&--locality_needs_correction,
+	&--street_name_needs_correction,
+	&--street_full_needs_correction,
+	&--building_number_needs_correction,
+	&--additional_info_needs_correction,
+	&--country_code_needs_correction {
+		input,
+		select,
+		.form-control,
+		.btn {
+			border-color: rgb(240, 173, 78);
+			background-color: #fefbf8;
+		}
+
+		&.radio-inline  {
+			border-bottom: 2px dotted rgb(240, 173, 78);
+		}
+	}
+}

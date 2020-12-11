@@ -29,6 +29,12 @@ function EnderecoBase() {
             trigger: {
                 onblur: true,
                 onsubmit: true
+            },
+            templates: {
+                default: ''
+            },
+            texts: {
+                default: ''
             }
         },
         type: 'base',
@@ -82,12 +88,14 @@ function EnderecoBase() {
         },
         waitForAllExtension: function(timeout = 10) {
             var $self = this;
+            this._awaits++;
             return new Promise(function(resolve, reject) {
                 var intervalObject = setInterval( function() {
                     if (Object.keys($self.loadedExtensions).length === $self.extensions.length) {
                         clearTimeout(timeoutObject);
                         clearInterval(intervalObject);
-                        resolve();
+                        $self._awaits--;
+                        resolve($self);
                     }
                 }, 100);
 
@@ -95,7 +103,8 @@ function EnderecoBase() {
                     clearTimeout(timeoutObject);
                     clearInterval(intervalObject);
                     console.log('Timeout!');
-                    reject();
+                    $self._awaits--;
+                    reject($self);
                 }, timeout * 1000); // Transform seconds to milliseconds.
             })
         },

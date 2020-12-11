@@ -1,0 +1,21 @@
+@import "./components/variables";
+@import "./components/mixins";
+@import "./components/predictions-dropdown";
+@import "./components/predictions-modal";
+@import "./components/statuses";
+@import "./components/statuslist";
+@import "./components/button";
+
+
+.form .endereco-predictions-wrapper + input[data-fieldsize="pair-xsmall"],
+.form .endereco-predictions-wrapper + css3-container + input[data-fieldsize="pair-xsmall"],
+.form .endereco-predictions-wrapper + input[data-fieldsize="xsmall"],
+.form .endereco-predictions-wrapper + css3-container + input[data-fieldsize="xsmall"],
+.form .endereco-predictions-wrapper + input[data-fieldsize="pair-small"],
+.form .endereco-predictions-wrapper + css3-container + input[data-fieldsize="pair-small"],
+.form .endereco-predictions-wrapper + input[data-fieldsize="small"],
+.form .endereco-predictions-wrapper + css3-container + input[data-fieldsize="small"],
+.form .endereco-predictions-wrapper + input[data-fieldsize="medium"],
+.form .endereco-predictions-wrapper + css3-container + input[data-fieldsize="medium"] {
+	margin-left: 5px;
+}

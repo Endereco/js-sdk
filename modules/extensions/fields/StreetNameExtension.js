@@ -65,7 +65,6 @@ var StreetNameExtension = {
                                     ExtendableObject._streetNameChunk = value;
                                 }
 
-
                                 // Inform all subscribers about the change.
                                 ExtendableObject._subscribers.streetName.forEach(function (subscriber) {
                                     subscriber.value = value;
@@ -92,9 +91,7 @@ var StreetNameExtension = {
                                     ExtendableObject.hasLoadedExtension('StreetFullExtension') &&
                                     ['general_address', 'shipping_address', 'billing_address'].includes(ExtendableObject.addressType)
                                 ) {
-                                    setTimeout(function() {
-                                        ExtendableObject.setField('streetFull', ExtendableObject.util.formatStreetFull(), false);
-                                    }, 100);
+                                    ExtendableObject.setField('streetFull', ExtendableObject.util.formatStreetFull(), false);
                                 }
                             }
                         }).catch(function(e) {

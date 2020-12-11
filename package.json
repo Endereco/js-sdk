@@ -1,5 +1,5 @@
 {
-  "name": "endereco-js-sdk",
+  "name": "frontend",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -45,6 +45,6 @@
     "terser-webpack-plugin": "^4.1.0",
     "uglifyjs-webpack-plugin": "^2.2.0"
   },
-  "author": "Ilja weber <ilja@endereco.de>",
+  "author": "ilja_weber <info@ilja-weber.de>",
   "license": "ISC"
 }

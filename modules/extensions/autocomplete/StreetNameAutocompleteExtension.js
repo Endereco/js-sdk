@@ -9,6 +9,8 @@ var StreetNameAutocompleteExtension = {
         return new ExtendableObject.util.Promise(function(resolve, reject) {
             ExtendableObject.waitForExtension('StreetNameExtension').then(function() {
 
+                var $streetNameChunkTimeout;
+
                 // Add fields.
                 ExtendableObject._streetNameChunk = '';
                 ExtendableObject._streetNamePredictions = [];
@@ -131,6 +133,10 @@ var StreetNameAutocompleteExtension = {
                         if (document.querySelector('[endereco-predictions]')) {
                             document.querySelector('[endereco-predictions]').parentNode.removeChild(document.querySelector('[endereco-predictions]'));
                         }
+
+                        if (!!$streetNameChunkTimeout) {
+                            clearTimeout($streetNameChunkTimeout)
+                        }
                     }
                 };
 
@@ -183,6 +189,10 @@ var StreetNameAutocompleteExtension = {
                                     ExtendableObject.config.ux.smartFill = false;
                                 }
                                 ExtendableObject._streetNameChunk = value;
+
+                                if (!!$streetNameChunkTimeout) {
+                                    clearTimeout($streetNameChunkTimeout)
+                                }
 
                                 // Get predictions.
                                 if (

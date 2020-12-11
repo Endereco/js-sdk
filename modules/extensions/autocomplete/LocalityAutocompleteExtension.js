@@ -9,6 +9,8 @@ var LocalityAutocompleteExtension = {
         return new ExtendableObject.util.Promise(function(resolve, reject) {
             ExtendableObject.waitForExtension('LocalityExtension').then(function() {
 
+                var $localityPredictionTimeout;
+
                 // Add fields.
                 ExtendableObject._localityChunk = '';
                 ExtendableObject._localityPredictions = [];
@@ -131,6 +133,10 @@ var LocalityAutocompleteExtension = {
                         if (document.querySelector('[endereco-predictions]')) {
                             document.querySelector('[endereco-predictions]').parentNode.removeChild(document.querySelector('[endereco-predictions]'));
                         }
+
+                        if (!!$localityPredictionTimeout) {
+                            clearTimeout($localityPredictionTimeout)
+                        }
                     }
                 };
 
@@ -182,6 +188,10 @@ var LocalityAutocompleteExtension = {
                                     ExtendableObject.config.ux.smartFill = false;
                                 }
                                 ExtendableObject._localityChunk = value;
+
+                                if (!!$localityPredictionTimeout) {
+                                    clearTimeout($localityPredictionTimeout)
+                                }
 
                                 // Get predictions.
                                 if (ExtendableObject.active) {

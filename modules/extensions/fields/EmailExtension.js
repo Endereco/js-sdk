@@ -121,8 +121,9 @@ var EmailExtension = {
                                         statusCollector['email_could_not_be_verified'] = true;
                                     }
 
-                                    ExtendableObject.emailStatus = Object.keys(statusCollector);
+                                    ExtendableObject.emailStatus = ExtendableObject.util.merge(data.status, Object.keys(statusCollector));
                                 }).catch(function(e) {
+                                    ExtendableObject.emailStatus = [];
                                     console.log('Failed checking email', e, ExtendableObject);
                                 }).finally(function() {
                                     ExtendableObject._awaits--;

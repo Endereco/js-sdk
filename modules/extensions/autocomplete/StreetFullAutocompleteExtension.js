@@ -10,6 +10,8 @@ var StreetFullAutocompleteExtension = {
         return new ExtendableObject.util.Promise(function(resolve, reject) {
             ExtendableObject.waitForExtension('StreetFullExtension').then(function() {
 
+                var $streetFullChunkTimeout;
+
                 // Add fields.
                 ExtendableObject._streetFullChunk = '';
                 ExtendableObject._streetFullPredictions = [];
@@ -102,13 +104,8 @@ var StreetFullAutocompleteExtension = {
                     if (null === index) {
                         index = ExtendableObject._streetFullPredictionsIndex;
                     }
-
-                    if (0 <= index && ExtendableObject.streetFullPredictions[index].streetName) {
-                        ExtendableObject.streetName = ExtendableObject.streetFullPredictions[index].streetName;
-                    }
-
-                    if (0 <= index && ExtendableObject.streetFullPredictions[index].buildingNumber) {
-                        ExtendableObject.buildingNumber = ExtendableObject.streetFullPredictions[index].buildingNumber;
+                    if (!!$streetFullChunkTimeout) {
+                        clearTimeout($streetFullChunkTimeout)
                     }
 
                     if (0 <= index && ExtendableObject.streetFullPredictions[index].streetFull) {
@@ -186,6 +183,24 @@ var StreetFullAutocompleteExtension = {
                                     ExtendableObject.config.ux.smartFill = false;
                                 }
                                 ExtendableObject._streetFullChunk = value;
+
+                                if (!!$streetFullChunkTimeout) {
+                                    clearTimeout($streetFullChunkTimeout)
+                                }
+
+                                $streetFullChunkTimeout = setTimeout( function() {
+                                    ExtendableObject.streetFull = value;
+                                }, 1000);
+
+                                // TODO possible problem, revisit later.
+                                /**
+                                 * Wipe the inner data for streetname and building number, as those will be regenerated on
+                                 * change event.
+                                  * @type {string}
+                                 * @private
+                                 */
+                                ExtendableObject._streetName = '';
+                                ExtendableObject._buildingNumber = '';
 
                                 // Get predictions.
                                 if (

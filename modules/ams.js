@@ -77,6 +77,9 @@ function EnderecoAddress(customConfig={}) {
     // Form submit handler.
     base.cb.onFormSubmit = function(e) {
         window.EnderecoIntegrator.hasSubmit = true;
+        if (!base.config.trigger.onsubmit) {
+            return true;
+        }
         if (base.util.shouldBeChecked()) {
             // First. Block.
             e.preventDefault();

@@ -19,7 +19,9 @@ function EnderecoSubscriber(propertyName, observableObject, options = {}) {
             return new Promise(function(resolve, reject) {
                 return resolve(value);
             })
-        }
+        },
+        customSetValue: undefined,
+        customGetValue: undefined,
     }
 
     if (!observableObject) {
@@ -144,7 +146,12 @@ function EnderecoSubscriber(propertyName, observableObject, options = {}) {
                     } else if ('innerHTML' === $self.options.valueContainer) {
                         return $self.setInnerHTML(value);
                     } else if ('value' === $self.options.valueContainer) {
-                        return $self.setValue(value);
+                        if (!!$self.options.customSetValue) {
+                            return $self.options.customSetValue($self, value);
+                        } else {
+                            return $self.setValue(value);
+                        }
+
                     } else {
                         return $self.set($self.options.valueContainer, value);
                     }
@@ -172,43 +179,11 @@ function EnderecoSubscriber(propertyName, observableObject, options = {}) {
                 }
                 this.object.checked = newValue;
 
-                if (preValue !== newValue) {
-                    this.object.dispatchEvent(
-                        new CustomEvent(
-                            'change',
-                            {
-                                'bubbles': true,
-                                'cancelable': true
-                            }
-                        )
-                    )
-                }
-
             } else {
                 if (Array.isArray(value)) {
                     this.object.value = value.join(',');
-                    this.object.dispatchEvent(
-                        new CustomEvent(
-                            'change',
-                            {
-                                'bubbles': true,
-                                'cancelable': true
-                            }
-                        )
-                    )
                 } else {
-
                     this.object.value = value;
-                    this.object.dispatchEvent(
-                        new CustomEvent(
-                            'change',
-                            {
-                                'bubbles': true,
-                                'cancelable': true
-                            }
-                        )
-                    )
-
                     if (this.subject && this.subject.config.ux.smartFill) {
                         var blockFunc = function(e) {
                             e.preventDefault();

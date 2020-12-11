@@ -1,0 +1,24 @@
+.endereco-status-wrapper-list {
+	list-style: inside;
+	margin-bottom: 1rem;
+	color: rgb(240, 173, 78);
+	list-style: '⚠ ' inside;
+	padding: 0;
+
+	&__item {
+		&--email_syntax_error {
+			color: red;
+			list-style: '✗ ' inside;
+		}
+		&--email_cant_receive {
+			color: red;
+			list-style: '✗ ' inside;
+		}
+
+		&--email_no_mx {
+			color: red;
+			list-style: '✗ ' inside;
+		}
+	}
+}
+

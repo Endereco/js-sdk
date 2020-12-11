@@ -101,10 +101,11 @@ var StreetFullExtension = {
                 return $self.util.Mustache.render(
                     $self.config.templates.streetFull.getTemplate(streetData.countryCode),
                     streetData
-                ).replace(/  +/g, ' ').replace(/(\r\n|\n|\r)/gm, "");
+                ).replace(/  +/g, ' ').replace(/(\r\n|\n|\r)/gm, "").trim();
             }
 
             // Add getter and setter for fields.
+            var $oldFullStreet;
             Object.defineProperty(ExtendableObject, 'streetFull', {
                 get: function() {
                     return this._streetFull;
@@ -117,23 +118,23 @@ var StreetFullExtension = {
                             var oldValue = ExtendableObject._streetFull;
                             var newValue = value;
 
-                            var notSame = ExtendableObject._streetFull !== value;
+                            var notSame = oldValue !== newValue;
 
                             // Chunk set.
                             if (ExtendableObject.hasLoadedExtension('StreetFullAutocompleteExtension')) {
-                                notSame = notSame || ( ExtendableObject._streetFullChunk !== value );
+                                notSame = notSame || ( ExtendableObject._streetFullChunk !== newValue );
                             }
 
                             if (notSame) {
-                                ExtendableObject._streetFull = value;
+                                ExtendableObject._streetFull = newValue;
 
                                 if (ExtendableObject.hasLoadedExtension('StreetFullAutocompleteExtension')) {
-                                    ExtendableObject._streetFullChunk = value;
+                                    ExtendableObject._streetFullChunk = newValue;
                                 }
 
                                 // Inform all subscribers about the change.
                                 ExtendableObject._subscribers.streetFull.forEach(function (subscriber) {
-                                    subscriber.value = value;
+                                    subscriber.value = newValue;
                                 });
 
                                 if (ExtendableObject.active) {
@@ -152,45 +153,58 @@ var StreetFullExtension = {
                                     );
                                 }
 
-                            }
+                                // Split and write sub parts.
+                                if (
+                                    ExtendableObject.hasLoadedExtension('StreetNameExtension') &&
+                                    ExtendableObject.hasLoadedExtension('BuildingNumberExtension') &&
+                                    ['general_address', 'shipping_address', 'billing_address'].includes(ExtendableObject.addressType)
+                                ) {
+                                    ExtendableObject.waitForActive().then(function() {
+                                        ExtendableObject._awaits++;
+                                        ExtendableObject.util.splitStreet().then(function(data) {
+                                            ExtendableObject._awaits++;
+                                            if (
+                                                ExtendableObject.hasLoadedExtension('AdditionalInfoExtension') &&
+                                                !!data.additionalInfo
+                                            ) {
+                                                ExtendableObject.setField('additionalInfo', data.additionalInfo, false);
+                                            }
+                                            if (
+                                                ExtendableObject.hasLoadedExtension('BuildingNumberExtension')
+                                            ) {
+                                                if (!!data.houseNumber) {
+                                                    ExtendableObject.setField('buildingNumber', data.houseNumber, false);
+                                                } else {
+                                                    ExtendableObject.setField('buildingNumber', '', false);
+                                                }
+                                            }
+                                            if (
+                                                ExtendableObject.hasLoadedExtension('StreetNameExtension')
+                                            ) {
+                                                if (!!data.streetName && !!data.houseNumber) {
+                                                    ExtendableObject.setField('streetName', data.streetName, false);
+                                                } else {
+                                                    ExtendableObject.setField('streetName', data.street, false);
+                                                }
 
-                            // Split and write sub parts.
-                            if (
-                                ExtendableObject.hasLoadedExtension('StreetNameExtension') &&
-                                ExtendableObject.hasLoadedExtension('BuildingNumberExtension') &&
-                                ['general_address', 'shipping_address', 'billing_address'].includes(ExtendableObject.addressType)
-                            ) {
-                                ExtendableObject.waitForActive().then(function() {
-                                    ExtendableObject._awaits++;
-                                    ExtendableObject.util.splitStreet().then(function(data) {
-                                        if (
-                                            ExtendableObject.hasLoadedExtension('StreetNameExtension') &&
-                                            !!data.streetName
-                                        ) {
-                                            ExtendableObject.setField('streetName', data.streetName, false);
-                                        }
-                                        if (
-                                            ExtendableObject.hasLoadedExtension('BuildingNumberExtension') &&
-                                            !!data.houseNumber
-                                        ) {
-                                            ExtendableObject.setField('buildingNumber', data.houseNumber, false);
-                                        }
-                                        if (
-                                            ExtendableObject.hasLoadedExtension('AdditionalInfoExtension') &&
-                                            !!data.additionalInfo
-                                        ) {
-                                            ExtendableObject.setField('additionalInfo', data.additionalInfo, false);
-                                        }
-                                    }).catch(function(e) {
-                                        if (
-                                            ExtendableObject.hasLoadedExtension('StreetNameExtension')
-                                        ) {
-                                            ExtendableObject.setField('streetName', ExtendableObject.streetFull, false);
-                                        }
-                                    }).finally(function() {
-                                        ExtendableObject._awaits--;
-                                    })
-                                }).catch();
+                                            }
+                                            ExtendableObject._awaits--;
+                                        }).catch(function(e) {
+                                            if (
+                                                ExtendableObject.hasLoadedExtension('StreetNameExtension')
+                                            ) {
+                                                ExtendableObject.setField('streetName', ExtendableObject.streetFull, false);
+                                            }
+                                            if (
+                                                ExtendableObject.hasLoadedExtension('BuildingNumberExtension')
+                                            ) {
+                                                ExtendableObject.setField('buildingNumber', '', false);
+                                            }
+                                        }).finally(function() {
+                                            ExtendableObject._awaits--;
+                                        })
+                                    }).catch();
+                                }
                             }
 
                         }).catch(function(e) {

@@ -1,3 +1,5 @@
+import statusWrapper from "../../../templates/email_check_status_wrapper.html";
+
 var EmailCheckExtension = {
     name: 'EmailCheckExtension',
     extend: function(ExtendableObject) {
@@ -8,6 +10,12 @@ var EmailCheckExtension = {
                 // Add email field.
                 ExtendableObject._emailStatus = '';
                 ExtendableObject._subscribers.emailStatus = [];
+
+                ExtendableObject.config.templates.statusWrapper = statusWrapper;
+
+                if (undefined === ExtendableObject.config.ux.showEmailStatus) {
+                    ExtendableObject.config.ux.showEmailStatus = false;
+                }
 
                 // Add change event hadler.
                 ExtendableObject.cb.emailStatusChange = function(subscriber) {
@@ -48,6 +56,10 @@ var EmailCheckExtension = {
                                         }
                                     )
                                 );
+
+                                if (ExtendableObject.config.ux.showEmailStatus) {
+                                    ExtendableObject.util.renderStatusMessages();
+                                }
                             }
                         }).catch().finally(function() {
                             ExtendableObject._awaits--;
@@ -55,6 +67,40 @@ var EmailCheckExtension = {
 
                     }
                 });
+
+                ExtendableObject.util.renderStatusMessages = function() {
+                    var statuses = [];
+
+                    ExtendableObject.emailStatus.forEach( function(emailStatus) {
+                        if (!!ExtendableObject.config.texts.statuses[emailStatus]) {
+                            statuses.push({
+                                status: emailStatus,
+                                text: ExtendableObject.config.texts.statuses[emailStatus]
+                            })
+                        }
+                    })
+
+                    if (document.querySelectorAll('.endereco-status-wrapper[data-id="' + ExtendableObject.id + '"]')) {
+                        document.querySelectorAll('.endereco-status-wrapper[data-id="' + ExtendableObject.id + '"]').forEach( function(DOMElement) {
+                            DOMElement.remove();
+                        });
+                    }
+
+                    if (0 < statuses.length) {
+                        var wrapperHtml = ExtendableObject.util.Mustache.render(
+                            ExtendableObject.config.templates.statusWrapper,
+                            {
+                                'ExtendableObject': ExtendableObject,
+                                'statuses': statuses
+                            }
+                        )
+
+                        ExtendableObject._subscribers.email.forEach( function(subscriber) {
+                            subscriber.object.insertAdjacentHTML('afterend', wrapperHtml);
+                        });
+                    }
+
+                }
 
                 ExtendableObject.util.checkEmail = function(email = null) {
                     var $self = this;
@@ -75,7 +121,7 @@ var EmailCheckExtension = {
                         // Send user data to remote server for validation.
                         ExtendableObject._awaits++;
                         ExtendableObject.util.axios.post(ExtendableObject.config.apiUrl, message, {
-                            timeout: 2000,
+                            timeout: 6000,
                             headers: {
                                 'X-Auth-Key': ExtendableObject.config.apiKey,
                                 'X-Remote-Api-Url': ExtendableObject.config.remoteApiUrl,

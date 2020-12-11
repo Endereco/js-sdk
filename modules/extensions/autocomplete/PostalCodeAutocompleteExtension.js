@@ -9,6 +9,8 @@ var PostalCodeAutocompleteExtension = {
         return new ExtendableObject.util.Promise(function(resolve, reject) {
             ExtendableObject.waitForExtension('PostalCodeExtension').then(function() {
 
+                var $postalCodeChunkTimeout;
+
                 // Add fields.
                 ExtendableObject._postalCodeChunk = '';
                 ExtendableObject._postalCodePredictions = [];
@@ -131,6 +133,9 @@ var PostalCodeAutocompleteExtension = {
                         if (document.querySelector('[endereco-predictions]')) {
                             document.querySelector('[endereco-predictions]').parentNode.removeChild(document.querySelector('[endereco-predictions]'));
                         }
+                        if (!!$postalCodeChunkTimeout) {
+                            clearTimeout($postalCodeChunkTimeout)
+                        }
                     }
                 };
 
@@ -182,6 +187,10 @@ var PostalCodeAutocompleteExtension = {
                                     ExtendableObject.config.ux.smartFill = false;
                                 }
                                 ExtendableObject._postalCodeChunk = value;
+
+                                if (!!$postalCodeChunkTimeout) {
+                                    clearTimeout($postalCodeChunkTimeout)
+                                }
 
                                 // Get predictions.
                                 if (ExtendableObject.active) {

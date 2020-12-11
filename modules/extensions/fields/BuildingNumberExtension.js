@@ -6,6 +6,8 @@ var BuildingNumberExtension = {
             ExtendableObject._buildingNumber = '';
             ExtendableObject._subscribers.buildingNumber = [];
 
+            var $buildingNumberTimeout;
+
             ExtendableObject.cb.setBuildingNumber = function(buildingNumber) {
                 return new ExtendableObject.util.Promise(function(resolve, reject) {
                     resolve(buildingNumber);
@@ -21,6 +23,14 @@ var BuildingNumberExtension = {
             ExtendableObject.cb.buildingNumberInput = function(subscriber) {
                 return function(e) {
                     ExtendableObject._changed = true;
+
+                    if (!!$buildingNumberTimeout) {
+                        clearTimeout($buildingNumberTimeout)
+                    }
+
+                    $buildingNumberTimeout = setTimeout( function() {
+                        ExtendableObject.buildingNumber = subscriber.value;
+                    }, 1500);
                 }
             };
 
@@ -97,9 +107,7 @@ var BuildingNumberExtension = {
                                     ExtendableObject.hasLoadedExtension('StreetFullExtension') &&
                                     ['general_address', 'shipping_address', 'billing_address'].includes(ExtendableObject.addressType)
                                 ) {
-                                    setTimeout(function() {
-                                        ExtendableObject.setField('streetFull', ExtendableObject.util.formatStreetFull(), false);
-                                    }, 100);
+                                    ExtendableObject.setField('streetFull', ExtendableObject.util.formatStreetFull(), false);
                                 }
                             }
                         }).catch(function(e) {

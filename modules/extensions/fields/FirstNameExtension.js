@@ -51,7 +51,6 @@ var FirstNameExtension = {
                                 );
                             }
 
-
                             // Check address, if the extension is loaded.
                             if (ExtendableObject.active && ExtendableObject.hasLoadedExtension('SalutationCheckExtension')) {
                                 ExtendableObject._awaits++;
@@ -77,7 +76,7 @@ var FirstNameExtension = {
                                         ExtendableObject.salutation = data.gender;
                                     }
                                 }).catch(function(e) {
-                                    console.log('Failed checking email', e, ExtendableObject);
+                                    console.log('Failed checking', e, ExtendableObject);
                                 }).finally(function() {
                                     ExtendableObject._awaits--;
                                 })

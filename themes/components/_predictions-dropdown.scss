@@ -1,0 +1,63 @@
+.endereco-predictions-wrapper {
+	position: absolute;
+	z-index: 99001;
+	height: 0;
+
+	.endereco-span--neutral {
+		border-bottom: 1px dotted #5cb85c;
+		color: #5cb85c;
+		font-weight: 700;
+		display: inline-block;
+		padding: 0;
+	}
+
+	.endereco-span--remove {
+		display: none!important;
+	}
+}
+
+.endereco-predictions-wrapper-inner {
+	width: 100%;
+	position: relative;
+	top: 6px;
+}
+
+.endereco-predictions {
+	background-color: #fff;
+	padding: 8px;
+	margin: 0;
+	list-style: none;
+	overflow: hidden;
+	border-radius: 4px;
+	box-shadow: 1px 1px 4px rgba(0,0,0,0.25), 0 0 12px rgba(0,0,0,0.125);
+	width: auto;
+	position: absolute;
+
+	.endereco-predictions__item.endereco-predictions__item.endereco-predictions__item {
+		white-space: nowrap;
+		margin: 0;
+		box-sizing: border-box;
+		cursor: pointer;
+		border: 0 none;
+		background-color: inherit;
+		display: block;
+		position: relative;
+		overflow: hidden;
+		padding: 8px;
+		color: #333;
+		width: 100%;
+
+		* {
+			pointer-events: none;
+		}
+
+		&:last-child {
+			margin-bottom: 0;
+		}
+
+		&:hover,
+		&.active {
+			background-color: rgba(76, 175, 80, 0.1);
+		}
+	}
+}

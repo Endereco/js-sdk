@@ -6,12 +6,12 @@ const TerserPlugin = require('terser-webpack-plugin');
 module.exports = {
   mode: process.env.NODE_ENV,
   entry: {
-    'index': './index.js',
+    'endereco-js-agent': './index.js'
   },
   output: {
     path: path.resolve(__dirname, './dist/'),
     publicPath: '/',
-    filename: 'endereco-js-agent.js'
+    filename: '[name].js'
   },
   optimization: {
     minimize: true,
