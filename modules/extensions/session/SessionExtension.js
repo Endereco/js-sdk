@@ -44,9 +44,6 @@ var SessionExtension = {
                             ExtendableObject.formsWithSession.push(form)
                         }
                     })
-
-
-
                 }
             }, 500);
 
