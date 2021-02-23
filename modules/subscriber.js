@@ -43,7 +43,12 @@ function EnderecoSubscriber(propertyName, observableObject, options = {}) {
             var changeCallbackGenerator = this.propertyName+'Change';
             if (undefined !== this._subject.cb[changeCallbackGenerator]) {
                 this.object.removeEventListener('change', this._subject.cb[changeCallbackGenerator](this));
-                this.object.addEventListener('change', this._subject.cb[changeCallbackGenerator](this));
+
+                if (!!window.jQuery) {
+                    window.jQuery(this.object).on('change', this._subject.cb[changeCallbackGenerator](this));
+                } else {
+                    this.object.addEventListener('change', this._subject.cb[changeCallbackGenerator](this));
+                }
             }
 
             var blurCallbackGenerator = this.propertyName+'Blur';
