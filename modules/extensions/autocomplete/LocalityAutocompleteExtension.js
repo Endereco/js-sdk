@@ -158,11 +158,12 @@ var LocalityAutocompleteExtension = {
                                 ExtendableObject.util.renderLocalityPredictionsDropdown();
                             }
                         } else if ('Tab' === e.key || 'Tab' === e.key) {
-                            if (0 < ExtendableObject._localityPredictions.length) {
+                            // TODO: configurable activate in future releases.
+                            /*if (0 < ExtendableObject._localityPredictions.length) {
                                 e.preventDefault();
                                 e.stopPropagation();
                                 ExtendableObject.cb.copyLocalityFromPrediction();
-                            }
+                            }*/
                         } else if ('Enter' === e.key || 'Enter' === e.key) {
                             if (0 < ExtendableObject._localityPredictions.length) {
                                 e.preventDefault();

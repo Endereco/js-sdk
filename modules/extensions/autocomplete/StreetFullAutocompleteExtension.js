@@ -153,11 +153,13 @@ var StreetFullAutocompleteExtension = {
                                 ExtendableObject.util.renderStreetFullPredictionsDropdown();
                             }
                         } else if ('Tab' === e.key || 'Tab' === e.key) {
+                            // TODO: configurable activate in future releases.
+                            /*
                             if (0 < ExtendableObject._streetFullPredictions.length) {
                                 e.preventDefault();
                                 e.stopPropagation();
                                 ExtendableObject.cb.copyStreetFullFromPrediction();
-                            }
+                            }*/
                         } else if ('Enter' === e.key || 'Enter' === e.key) {
                             if (0 < ExtendableObject._streetFullPredictions.length) {
                                 e.preventDefault();

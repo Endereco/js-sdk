@@ -9,6 +9,7 @@ var EnderecoIntegrator = {
     popupQueue: 0,
     ready: false,
     loaded: true,
+    themeName: undefined,
     countryMappingUrl: '',
     defaultCountry: 'de',
     defaultCountrySelect: false,
@@ -375,44 +376,45 @@ var EnderecoIntegrator = {
                 }
 
                 $self.dispatchEvent('endereco.ams.after-adding-subscribers')
-            }
 
-            EAO.waitUntilReady().then(function() {
-                EAO.syncValues().then(function() {
-                    EAO.waitUntilReady().then(function() {
-                        if (!EAO.countryCode && $self.defaultCountrySelect) {
-                            EAO.countryCode = $self.defaultCountry;
-                        }
 
-                        // Start setting default values.
-                        if (!!options.addressType) {
-                            EAO._addressType = options.addressType
-                        }
-
-                        EAO._changed = false;
-                        EAO.activate();
-                        $self.afterAMSActivation.forEach( function(callback) {
-                            callback(EAO);
-                        })
-
+                EAO.waitUntilReady().then(function() {
+                    EAO.syncValues().then(function() {
                         EAO.waitUntilReady().then(function() {
-                            EAO.util.calculateDependingStatuses();
-                        }).catch();
+                            if (!EAO.countryCode && $self.defaultCountrySelect) {
+                                EAO.countryCode = $self.defaultCountry;
+                            }
 
-                        // If automated check is active, render the address selection field.
-                        if (
-                            EAO.config.ux.checkExisting && (
-                                EAO.addressStatus.includes('address_needs_correction') ||
-                                EAO.addressStatus.includes('address_multiple_variants') ||
-                                EAO.addressStatus.includes('address_not_checked')
-                            ) &&
-                            !EAO.addressStatus.includes('address_selected_by_customer')
-                        ) {
-                            EAO.util.renderAddressPredictionsPopup();
-                        }
-                    }).catch();
-                }).catch()
-            }).catch();
+                            // Start setting default values.
+                            if (!!options.addressType) {
+                                EAO._addressType = options.addressType
+                            }
+
+                            EAO._changed = false;
+                            EAO.activate();
+                            $self.afterAMSActivation.forEach( function(callback) {
+                                callback(EAO);
+                            })
+
+                            EAO.waitUntilReady().then(function() {
+                                EAO.util.calculateDependingStatuses();
+                            }).catch();
+
+                            // If automated check is active, render the address selection field.
+                            if (
+                                EAO.config.ux.checkExisting && (
+                                    EAO.addressStatus.includes('address_needs_correction') ||
+                                    EAO.addressStatus.includes('address_multiple_variants') ||
+                                    EAO.addressStatus.includes('address_not_checked')
+                                ) &&
+                                !EAO.addressStatus.includes('address_selected_by_customer')
+                            ) {
+                                EAO.util.renderAddressPredictionsPopup();
+                            }
+                        }).catch();
+                    }).catch()
+                }).catch();
+            }
         }).catch();
 
         this.integratedObjects[EAO.fullName] = EAO;
@@ -575,29 +577,26 @@ var EnderecoIntegrator = {
                     document.querySelector($self.getSelector(prefix + postfix.salutation)) &&
                     $self.dispatchEvent('endereco.ps.before-adding-salutation-subscriber')
                 ) {
+                    var salutationSubscriberOptions = {};
+                    if (!!$self.resolvers.salutationWrite) {
+                        salutationSubscriberOptions['writeFilterCb'] = function(value) {
+                            return $self.resolvers.salutationWrite(value);
+                        }
+                    }
+                    if (!!$self.resolvers.salutationRead) {
+                        salutationSubscriberOptions['readFilterCb'] = function(value) {
+                            return $self.resolvers.salutationRead(value);
+                        }
+                    }
+                    if (!!$self.resolvers.salutationSetValue) {
+                        salutationSubscriberOptions['customSetValue'] = function(subscriber, value) {
+                            return $self.resolvers.salutationSetValue(subscriber, value);
+                        }
+                    }
                     var salutationSubscriber = new EnderecoSubscriber(
                         'salutation',
                         document.querySelector($self.getSelector(prefix + postfix.salutation)),
-                        {
-                            writeFilterCb: function(value) {
-                                if (!!$self.resolvers.salutationWrite) {
-                                    return $self.resolvers.salutationWrite(value);
-                                } else {
-                                    return new EPO.util.Promise(function(resolve, reject) {
-                                        resolve(value);
-                                    });
-                                }
-                            },
-                            readFilterCb: function(value) {
-                                if (!!$self.resolvers.salutationRead) {
-                                    return $self.resolvers.salutationRead(value);
-                                } else {
-                                    return new EPO.util.Promise(function(resolve, reject) {
-                                        resolve(value);
-                                    });
-                                }
-                            }
-                        }
+                        salutationSubscriberOptions
                     )
                     EPO.addSubscriber(salutationSubscriber);
 
@@ -687,6 +686,11 @@ var EnderecoIntegrator = {
             linkElement.setAttribute('type', 'text/css');
             linkElement.setAttribute('href', 'data:text/css;charset=UTF-8,' + encodeURIComponent(this.css));
             head.appendChild(linkElement);
+        }
+    },
+    addBodyClass: function() {
+        if (!!this.themeName) {
+            document.querySelector('body').classList.add('endereco-theme--'+this.themeName);
         }
     },
     dispatchEvent: function(event) {
@@ -792,6 +796,7 @@ var EnderecoIntegrator = {
 
 EnderecoIntegrator.waitUntilReady().then( function() {
     EnderecoIntegrator.addCss();
+    EnderecoIntegrator.addBodyClass();
 }).catch();
 
 export default EnderecoIntegrator;

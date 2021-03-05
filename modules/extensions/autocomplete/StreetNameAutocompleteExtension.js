@@ -158,11 +158,13 @@ var StreetNameAutocompleteExtension = {
                                 ExtendableObject.util.renderStreetNamePredictionsDropdown();
                             }
                         } else if ('Tab' === e.key || 'Tab' === e.key) {
+                            // TODO: configurable activate in future releases.
+                            /*
                             if (0 < ExtendableObject._streetNamePredictions.length) {
                                 e.preventDefault();
                                 e.stopPropagation();
                                 ExtendableObject.cb.copyStreetNameFromPrediction();
-                            }
+                            }*/
                         } else if ('Enter' === e.key || 'Enter' === e.key) {
                             if (0 < ExtendableObject._streetNamePredictions.length) {
                                 e.preventDefault();

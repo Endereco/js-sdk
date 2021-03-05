@@ -144,8 +144,14 @@ function EnderecoSubscriber(propertyName, observableObject, options = {}) {
         },
         set value(value) {
             var $self = this;
+            if (!!$self._subject) {
+                $self._subject._awaits++;
+            }
             this.options.writeFilterCb(value)
                 .then(function(value) {
+                    if (!!$self._subject) {
+                        $self._subject._awaits--;
+                    }
                     if ('classList' === $self.options.valueContainer) {
                         return $self.setClassList(value);
                     } else if ('innerHTML' === $self.options.valueContainer) {
@@ -160,7 +166,12 @@ function EnderecoSubscriber(propertyName, observableObject, options = {}) {
                     } else {
                         return $self.set($self.options.valueContainer, value);
                     }
-                }).catch();
+                })
+                .catch( function(e) {
+                    if (!!$self._subject) {
+                        $self._subject._awaits--;
+                    }
+            });
         },
         set: function(valueType, value) {
             if (this.object instanceof HTMLElement) {

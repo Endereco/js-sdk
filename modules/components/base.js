@@ -250,6 +250,9 @@ function EnderecoBase() {
                 var keys = Object.keys($self._subscribers);
                 keys.forEach( function(key) {
                     $self._subscribers[key].forEach(function(subscriber) {
+                        if(!!subscriber._subject) {
+                            subscriber._subject._awaits++;
+                        }
                         // Sync values.
                         $self.util.Promise.resolve(subscriber.value).then(function(subscriberValue) {
                             var innerValue = $self[key];
@@ -266,6 +269,9 @@ function EnderecoBase() {
                             }
                             if (subscriberValueEmpty && !innerValueEmpty) {
                                 subscriber.value = $self[key];
+                            }
+                            if(!!subscriber._subject) {
+                                subscriber._subject._awaits--;
                             }
                             resolve();
                         }).catch(function(e) {
