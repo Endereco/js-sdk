@@ -1,0 +1,36 @@
+<div endereco-popup class="endereco-popup-container endereco-popup-container--direction-{{direction}}">
+	<div class="endereco-modal endereco-modal--no-prediction {{{modalClasses}}}">
+		<div class="endereco-modal__header">
+			<p class="endereco-modal__header-main">{{{title}}}</p>
+			<p class="endereco-modal__header-sub">{{{EnderecoAddressObject.config.texts.notFoundSubline}}}</p>
+
+			{{#showClose}}<span class="endereco-modal__close" endereco-modal-close></span>{{/showClose}}
+		</div>
+		<div class="endereco-modal__body">
+			<div class="endereco-modal__divider">
+				<span class="endereco-modal__divider-innertext">{{{EnderecoAddressObject.config.texts.yourInput}}} <small><a href="javascript:void(0)" endereco-edit-address>{{{EnderecoAddressObject.config.texts.editYourInput}}}</a></small></span>
+			</div>
+			{{#hasErrors}}
+			<div class="endereco-modal__errors">
+				<ul>
+					{{#errors}}
+					<li>{{{.}}}</li>
+					{{/errors}}
+				</ul>
+			</div>
+			{{/hasErrors}}
+			<div class="endereco-modal__address-container">
+				{{{ mainAddress }}}
+			</div>
+			<div class="endereco-modal__address-confirmation">
+				<label>
+					<input type="checkbox" value="1" endereco-confirm-address-checkbox> I confirm that the address is valid and deliverable.
+				</label>
+			</div>
+		</div>
+		<div class="endereco-modal__footer">
+			{{{buttonSecondary}}}
+			{{{button}}}
+		</div>
+	</div>
+</div>

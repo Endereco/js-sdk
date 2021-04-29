@@ -24,7 +24,7 @@ function EnderecoBase() {
                     inputAssistant: 100,
                     streetCopy: 600
                 },
-                requestTimeout: 4000
+                requestTimeout: 8000
             },
             trigger: {
                 onblur: true,

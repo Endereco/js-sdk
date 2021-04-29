@@ -1,6 +1,9 @@
 import {diffWords} from "diff";
 import addressFullTemplates from "../../../templates/addressFullTemplates";
 import addressPredictionsPopupWrapper from "../../../templates/address_check_wrapper_template.html";
+import addressNotFoundPopupWrapper from "../../../templates/address_not_found_wrapper_template.html";
+import addressNoPredictionWrapper from '../../../templates/address_no_prediction_wrapper_template.html';
+
 import EnderecoSubscriber from './../../subscriber.js';
 
 var AddressCheckExtension = {
@@ -28,13 +31,24 @@ var AddressCheckExtension = {
                 ExtendableObject.onAfterAddressCheckSelected = [];
                 ExtendableObject.onAfterModalRendered = [];
                 ExtendableObject.onEditAddress = [];
+                ExtendableObject.onConfirmAddress = [];
 
 
                 ExtendableObject.config.templates.addressFull = addressFullTemplates;
                 ExtendableObject.config.templates.addressPredictionsPopupWrapper = addressPredictionsPopupWrapper;
+                ExtendableObject.config.templates.addressNotFoundPopupWrapper = addressNotFoundPopupWrapper;
+                ExtendableObject.config.templates.addressNoPredictionWrapper = addressNoPredictionWrapper;
 
                 if (!ExtendableObject.config.templates.button) {
-                    ExtendableObject.config.templates.button = '<button class="endereco-button endereco-button-primary endereco-button-default" endereco-use-selection>{{{EnderecoAddressObject.config.texts.useSelected}}}</button>';
+                    ExtendableObject.config.templates.button = '<button class="{{{buttonClasses}}}" endereco-use-selection endereco-disabled-until-confirmed>{{{EnderecoAddressObject.config.texts.useSelected}}}</button>';
+                }
+
+                if (!ExtendableObject.config.templates.buttonEditAddress) {
+                    ExtendableObject.config.templates.buttonEditAddress = '<button class="{{{buttonClasses}}}" endereco-edit-address>{{{EnderecoAddressObject.config.texts.editAddress}}}</button>';
+                }
+
+                if (!ExtendableObject.config.templates.buttonConfirmAddress) {
+                    ExtendableObject.config.templates.buttonConfirmAddress = '<button class="{{{buttonClasses}}}" endereco-confirm-address endereco-disabled-until-confirmed>{{{EnderecoAddressObject.config.texts.confirmAddress}}}</button>';
                 }
 
                 ExtendableObject.onBlurTimeout = null;
@@ -85,19 +99,33 @@ var AddressCheckExtension = {
                     return true;
                 }
 
-                ExtendableObject.util.formatAddress = function(address=null) {
+                ExtendableObject.util.formatAddress = function(address=null, forceCountryDisplay = false) {
                     var $self = ExtendableObject;
                     var useTemplate = 'default';
                     var formattedAddress = '';
 
                     if (!address) {
-                        address = ExtendableObject.address;
+                        address = JSON.parse(JSON.stringify(ExtendableObject.address));
                     }
 
                     // Format current address.
                     if (undefined !== $self.config.templates.addressFull[$self.countryCode]) {
                         useTemplate = $self.countryCode;
                     }
+
+                    if (!!address.countryCode) {
+                        if (!!window.EnderecoIntegrator.countryCodeToNameMapping && !!window.EnderecoIntegrator.countryCodeToNameMapping[address.countryCode.toUpperCase()]) {
+                            address.countryName = window.EnderecoIntegrator.countryCodeToNameMapping[address.countryCode.toUpperCase()].toUpperCase();
+                        } else {
+                            address.countryName = address.countryCode.toUpperCase();
+                        }
+                        address.showCountry = forceCountryDisplay || ExtendableObject.addressStatus.includes('country_code_needs_correction')
+                    }
+
+                    if (!address.buildingNumber) {
+                        address.buildingNumber = '&nbsp;';
+                    }
+
                     formattedAddress = ExtendableObject.util.Mustache.render(
                         $self.config.templates.addressFull[useTemplate],
                         address
@@ -117,16 +145,12 @@ var AddressCheckExtension = {
                     window.EnderecoIntegrator.popupQueue++;
 
                     ExtendableObject.waitUntilReady().then( function() {
-                        var $self = ExtendableObject;
-
-                        $self.waitForPopupAreaToBeFree().then(function() {
+                        ExtendableObject.waitForPopupAreaToBeFree().then(function() {
                             var diff = [];
+                            var $self = ExtendableObject;
 
-                            // Check if the popup need to be rendered.
-                            if (
-                                ExtendableObject.addressStatus.includes('address_correct') ||
-                                ExtendableObject.addressStatus.includes('address_not_found')
-                            ) {
+                            // Render no popup.
+                            if (ExtendableObject.addressStatus.includes('address_correct')) {
                                 // No poup needed.
                                 window.EnderecoIntegrator.popupQueue--;
 
@@ -144,11 +168,22 @@ var AddressCheckExtension = {
                                         window.EnderecoIntegrator.submitResume();
                                     }
                                 }).catch()
-                            } else if (
-                                (ExtendableObject.addressStatus.includes('address_needs_correction') ||
-                                ExtendableObject.addressStatus.includes('address_multiple_variants')) &&
-                                0 < ExtendableObject.addressPredictions.length
+
+                                return;
+                            }
+
+                            // Render popup with corrections.
+                            if (
+                                ExtendableObject.addressStatus.includes('address_multiple_variants') ||
+                                ExtendableObject.addressStatus.includes('address_needs_correction') &&
+                                    0 < ExtendableObject.addressPredictions.length &&
+                                !(
+                                    ExtendableObject.addressStatus.includes('building_number_is_missing')
+                                    || ExtendableObject.addressStatus.includes('building_number_not_found')
+                                    || ExtendableObject.addressStatus.includes('address_minor_correction')
+                                )
                             ) {
+                                console.log("render multiple variant address modal");
                                 // Popup needed.
                                 var startingIndex = -1;
                                 // Prepare main address.
@@ -161,7 +196,7 @@ var AddressCheckExtension = {
                                 diff.forEach(function(part){
                                     var markClass = part.added ? 'endereco-span--add' :
                                         part.removed ? 'endereco-span--remove' : 'endereco-span--neutral';
-                                    mainAddressDiffHtml += '<span class="' + markClass + '">' + part.value.replace(/[ ]/g,  '&nbsp;') + '</span>';
+                                    mainAddressDiffHtml += '<span class="' + markClass + '">' + part.value + '</span>';
                                 });
 
                                 // Prepare predictions.
@@ -173,7 +208,7 @@ var AddressCheckExtension = {
                                     diff.forEach(function(part){
                                         var markClass = part.added ? 'endereco-span--add' :
                                             part.removed ? 'endereco-span--remove' : 'endereco-span--neutral';
-                                        addressDiff += '<span class="' + markClass + '">' + part.value.replace(/[ ]/g,  '&nbsp;') + '</span>';
+                                        addressDiff += '<span class="' + markClass + '">' + part.value + '</span>';
                                     });
                                     addressPredictions.push({
                                         addressDiff: addressDiff
@@ -182,8 +217,9 @@ var AddressCheckExtension = {
 
                                 // Render wrapper.
                                 var indexCounter = 0;
+                                var useButtonHTML = $self.config.templates.button.replace('{{{buttonClasses}}}', $self.config.templates.primaryButtonClasses);
                                 var predictionsWrapperHtml = ExtendableObject.util.Mustache.render(
-                                    $self.config.templates.addressPredictionsPopupWrapper.replace('{{{button}}}', $self.config.templates.button),
+                                    $self.config.templates.addressPredictionsPopupWrapper.replace('{{{button}}}', useButtonHTML),
                                     {
                                         EnderecoAddressObject: $self,
                                         direction: getComputedStyle(document.querySelector('body')).direction,
@@ -261,7 +297,6 @@ var AddressCheckExtension = {
                                     })
                                 });
 
-
                                 document.querySelectorAll('[name="endereco-address-predictions"]').forEach(function(DOMElement) {
                                     $self.addSubscriber(
                                         new EnderecoSubscriber(
@@ -273,10 +308,355 @@ var AddressCheckExtension = {
                                         )
                                     );
                                 });
-                            } else {
-                                window.EnderecoIntegrator.popupQueue--;
+
+                                document.querySelectorAll('[endereco-confirm-address-checkbox]').forEach(function(DOMElement) {
+                                    DOMElement.addEventListener('change', function(e) {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        var $isChecked = e.target.checked;
+                                        e.target.closest('.endereco-modal').querySelectorAll('[endereco-disabled-until-confirmed]').forEach( function(disableableDOM) {
+                                            if ($isChecked || (0 <= ExtendableObject.addressPredictionsIndex)) {
+                                                disableableDOM.disabled = false;
+                                            } else {
+                                                disableableDOM.disabled = true;
+                                            }
+                                        })
+                                        // Find container
+                                    });
+                                    var $isChecked = DOMElement.checked;
+                                    DOMElement.closest('.endereco-modal').querySelectorAll('[endereco-disabled-until-confirmed]').forEach( function(disableableDOM) {
+                                        if ($isChecked || (0 <= ExtendableObject.addressPredictionsIndex)) {
+                                            disableableDOM.disabled = false;
+                                        } else {
+                                            disableableDOM.disabled = true;
+                                        }
+                                    })
+                                });
+
+                                document.querySelectorAll('[name="endereco-address-predictions"]').forEach(function(DOMElement) {
+                                    DOMElement.addEventListener('change', function(e) {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        var $modal = e.target.closest('.endereco-modal');
+                                        var $value = parseInt(e.target.value);
+                                        var $isChecked = $modal.querySelector('[endereco-confirm-address-checkbox]').checked;
+                                        if ((0 <= $value)) {
+                                            $modal.querySelector('.endereco-modal__address-confirmation').style.display = 'none';
+                                        } else {
+                                            $modal.querySelector('.endereco-modal__address-confirmation').style.display = 'block';
+                                        }
+                                        e.target.closest('.endereco-modal').querySelectorAll('[endereco-disabled-until-confirmed]').forEach( function(disableableDOM) {
+                                            if ($isChecked || (0 <= $value)) {
+                                                disableableDOM.disabled = false;
+                                            } else {
+                                                disableableDOM.disabled = true;
+                                            }
+                                        })
+                                        // Find container
+                                    });
+                                    var $isChecked = DOMElement.closest('.endereco-modal').querySelector('[endereco-confirm-address-checkbox]').checked;
+                                    if ((0 <= ExtendableObject.addressPredictionsIndex)) {
+                                        DOMElement.closest('.endereco-modal').querySelector('.endereco-modal__address-confirmation').style.display = 'none';
+                                    } else {
+                                        DOMElement.closest('.endereco-modal').querySelector('.endereco-modal__address-confirmation').style.display = 'block';
+                                    }
+                                    DOMElement.closest('.endereco-modal').querySelectorAll('[endereco-disabled-until-confirmed]').forEach( function(disableableDOM) {
+                                        if ($isChecked || (0 <= ExtendableObject.addressPredictionsIndex)) {
+                                            disableableDOM.disabled = false;
+                                        } else {
+                                            disableableDOM.disabled = true;
+                                        }
+                                    })
+                                });
+
+                                return;
                             }
 
+                            // Render popup for address correction without predictions.
+                            if (
+                                ExtendableObject.addressStatus.includes('address_minor_correction') &&
+                                (0 < ExtendableObject.addressPredictions.length)
+                            ) {
+                                console.log("automatically copy addresses");
+                                ExtendableObject._awaits++;
+                                var addressData = $self.addressPredictions[0];
+                                $self.fieldNames.forEach( function(fieldName) {
+                                    if(undefined !== $self[fieldName] && undefined !== addressData[fieldName]) {
+                                        $self[fieldName] = addressData[fieldName];
+                                    }
+                                });
+
+                                $self.addressStatus = ['address_correct', 'address_selected_automatically'];
+                                ExtendableObject._awaits--;
+                                return;
+                            }
+
+                            // Render popup for address correction without predictions.
+                            if (
+                                ExtendableObject.addressStatus.includes('address_needs_correction') &&
+                                (
+                                    ExtendableObject.addressStatus.includes('building_number_is_missing')
+                                    || ExtendableObject.addressStatus.includes('building_number_not_found')
+                                    || (0 === ExtendableObject.addressPredictions.length)
+                                )
+                            ) {
+                                console.log("render no pred with errors");
+                                // Prepare main address.
+                                // TODO: replace button then replace button classes.
+                                var mainAddressHtml = $self.util.formatAddress($self.address, true);
+                                var editButtonHTML = $self.config.templates.buttonEditAddress.replace('{{{buttonClasses}}}', $self.config.templates.primaryButtonClasses);
+                                var confirmButtonHTML = $self.config.templates.buttonConfirmAddress.replace('{{{buttonClasses}}}', $self.config.templates.secondaryButtonClasses);
+                                var errors = [];
+
+                                if (ExtendableObject.addressStatus.includes('building_number_is_missing')) {
+                                    if (!!window.EnderecoIntegrator.config.texts.statuses.building_number_is_missing) {
+                                        errors.push(window.EnderecoIntegrator.config.texts.statuses.building_number_is_missing)
+                                    } else {
+                                        errors.push('Hausnummer fehlt.')
+                                    }
+                                }
+
+                                if (ExtendableObject.addressStatus.includes('building_number_not_found')) {
+                                    if (!!window.EnderecoIntegrator.config.texts.statuses.building_number_not_found) {
+                                        errors.push(window.EnderecoIntegrator.config.texts.statuses.building_number_not_found)
+                                    } else {
+                                        errors.push('Hausnummer konnte nicht verifiziert werden. Prüfen Sie die Schreibweise und ob sie im richtigen Feld eingetragen ist.')
+                                    }
+                                    errors.push();
+                                }
+
+                                if (ExtendableObject.addressStatus.includes('street_name_needs_correction')) {
+                                    if (!!window.EnderecoIntegrator.config.texts.statuses.street_name_needs_correction) {
+                                        errors.push(window.EnderecoIntegrator.config.texts.statuses.street_name_needs_correction)
+                                    } else {
+                                        errors.push('Schreibfehler bei der Stra&szlig;e. Nutzen Sie bitte die amtliche Schreibweise.')
+                                    }
+                                }
+
+                                if (ExtendableObject.addressStatus.includes('locality_needs_correction')) {
+                                    if (!!window.EnderecoIntegrator.config.texts.statuses.locality_needs_correction) {
+                                        errors.push(window.EnderecoIntegrator.config.texts.statuses.locality_needs_correction)
+                                    } else {
+                                        errors.push('Schreibfehler bei dem Ort. Nutzen Sie bitte die amtliche Schreibweise.')
+                                    }
+                                }
+
+                                if (ExtendableObject.addressStatus.includes('postal_code_needs_correction')) {
+                                    if (!!window.EnderecoIntegrator.config.texts.statuses.postal_code_needs_correction) {
+                                        errors.push(window.EnderecoIntegrator.config.texts.statuses.postal_code_needs_correction)
+                                    } else {
+                                        errors.push('Schreibfehler bei der Postleitzahl. Achten Sie auf Vertipper.')
+                                    }
+                                }
+
+                                if (ExtendableObject.addressStatus.includes('country_code_needs_correction')) {
+                                    if (!!window.EnderecoIntegrator.config.texts.statuses.country_code_needs_correction) {
+                                        errors.push(window.EnderecoIntegrator.config.texts.statuses.country_code_needs_correction)
+                                    } else {
+                                        errors.push('Falsches Land. Wählen Sie bitte das richtige Land aus.');
+                                    }
+                                }
+
+                                var modalHTML = ExtendableObject.util.Mustache.render(
+                                    $self.config.templates.addressNoPredictionWrapper
+                                        .replace('{{{button}}}', editButtonHTML)
+                                        .replace('{{{buttonSecondary}}}', confirmButtonHTML)
+                                    ,
+                                    {
+                                        EnderecoAddressObject: $self,
+                                        direction: getComputedStyle(document.querySelector('body')).direction,
+                                        modalClasses: ExtendableObject.addressStatus.join(' '),
+                                        hasErrors: 0 < errors.length,
+                                        errors: errors,
+                                        mainAddress: mainAddressHtml,
+                                        button: $self.config.templates.button,
+                                        title: $self.config.texts.popupHeadlines[$self.addressType]
+                                    }
+                                );
+                                document.querySelector('body').insertAdjacentHTML('beforeend', modalHTML);
+                                document.querySelector('body').classList.add('endereco-no-scroll');
+
+                                ExtendableObject.onAfterModalRendered.forEach( function(cb) {
+                                    cb(ExtendableObject);
+                                });
+
+                                // Subscribe to events.
+                                document.querySelectorAll('[endereco-modal-close]').forEach(function(DOMElement) {
+                                    DOMElement.addEventListener('click', function(e) {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        $self.util.removePopup();
+                                        window.EnderecoIntegrator.submitResume = undefined;
+                                        window.EnderecoIntegrator.hasSubmit = false;
+                                        if (ExtendableObject.modalClosed) {
+                                            ExtendableObject.modalClosed();
+                                        }
+                                    })
+                                });
+
+                                document.querySelectorAll('[endereco-edit-address]').forEach(function(DOMElement) {
+                                    DOMElement.addEventListener('click', function(e) {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        $self.util.removePopup();
+                                        window.EnderecoIntegrator.submitResume = undefined;
+                                        window.EnderecoIntegrator.hasSubmit = false;
+                                        $self.waitUntilReady().then( function(){
+                                            $self.onEditAddress.forEach(function(cb) {
+                                                cb($self);
+                                            });
+                                        }).catch();
+                                    })
+                                });
+
+                                document.querySelectorAll('[endereco-confirm-address]').forEach(function(DOMElement) {
+                                    DOMElement.addEventListener('click', function(e) {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        $self.util.removePopup();
+                                        window.EnderecoIntegrator.submitResume = undefined;
+                                        window.EnderecoIntegrator.hasSubmit = false;
+                                        var statusTemp = JSON.parse(JSON.stringify(ExtendableObject.addressStatus));
+                                        statusTemp.push('address_selected_by_customer')
+                                        ExtendableObject.addressStatus = statusTemp;
+                                        $self.waitUntilReady().then( function(){
+                                            $self.onConfirmAddress.forEach(function(cb) {
+                                                cb($self);
+                                            });
+                                        }).catch();
+                                    })
+                                });
+
+                                document.querySelectorAll('[endereco-confirm-address-checkbox]').forEach(function(DOMElement) {
+                                    DOMElement.addEventListener('change', function(e) {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        var $isChecked = e.target.checked;
+                                        e.target.closest('.endereco-modal').querySelectorAll('[endereco-disabled-until-confirmed]').forEach( function(disableableDOM) {
+                                            if ($isChecked) {
+                                                disableableDOM.disabled = false;
+                                            } else {
+                                                disableableDOM.disabled = true;
+                                            }
+                                        })
+                                        // Find container
+                                    });
+                                    var $isChecked = DOMElement.checked;
+                                    DOMElement.closest('.endereco-modal').querySelectorAll('[endereco-disabled-until-confirmed]').forEach( function(disableableDOM) {
+                                        if ($isChecked) {
+                                            disableableDOM.disabled = false;
+                                        } else {
+                                            disableableDOM.disabled = true;
+                                        }
+                                    })
+                                });
+                                return;
+                            }
+
+                            // Render popup for not found address.
+                            if (
+                                ExtendableObject.addressStatus.includes('address_not_found') &&
+                                (0 === ExtendableObject.addressPredictions.length)
+                            ) {
+                                // Prepare main address.
+                                // TODO: replace button then replace button classes.
+                                var mainAddressHtml = $self.util.formatAddress($self.address, true);
+                                var editButtonHTML = $self.config.templates.buttonEditAddress.replace('{{{buttonClasses}}}', $self.config.templates.primaryButtonClasses);
+                                var confirmButtonHTML = $self.config.templates.buttonConfirmAddress.replace('{{{buttonClasses}}}', $self.config.templates.secondaryButtonClasses);
+
+                                console.log("prerender", editButtonHTML, confirmButtonHTML)
+
+                                var modalHTML = ExtendableObject.util.Mustache.render(
+                                    $self.config.templates.addressNotFoundPopupWrapper
+                                        .replace('{{{button}}}', editButtonHTML)
+                                        .replace('{{{buttonSecondary}}}', confirmButtonHTML)
+                                    ,
+                                    {
+                                        EnderecoAddressObject: $self,
+                                        direction: getComputedStyle(document.querySelector('body')).direction,
+                                        mainAddress: mainAddressHtml,
+                                        button: $self.config.templates.button,
+                                        title: $self.config.texts.popupHeadlines[$self.addressType]
+                                    }
+                                );
+                                document.querySelector('body').insertAdjacentHTML('beforeend', modalHTML);
+                                document.querySelector('body').classList.add('endereco-no-scroll');
+
+                                ExtendableObject.onAfterModalRendered.forEach( function(cb) {
+                                    cb(ExtendableObject);
+                                });
+
+                                // Subscribe to events.
+                                document.querySelectorAll('[endereco-modal-close]').forEach(function(DOMElement) {
+                                    DOMElement.addEventListener('click', function(e) {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        $self.util.removePopup();
+                                        window.EnderecoIntegrator.submitResume = undefined;
+                                        window.EnderecoIntegrator.hasSubmit = false;
+                                        if (ExtendableObject.modalClosed) {
+                                            ExtendableObject.modalClosed();
+                                        }
+                                    })
+                                });
+
+                                document.querySelectorAll('[endereco-edit-address]').forEach(function(DOMElement) {
+                                    DOMElement.addEventListener('click', function(e) {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        $self.util.removePopup();
+                                        window.EnderecoIntegrator.submitResume = undefined;
+                                        window.EnderecoIntegrator.hasSubmit = false;
+                                        $self.waitUntilReady().then( function(){
+                                            $self.onEditAddress.forEach(function(cb) {
+                                                cb($self);
+                                            });
+                                        }).catch();
+                                    })
+                                });
+
+                                document.querySelectorAll('[endereco-confirm-address]').forEach(function(DOMElement) {
+                                    DOMElement.addEventListener('click', function(e) {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        $self.util.removePopup();
+                                        window.EnderecoIntegrator.submitResume = undefined;
+                                        window.EnderecoIntegrator.hasSubmit = false;
+                                        ExtendableObject.addressStatus = ['address_not_found','address_selected_by_customer'];
+                                        $self.waitUntilReady().then( function(){
+                                            $self.onConfirmAddress.forEach(function(cb) {
+                                                cb($self);
+                                            });
+                                        }).catch();
+                                    })
+                                });
+
+                                document.querySelectorAll('[endereco-confirm-address-checkbox]').forEach(function(DOMElement) {
+                                    DOMElement.addEventListener('change', function(e) {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        var $isChecked = e.target.checked;
+                                        e.target.closest('.endereco-modal').querySelectorAll('[endereco-disabled-until-confirmed]').forEach( function(disableableDOM) {
+                                            if ($isChecked) {
+                                                disableableDOM.disabled = false;
+                                            } else {
+                                                disableableDOM.disabled = true;
+                                            }
+                                        })
+                                        // Find container
+                                    });
+                                    var $isChecked = DOMElement.checked;
+                                    DOMElement.closest('.endereco-modal').querySelectorAll('[endereco-disabled-until-confirmed]').forEach( function(disableableDOM) {
+                                        if ($isChecked) {
+                                            disableableDOM.disabled = false;
+                                        } else {
+                                            disableableDOM.disabled = true;
+                                        }
+                                    })
+                                });
+
+                                return;
+                            }
                         }).catch();
                     }).catch();
                 };
@@ -299,7 +679,11 @@ var AddressCheckExtension = {
                             countryCodeStatus.push('country_code_correct');
                         }
                         if (value.includes('address_needs_correction') && ExtendableObject.countryCode) {
-                            if (0 < ExtendableObject.addressPredictions.length && ExtendableObject.addressPredictions[0].countryCode !== ExtendableObject.countryCode) {
+                            if (value.includes('country_code_correct')) {
+                                countryCodeStatus.push('country_code_correct');
+                            } else if (value.includes('country_code_needs_correction')) {
+                                countryCodeStatus.push('country_code_needs_correction');
+                            } else if (0 < ExtendableObject.addressPredictions.length && ExtendableObject.addressPredictions[0].countryCode.toUpperCase() !== ExtendableObject.countryCode.toUpperCase()) {
                                 countryCodeStatus.push('country_code_needs_correction');
                             } else {
                                 countryCodeStatus.push('country_code_correct');
@@ -514,19 +898,24 @@ var AddressCheckExtension = {
 
                             // Transform statuscodes.
                             if (value.includes('A1000') && !value.includes('A1100')) {
-                                newValue.push('address_correct');
+                                if (!value.includes('address_correct')) {
+                                    value.push('address_correct');
+                                }
                             }
                             if (value.includes('A1000') && value.includes('A1100')) {
-                                newValue.push('address_needs_correction');
+                                if (!value.includes('address_needs_correction')) {
+                                    value.push('address_needs_correction');
+                                }
                             }
                             if (value.includes('A2000')) {
-                                newValue.push('address_multiple_variants');
+                                if (!value.includes('address_multiple_variants')) {
+                                    value.push('address_multiple_variants');
+                                }
                             }
                             if (value.includes('A3000')) {
-                                newValue.push('address_not_found');
-                            }
-                            if (0 < newValue.length) {
-                                value = newValue;
+                                if (!value.includes('address_not_found')) {
+                                    value.push('address_not_found');
+                                }
                             }
 
                             if (0 === value.length) {

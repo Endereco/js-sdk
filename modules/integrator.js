@@ -46,7 +46,7 @@ var EnderecoIntegrator = {
                 inputAssistant: 100,
                 streetCopy: 600
             },
-            requestTimeout: 4000
+            requestTimeout: 8000
         },
         trigger: {
             onblur: true,
@@ -66,8 +66,7 @@ var EnderecoIntegrator = {
             }
         },
         templates: {
-            button: '<button class="{{{EnderecoAddressObject.config.templates.buttonClasses}}}" endereco-use-selection>{{{EnderecoAddressObject.config.texts.useSelected}}}</button>',
-            buttonClasses: 'endereco-button endereco-button-primary'
+
         }
     },
     postfix: {
@@ -657,7 +656,8 @@ var EnderecoIntegrator = {
         var $self = this;
         return new Promise(function(resolve, reject) {
             var interval = setInterval(function() {
-                if ($self.ready) {
+                if (window.EnderecoIntegrator.ready) {
+                    clearInterval(interval);
                     resolve();
                 }
             }, 100);
@@ -762,7 +762,7 @@ var EnderecoIntegrator = {
         }
     },
     _test: {},
-    changeFieldsOrder: function(collection, fieldNamesOrder = ['countryCode', 'postalCode', 'locality', 'streetName','buildingNumber', 'additionalInfo']) {
+    changeFieldsOrder: function(collection, fieldNamesOrder = ['countryCode', 'postalCode', 'locality', 'streetFull', 'streetName','buildingNumber', 'additionalInfo']) {
         var myStructure = {};
 
         // Create parent line for additional info if it exists.
@@ -794,7 +794,7 @@ var EnderecoIntegrator = {
     }
 }
 
-EnderecoIntegrator.waitUntilReady().then( function() {
+EnderecoIntegrator.waitUntilReady("test2").then( function() {
     EnderecoIntegrator.addCss();
     EnderecoIntegrator.addBodyClass();
 }).catch();

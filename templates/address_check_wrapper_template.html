@@ -4,18 +4,9 @@
 			<p class="endereco-modal__header-main">{{{title}}}</p>
 			<p class="endereco-modal__header-sub">{{{EnderecoAddressObject.config.texts.popUpSubline}}}</p>
 
-			<span class="endereco-modal__close" endereco-modal-close></span>
+			{{#showClose}}<span class="endereco-modal__close" endereco-modal-close></span>{{/showClose}}
 		</div>
 		<div class="endereco-modal__body">
-			<div class="endereco-modal__divider">
-				<span class="endereco-modal__divider-innertext">{{{EnderecoAddressObject.config.texts.yourInput}}} <small><a href="javascript:void(0)" endereco-edit-address>{{{EnderecoAddressObject.config.texts.editYourInput}}}</a></small></span>
-			</div>
-			<ul class="endereco-address-predictions endereco-address-predictions--original">
-				<li class="endereco-address-predictions__item">
-					<input class="endereco-address-predictions__radio" type="radio" name="endereco-address-predictions" value="-1" id="endereco-address-predictions__item_original">
-					<label class="endereco-address-predictions__label" for="endereco-address-predictions__item_original">{{{ mainAddress }}}</label>
-				</li>
-			</ul>
 			<div class="endereco-modal__divider">
 				<span class="endereco-modal__divider-innertext">{{{EnderecoAddressObject.config.texts.ourSuggestions}}}</span>
 			</div>
@@ -28,6 +19,20 @@
 				{{loopUp}}
 				{{/predictions}}
 			</ul>
+			<div class="endereco-modal__divider">
+				<span class="endereco-modal__divider-innertext">{{{EnderecoAddressObject.config.texts.yourInput}}} <small><a href="javascript:void(0)" endereco-edit-address>{{{EnderecoAddressObject.config.texts.editYourInput}}}</a></small></span>
+			</div>
+			<ul class="endereco-address-predictions endereco-address-predictions--original">
+				<li class="endereco-address-predictions__item">
+					<input class="endereco-address-predictions__radio" type="radio" name="endereco-address-predictions" value="-1" id="endereco-address-predictions__item_original">
+					<label class="endereco-address-predictions__label" for="endereco-address-predictions__item_original">{{{ mainAddress }}}</label>
+				</li>
+			</ul>
+			<div class="endereco-modal__address-confirmation">
+				<label>
+					<input type="checkbox" value="1" endereco-confirm-address-checkbox> I confirm that the address is valid and deliverable.
+				</label>
+			</div>
 		</div>
 		<div class="endereco-modal__footer">
 			{{{button}}}

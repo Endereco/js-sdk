@@ -98,6 +98,7 @@ function EnderecoSubscriber(propertyName, observableObject, options = {}) {
                 ));
             }
 
+
             // Add autocomplete subscriber.
             if (this.options.syncValue) {
                 var $this = this;
