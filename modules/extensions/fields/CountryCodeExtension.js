@@ -17,6 +17,10 @@ var CountryCodeExtension = {
             ExtendableObject.cb.countryCodeChange = function(subscriber) {
                 return function(e) {
                     ExtendableObject.countryCode = subscriber.value;
+
+                    if (!!ExtendableObject.addressStatus) {
+                        ExtendableObject.addressStatus = [];
+                    }
                 }
             };
 

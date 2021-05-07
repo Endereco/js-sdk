@@ -99,7 +99,7 @@ var AddressCheckExtension = {
                     return true;
                 }
 
-                ExtendableObject.util.formatAddress = function(address=null, forceCountryDisplay = false) {
+                ExtendableObject.util.formatAddress = function(address=null, forceCountryDisplay = false, useHtml = false) {
                     var $self = ExtendableObject;
                     var useTemplate = 'default';
                     var formattedAddress = '';
@@ -122,12 +122,16 @@ var AddressCheckExtension = {
                         address.showCountry = forceCountryDisplay || ExtendableObject.addressStatus.includes('country_code_needs_correction')
                     }
 
-                    if (!address.buildingNumber) {
+                    if (!(address.buildingNumber.trim())) {
                         address.buildingNumber = '&nbsp;';
                     }
 
+                    address.useHtml = useHtml;
+
+                    var template = JSON.parse(JSON.stringify($self.config.templates.addressFull[useTemplate]));
+
                     formattedAddress = ExtendableObject.util.Mustache.render(
-                        $self.config.templates.addressFull[useTemplate],
+                        template,
                         address
                     ).replace(/  +/g, ' ');
 
@@ -183,7 +187,6 @@ var AddressCheckExtension = {
                                     || ExtendableObject.addressStatus.includes('address_minor_correction')
                                 )
                             ) {
-                                console.log("render multiple variant address modal");
                                 // Popup needed.
                                 var startingIndex = -1;
                                 // Prepare main address.
@@ -225,6 +228,7 @@ var AddressCheckExtension = {
                                         direction: getComputedStyle(document.querySelector('body')).direction,
                                         predictions: addressPredictions,
                                         mainAddress: mainAddressDiffHtml,
+                                        showClose: ExtendableObject.config.ux.allowCloseModal,
                                         button: $self.config.templates.button,
                                         title: $self.config.texts.popupHeadlines[$self.addressType],
                                         index: function() {
@@ -377,7 +381,6 @@ var AddressCheckExtension = {
                                 ExtendableObject.addressStatus.includes('address_minor_correction') &&
                                 (0 < ExtendableObject.addressPredictions.length)
                             ) {
-                                console.log("automatically copy addresses");
                                 ExtendableObject._awaits++;
                                 var addressData = $self.addressPredictions[0];
                                 $self.fieldNames.forEach( function(fieldName) {
@@ -385,8 +388,13 @@ var AddressCheckExtension = {
                                         $self[fieldName] = addressData[fieldName];
                                     }
                                 });
-
                                 $self.addressStatus = ['address_correct', 'address_selected_automatically'];
+                                $self.addressPredictions = [];
+                                $self.waitUntilReady().then( function() {
+                                    $self.onAfterAddressCheckSelected.forEach(function(cb) {
+                                        cb($self);
+                                    });
+                                }).catch();
                                 ExtendableObject._awaits--;
                                 return;
                             }
@@ -400,10 +408,9 @@ var AddressCheckExtension = {
                                     || (0 === ExtendableObject.addressPredictions.length)
                                 )
                             ) {
-                                console.log("render no pred with errors");
                                 // Prepare main address.
                                 // TODO: replace button then replace button classes.
-                                var mainAddressHtml = $self.util.formatAddress($self.address, true);
+                                var mainAddressHtml = $self.util.formatAddress($self.address, true, true);
                                 var editButtonHTML = $self.config.templates.buttonEditAddress.replace('{{{buttonClasses}}}', $self.config.templates.primaryButtonClasses);
                                 var confirmButtonHTML = $self.config.templates.buttonConfirmAddress.replace('{{{buttonClasses}}}', $self.config.templates.secondaryButtonClasses);
                                 var errors = [];
@@ -466,6 +473,7 @@ var AddressCheckExtension = {
                                         EnderecoAddressObject: $self,
                                         direction: getComputedStyle(document.querySelector('body')).direction,
                                         modalClasses: ExtendableObject.addressStatus.join(' '),
+                                        showClose: ExtendableObject.config.ux.allowCloseModal,
                                         hasErrors: 0 < errors.length,
                                         errors: errors,
                                         mainAddress: mainAddressHtml,
@@ -563,9 +571,6 @@ var AddressCheckExtension = {
                                 var mainAddressHtml = $self.util.formatAddress($self.address, true);
                                 var editButtonHTML = $self.config.templates.buttonEditAddress.replace('{{{buttonClasses}}}', $self.config.templates.primaryButtonClasses);
                                 var confirmButtonHTML = $self.config.templates.buttonConfirmAddress.replace('{{{buttonClasses}}}', $self.config.templates.secondaryButtonClasses);
-
-                                console.log("prerender", editButtonHTML, confirmButtonHTML)
-
                                 var modalHTML = ExtendableObject.util.Mustache.render(
                                     $self.config.templates.addressNotFoundPopupWrapper
                                         .replace('{{{button}}}', editButtonHTML)
@@ -575,6 +580,7 @@ var AddressCheckExtension = {
                                         EnderecoAddressObject: $self,
                                         direction: getComputedStyle(document.querySelector('body')).direction,
                                         mainAddress: mainAddressHtml,
+                                        showClose: ExtendableObject.config.ux.allowCloseModal,
                                         button: $self.config.templates.button,
                                         title: $self.config.texts.popupHeadlines[$self.addressType]
                                     }

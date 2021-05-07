@@ -122,6 +122,10 @@ var StreetFullAutocompleteExtension = {
                         ExtendableObject.streetFullPredictions = [];
                         ExtendableObject._streetFullPredictionsIndex = 0;
                         ExtendableObject.streetFullChunk = subscriber.value;
+
+                        if (!!ExtendableObject.addressStatus) {
+                            ExtendableObject.addressStatus = [];
+                        }
                     }
                 };
 

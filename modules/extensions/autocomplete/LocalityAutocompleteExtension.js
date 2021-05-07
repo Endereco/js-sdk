@@ -123,6 +123,10 @@ var LocalityAutocompleteExtension = {
                         ExtendableObject.localityPredictions = [];
                         ExtendableObject._localityPredictionsIndex = 0;
                         ExtendableObject.localityChunk = subscriber.value;
+
+                        if (!!ExtendableObject.addressStatus) {
+                            ExtendableObject.addressStatus = [];
+                        }
                     }
                 };
 

@@ -2,7 +2,7 @@
 	<div class="endereco-modal endereco-modal--no-prediction {{{modalClasses}}}">
 		<div class="endereco-modal__header">
 			<p class="endereco-modal__header-main">{{{title}}}</p>
-			<p class="endereco-modal__header-sub">{{{EnderecoAddressObject.config.texts.notFoundSubline}}}</p>
+			<p class="endereco-modal__header-sub">{{{EnderecoAddressObject.config.texts.mistakeNoPredictionSubline}}}</p>
 
 			{{#showClose}}<span class="endereco-modal__close" endereco-modal-close></span>{{/showClose}}
 		</div>
@@ -24,7 +24,7 @@
 			</div>
 			<div class="endereco-modal__address-confirmation">
 				<label>
-					<input type="checkbox" value="1" endereco-confirm-address-checkbox> I confirm that the address is valid and deliverable.
+					<input type="checkbox" value="1" endereco-confirm-address-checkbox> {{{EnderecoAddressObject.config.texts.confirmMyAddressCheckbox}}}
 				</label>
 			</div>
 		</div>
