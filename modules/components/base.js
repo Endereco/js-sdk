@@ -18,7 +18,7 @@ function EnderecoBase() {
                 smartFillBlockTime: 600,
                 resumeSubmit: true,
                 disableBrowserAutocomplete: true,
-                maxAutocompletePredictionItems: 6,
+                maxAutocompletePredictionItems: 100,
                 maxAddressPredictionItems: 3,
                 delay: {
                     inputAssistant: 100,
@@ -189,9 +189,11 @@ function EnderecoBase() {
             levenstein: levenstein,
             merge: merge,
             isEqual: isEqual,
-            CustomEvent: CustomEvent
+            CustomEvent: CustomEvent,
+            generateId: function() {
+                return uuidv4();
+            }
         },
-
 
         // Event Handling.
         _subscribers: {},

@@ -39,7 +39,7 @@ var EnderecoIntegrator = {
             smartFillBlockTime: 600,
             resumeSubmit: true,
             disableBrowserAutocomplete: true,
-            maxAutocompletePredictionItems: 6,
+            maxAutocompletePredictionItems: 100,
             maxAddressPredictionItems: 3,
             useStandardCss: true,
             delay: {
