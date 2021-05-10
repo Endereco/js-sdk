@@ -141,6 +141,13 @@
 		}
 	}
 
+	&__warning {
+		padding: 15px;
+		background-color: #f6f6f6;
+		margin: 15px 0;
+		border-radius: 4px;
+	}
+
 	&__header {
 		color: #333;
 		padding: 15px 45px 15px 15px;
@@ -234,13 +241,13 @@
 	}
 
 	&__address-confirmation {
-		padding: 0 10px;
-		margin: 20px 0;
+		padding: 0 0 0 15px;
+		margin: 15px 0;
 		position: relative;
 		label {
 			font-weight: 600;
 			cursor: pointer;
-			font-size: 1.2em;
+			font-size: 1.125em;
 			padding-left: 30px;
 			position: relative;
 			line-height: 1.8em;

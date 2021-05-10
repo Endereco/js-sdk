@@ -229,6 +229,7 @@ var AddressCheckExtension = {
                                         predictions: addressPredictions,
                                         mainAddress: mainAddressDiffHtml,
                                         showClose: ExtendableObject.config.ux.allowCloseModal,
+                                        showConfirCheckbox: ExtendableObject.config.ux.confirmWithCheckbox,
                                         button: $self.config.templates.button,
                                         title: $self.config.texts.popupHeadlines[$self.addressType],
                                         index: function() {
@@ -313,29 +314,32 @@ var AddressCheckExtension = {
                                     );
                                 });
 
-                                document.querySelectorAll('[endereco-confirm-address-checkbox]').forEach(function(DOMElement) {
-                                    DOMElement.addEventListener('change', function(e) {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        var $isChecked = e.target.checked;
-                                        e.target.closest('.endereco-modal').querySelectorAll('[endereco-disabled-until-confirmed]').forEach( function(disableableDOM) {
+                                if (ExtendableObject.config.ux.confirmWithCheckbox) {
+                                    document.querySelectorAll('[endereco-confirm-address-checkbox]').forEach(function(DOMElement) {
+                                        DOMElement.addEventListener('change', function(e) {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            var $isChecked = e.target.checked;
+                                            e.target.closest('.endereco-modal').querySelectorAll('[endereco-disabled-until-confirmed]').forEach( function(disableableDOM) {
+                                                if ($isChecked || (0 <= ExtendableObject.addressPredictionsIndex)) {
+                                                    disableableDOM.disabled = false;
+                                                } else {
+                                                    disableableDOM.disabled = true;
+                                                }
+                                            })
+                                            // Find container
+                                        });
+                                        var $isChecked = DOMElement.checked;
+                                        DOMElement.closest('.endereco-modal').querySelectorAll('[endereco-disabled-until-confirmed]').forEach( function(disableableDOM) {
                                             if ($isChecked || (0 <= ExtendableObject.addressPredictionsIndex)) {
                                                 disableableDOM.disabled = false;
                                             } else {
                                                 disableableDOM.disabled = true;
                                             }
                                         })
-                                        // Find container
                                     });
-                                    var $isChecked = DOMElement.checked;
-                                    DOMElement.closest('.endereco-modal').querySelectorAll('[endereco-disabled-until-confirmed]').forEach( function(disableableDOM) {
-                                        if ($isChecked || (0 <= ExtendableObject.addressPredictionsIndex)) {
-                                            disableableDOM.disabled = false;
-                                        } else {
-                                            disableableDOM.disabled = true;
-                                        }
-                                    })
-                                });
+                                }
+
 
                                 document.querySelectorAll('[name="endereco-address-predictions"]').forEach(function(DOMElement) {
                                     DOMElement.addEventListener('change', function(e) {
@@ -343,34 +347,50 @@ var AddressCheckExtension = {
                                         e.stopPropagation();
                                         var $modal = e.target.closest('.endereco-modal');
                                         var $value = parseInt(e.target.value);
-                                        var $isChecked = $modal.querySelector('[endereco-confirm-address-checkbox]').checked;
+
                                         if ((0 <= $value)) {
-                                            $modal.querySelector('.endereco-modal__address-confirmation').style.display = 'none';
+                                            $modal.querySelectorAll('[endereco-show-if-origin]').forEach( function(element) {
+                                                element.style.display = 'none';
+                                            });
                                         } else {
-                                            $modal.querySelector('.endereco-modal__address-confirmation').style.display = 'block';
+                                            $modal.querySelectorAll('[endereco-show-if-origin]').forEach( function(element) {
+                                                element.style.display = 'block';
+                                            });
                                         }
-                                        e.target.closest('.endereco-modal').querySelectorAll('[endereco-disabled-until-confirmed]').forEach( function(disableableDOM) {
-                                            if ($isChecked || (0 <= $value)) {
+                                        if (ExtendableObject.config.ux.confirmWithCheckbox) {
+                                            var $isChecked = $modal.querySelector('[endereco-confirm-address-checkbox]').checked;
+                                            e.target.closest('.endereco-modal').querySelectorAll('[endereco-disabled-until-confirmed]').forEach( function(disableableDOM) {
+                                                if ($isChecked || (0 <= $value)) {
+                                                    disableableDOM.disabled = false;
+                                                } else {
+                                                    disableableDOM.disabled = true;
+                                                }
+                                            })
+                                        }
+
+                                        // Find container
+                                    });
+
+                                    if ((0 <= ExtendableObject.addressPredictionsIndex)) {
+                                        DOMElement.closest('.endereco-modal').querySelectorAll('[endereco-show-if-origin]').forEach( function(element) {
+                                            element.style.display = 'none';
+                                        });
+                                    } else {
+                                        DOMElement.closest('.endereco-modal').querySelectorAll('[endereco-show-if-origin]').forEach( function(element) {
+                                            element.style.display = 'block';
+                                        });
+                                    }
+
+                                    if (ExtendableObject.config.ux.confirmWithCheckbox) {
+                                        var $isChecked = DOMElement.closest('.endereco-modal').querySelector('[endereco-confirm-address-checkbox]').checked;
+                                        DOMElement.closest('.endereco-modal').querySelectorAll('[endereco-disabled-until-confirmed]').forEach( function(disableableDOM) {
+                                            if ($isChecked || (0 <= ExtendableObject.addressPredictionsIndex)) {
                                                 disableableDOM.disabled = false;
                                             } else {
                                                 disableableDOM.disabled = true;
                                             }
                                         })
-                                        // Find container
-                                    });
-                                    var $isChecked = DOMElement.closest('.endereco-modal').querySelector('[endereco-confirm-address-checkbox]').checked;
-                                    if ((0 <= ExtendableObject.addressPredictionsIndex)) {
-                                        DOMElement.closest('.endereco-modal').querySelector('.endereco-modal__address-confirmation').style.display = 'none';
-                                    } else {
-                                        DOMElement.closest('.endereco-modal').querySelector('.endereco-modal__address-confirmation').style.display = 'block';
                                     }
-                                    DOMElement.closest('.endereco-modal').querySelectorAll('[endereco-disabled-until-confirmed]').forEach( function(disableableDOM) {
-                                        if ($isChecked || (0 <= ExtendableObject.addressPredictionsIndex)) {
-                                            disableableDOM.disabled = false;
-                                        } else {
-                                            disableableDOM.disabled = true;
-                                        }
-                                    })
                                 });
 
                                 return;
@@ -476,6 +496,7 @@ var AddressCheckExtension = {
                                         showClose: ExtendableObject.config.ux.allowCloseModal,
                                         hasErrors: 0 < errors.length,
                                         errors: errors,
+                                        showConfirCheckbox: ExtendableObject.config.ux.confirmWithCheckbox,
                                         mainAddress: mainAddressHtml,
                                         button: $self.config.templates.button,
                                         title: $self.config.texts.popupHeadlines[$self.addressType]
@@ -535,29 +556,32 @@ var AddressCheckExtension = {
                                     })
                                 });
 
-                                document.querySelectorAll('[endereco-confirm-address-checkbox]').forEach(function(DOMElement) {
-                                    DOMElement.addEventListener('change', function(e) {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        var $isChecked = e.target.checked;
-                                        e.target.closest('.endereco-modal').querySelectorAll('[endereco-disabled-until-confirmed]').forEach( function(disableableDOM) {
+                                if (ExtendableObject.config.ux.confirmWithCheckbox) {
+                                    document.querySelectorAll('[endereco-confirm-address-checkbox]').forEach(function(DOMElement) {
+                                        DOMElement.addEventListener('change', function(e) {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            var $isChecked = e.target.checked;
+                                            e.target.closest('.endereco-modal').querySelectorAll('[endereco-disabled-until-confirmed]').forEach( function(disableableDOM) {
+                                                if ($isChecked) {
+                                                    disableableDOM.disabled = false;
+                                                } else {
+                                                    disableableDOM.disabled = true;
+                                                }
+                                            })
+                                            // Find container
+                                        });
+                                        var $isChecked = DOMElement.checked;
+                                        DOMElement.closest('.endereco-modal').querySelectorAll('[endereco-disabled-until-confirmed]').forEach( function(disableableDOM) {
                                             if ($isChecked) {
                                                 disableableDOM.disabled = false;
                                             } else {
                                                 disableableDOM.disabled = true;
                                             }
                                         })
-                                        // Find container
                                     });
-                                    var $isChecked = DOMElement.checked;
-                                    DOMElement.closest('.endereco-modal').querySelectorAll('[endereco-disabled-until-confirmed]').forEach( function(disableableDOM) {
-                                        if ($isChecked) {
-                                            disableableDOM.disabled = false;
-                                        } else {
-                                            disableableDOM.disabled = true;
-                                        }
-                                    })
-                                });
+                                }
+
                                 return;
                             }
 
@@ -581,6 +605,7 @@ var AddressCheckExtension = {
                                         direction: getComputedStyle(document.querySelector('body')).direction,
                                         mainAddress: mainAddressHtml,
                                         showClose: ExtendableObject.config.ux.allowCloseModal,
+                                        showConfirCheckbox: ExtendableObject.config.ux.confirmWithCheckbox,
                                         button: $self.config.templates.button,
                                         title: $self.config.texts.popupHeadlines[$self.addressType]
                                     }
@@ -637,29 +662,31 @@ var AddressCheckExtension = {
                                     })
                                 });
 
-                                document.querySelectorAll('[endereco-confirm-address-checkbox]').forEach(function(DOMElement) {
-                                    DOMElement.addEventListener('change', function(e) {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        var $isChecked = e.target.checked;
-                                        e.target.closest('.endereco-modal').querySelectorAll('[endereco-disabled-until-confirmed]').forEach( function(disableableDOM) {
+                                if (ExtendableObject.config.ux.confirmWithCheckbox) {
+                                    document.querySelectorAll('[endereco-confirm-address-checkbox]').forEach(function(DOMElement) {
+                                        DOMElement.addEventListener('change', function(e) {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            var $isChecked = e.target.checked;
+                                            e.target.closest('.endereco-modal').querySelectorAll('[endereco-disabled-until-confirmed]').forEach( function(disableableDOM) {
+                                                if ($isChecked) {
+                                                    disableableDOM.disabled = false;
+                                                } else {
+                                                    disableableDOM.disabled = true;
+                                                }
+                                            })
+                                            // Find container
+                                        });
+                                        var $isChecked = DOMElement.checked;
+                                        DOMElement.closest('.endereco-modal').querySelectorAll('[endereco-disabled-until-confirmed]').forEach( function(disableableDOM) {
                                             if ($isChecked) {
                                                 disableableDOM.disabled = false;
                                             } else {
                                                 disableableDOM.disabled = true;
                                             }
                                         })
-                                        // Find container
                                     });
-                                    var $isChecked = DOMElement.checked;
-                                    DOMElement.closest('.endereco-modal').querySelectorAll('[endereco-disabled-until-confirmed]').forEach( function(disableableDOM) {
-                                        if ($isChecked) {
-                                            disableableDOM.disabled = false;
-                                        } else {
-                                            disableableDOM.disabled = true;
-                                        }
-                                    })
-                                });
+                                }
 
                                 return;
                             }

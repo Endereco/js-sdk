@@ -22,11 +22,16 @@
 			<div class="endereco-modal__address-container">
 				{{{ mainAddress }}}
 			</div>
+			<div class="endereco-modal__warning">
+				{{{EnderecoAddressObject.config.texts.warningText}}}
+			</div>
+			{{#showConfirCheckbox}}
 			<div class="endereco-modal__address-confirmation">
 				<label>
 					<input type="checkbox" value="1" endereco-confirm-address-checkbox> {{{EnderecoAddressObject.config.texts.confirmMyAddressCheckbox}}}
 				</label>
 			</div>
+			{{/showConfirCheckbox}}
 		</div>
 		<div class="endereco-modal__footer">
 			{{{buttonSecondary}}}

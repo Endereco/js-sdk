@@ -42,6 +42,7 @@ var EnderecoIntegrator = {
             maxAutocompletePredictionItems: 100,
             maxAddressPredictionItems: 3,
             useStandardCss: true,
+            confirmWithCheckbox: false,
             delay: {
                 inputAssistant: 100,
                 streetCopy: 600

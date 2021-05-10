@@ -28,11 +28,16 @@
 					<label class="endereco-address-predictions__label" for="endereco-address-predictions__item_original">{{{ mainAddress }}}</label>
 				</li>
 			</ul>
-			<div class="endereco-modal__address-confirmation">
+			<div class="endereco-modal__warning" endereco-show-if-origin>
+				{{{EnderecoAddressObject.config.texts.warningText}}}
+			</div>
+			{{#showConfirCheckbox}}
+			<div class="endereco-modal__address-confirmation" endereco-show-if-origin>
 				<label>
 					<input type="checkbox" value="1" endereco-confirm-address-checkbox> {{{EnderecoAddressObject.config.texts.confirmMyAddressCheckbox}}}
 				</label>
 			</div>
+			{{/showConfirCheckbox}}
 		</div>
 		<div class="endereco-modal__footer">
 			{{{button}}}
