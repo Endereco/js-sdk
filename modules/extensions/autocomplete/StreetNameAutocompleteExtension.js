@@ -123,10 +123,6 @@ var StreetNameAutocompleteExtension = {
                         ExtendableObject.streetNamePredictions = [];
                         ExtendableObject._streetNamePredictionsIndex = 0;
                         ExtendableObject.streetNameChunk = subscriber.value;
-
-                        if (!!ExtendableObject.addressStatus) {
-                            ExtendableObject.addressStatus = [];
-                        }
                     }
                 };
 

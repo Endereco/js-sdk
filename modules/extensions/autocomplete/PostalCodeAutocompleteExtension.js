@@ -123,10 +123,6 @@ var PostalCodeAutocompleteExtension = {
                         ExtendableObject.postalCodePredictions = [];
                         ExtendableObject._postalCodePredictionsIndex = 0;
                         ExtendableObject.postalCodeChunk = subscriber.value;
-
-                        if (!!ExtendableObject.addressStatus) {
-                            ExtendableObject.addressStatus = [];
-                        }
                     }
                 };
 

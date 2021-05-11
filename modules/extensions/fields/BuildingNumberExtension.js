@@ -31,10 +31,6 @@ var BuildingNumberExtension = {
                     $buildingNumberTimeout = setTimeout( function() {
                         ExtendableObject.buildingNumber = subscriber.value;
                     }, 1500);
-
-                    if (!!ExtendableObject.addressStatus) {
-                        ExtendableObject.addressStatus = [];
-                    }
                 }
             };
 
