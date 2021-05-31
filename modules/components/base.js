@@ -10,6 +10,7 @@ function EnderecoBase() {
     return {
         id: uuidv4(),
         config: {
+            agentName: "DefaultAgent v1.0.0",
             showDebugInfo: true,
             lang: 'de',
             splitStreet: true,

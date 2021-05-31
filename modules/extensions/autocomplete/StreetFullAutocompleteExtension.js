@@ -13,6 +13,7 @@ var StreetFullAutocompleteExtension = {
                 var $streetFullChunkTimeout;
 
                 // Add fields.
+                ExtendableObject._streetFullAutocompleteRequestIndex = 1;
                 ExtendableObject._streetFullChunk = '';
                 ExtendableObject._streetFullPredictions = [];
                 ExtendableObject._streetFullPredictionsIndex = 0;
@@ -211,9 +212,11 @@ var StreetFullAutocompleteExtension = {
                                 ) {
                                     clearTimeout(ExtendableObject._streetFullTimeout);
                                     ExtendableObject._streetFullTimeout = setTimeout(function() {
+                                        ExtendableObject._streetFullAutocompleteRequestIndex++;
+                                        var autocompleteRequestIndex = ExtendableObject._streetFullAutocompleteRequestIndex * 1; // Create a copy.
                                         var message = {
                                             'jsonrpc': '2.0',
-                                            'id': 1,
+                                            'id': ExtendableObject._streetFullAutocompleteRequestIndex,
                                             'method': 'streetAutocomplete',
                                             'params': {
                                                 'country': ExtendableObject.countryCode,
@@ -230,6 +233,7 @@ var StreetFullAutocompleteExtension = {
                                             timeout: ExtendableObject.config.ux.requestTimeout,
                                             headers: {
                                                 'X-Auth-Key': ExtendableObject.config.apiKey,
+                                                'X-Agent': ExtendableObject.config.agentName,
                                                 'X-Remote-Api-Url': ExtendableObject.config.remoteApiUrl,
                                                 'X-Transaction-Referer': window.location.href,
                                                 'X-Transaction-Id': (ExtendableObject.hasLoadedExtension('SessionExtension'))?ExtendableObject.sessionId:'not_required'
@@ -237,6 +241,12 @@ var StreetFullAutocompleteExtension = {
                                         })
                                             .then(function(response) {
                                                 if (undefined !== response.data.result && undefined !== response.data.result.predictions) {
+
+                                                    // Is still actual?
+                                                    if (autocompleteRequestIndex !== ExtendableObject._streetFullAutocompleteRequestIndex) {
+                                                        return;
+                                                    }
+
                                                     var counter = 0;
                                                     var tempStreetFullContainer, diff, streetFullHtml;
                                                     var streetFullPredictionsTemp = [];

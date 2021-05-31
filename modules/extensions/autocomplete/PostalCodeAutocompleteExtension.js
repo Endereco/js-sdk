@@ -12,6 +12,7 @@ var PostalCodeAutocompleteExtension = {
                 var $postalCodeChunkTimeout;
 
                 // Add fields.
+                ExtendableObject._postalCodeAutocompleteRequestIndex = 1;
                 ExtendableObject._postalCodeChunk = '';
                 ExtendableObject._postalCodePredictions = [];
                 ExtendableObject._postalCodePredictionsIndex = 0;
@@ -198,9 +199,11 @@ var PostalCodeAutocompleteExtension = {
                                 if (ExtendableObject.active) {
                                     clearTimeout(ExtendableObject._postalCodeTimeout);
                                     ExtendableObject._postalCodeTimeout = setTimeout(function() {
+                                        ExtendableObject._postalCodeAutocompleteRequestIndex++;
+                                        var autocompleteRequestIndex = ExtendableObject._postalCodeAutocompleteRequestIndex * 1; // Create a copy.
                                         var message = {
                                             'jsonrpc': '2.0',
-                                            'id': 1,
+                                            'id': ExtendableObject._postalCodeAutocompleteRequestIndex,
                                             'method': 'postCodeAutocomplete',
                                             'params': {
                                                 'country': ExtendableObject.countryCode,
@@ -218,6 +221,7 @@ var PostalCodeAutocompleteExtension = {
                                             timeout: ExtendableObject.config.ux.requestTimeout,
                                             headers: {
                                                 'X-Auth-Key': ExtendableObject.config.apiKey,
+                                                'X-Agent': ExtendableObject.config.agentName,
                                                 'X-Remote-Api-Url': ExtendableObject.config.remoteApiUrl,
                                                 'X-Transaction-Referer': window.location.href,
                                                 'X-Transaction-Id': (ExtendableObject.hasLoadedExtension('SessionExtension'))?ExtendableObject.sessionId:'not_required'
@@ -225,6 +229,12 @@ var PostalCodeAutocompleteExtension = {
                                         })
                                             .then(function(response) {
                                                 if (undefined !== response.data.result && undefined !== response.data.result.predictions) {
+
+                                                    // Is still actual?
+                                                    if (autocompleteRequestIndex !== ExtendableObject._postalCodeAutocompleteRequestIndex) {
+                                                        return;
+                                                    }
+
                                                     var counter = 0;
                                                     var tempPostalCodeContainer, diff, postalCodeHtml;
                                                     var postalCodePredictionsTemp = [];

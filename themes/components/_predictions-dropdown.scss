@@ -34,6 +34,7 @@
 	position: absolute;
 	max-height: 240px;
 	overflow-y: auto;
+	scrollbar-width: thin;
 
 	.endereco-predictions__item.endereco-predictions__item.endereco-predictions__item {
 		white-space: nowrap;

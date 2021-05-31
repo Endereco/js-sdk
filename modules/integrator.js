@@ -411,6 +411,13 @@ var EnderecoIntegrator = {
                             ) {
                                 EAO.util.renderAddressPredictionsPopup();
                             }
+
+                            // Special ajax form handler.
+                            if (!!options.ajaxForm) {
+                                $self.onAjaxFormHandler.forEach( function(callback) {
+                                    callback(EAO);
+                                })
+                            }
                         }).catch();
                     }).catch()
                 }).catch();
@@ -421,6 +428,7 @@ var EnderecoIntegrator = {
         return EAO;
     },
     afterAMSActivation: [],
+    onAjaxFormHandler: [],
     initEmailServices: function(
         prefix,
         options = {

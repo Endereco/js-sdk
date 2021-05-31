@@ -14,6 +14,7 @@ var AddressCheckExtension = {
         return new ExtendableObject.util.Promise(function(resolve, reject) {
             ExtendableObject.waitForExtension('AddressExtension').then(function() {
                 // Add email field.
+                ExtendableObject._addressCheckRequestIndex = 1;
                 ExtendableObject._addressStatus = [];
                 ExtendableObject._subscribers.addressStatus = [];
                 ExtendableObject._addressPredictions = [];
@@ -1156,9 +1157,11 @@ var AddressCheckExtension = {
                     return new ExtendableObject.util.Promise(function(resolve, reject) {
 
                         ExtendableObject.waitUntilReady().then(function() {
+                            ExtendableObject._addressCheckRequestIndex++;
+                            var addressCheckRequestIndex = ExtendableObject._addressCheckRequestIndex * 1;
                             var message = {
                                 'jsonrpc': '2.0',
-                                'id': 1,
+                                'id': ExtendableObject._addressCheckRequestIndex,
                                 'method': 'addressCheck',
                                 'params': {
                                     'country': address.countryCode,
@@ -1181,6 +1184,7 @@ var AddressCheckExtension = {
                                 timeout: ExtendableObject.config.ux.requestTimeout,
                                 headers: {
                                     'X-Auth-Key': ExtendableObject.config.apiKey,
+                                    'X-Agent': ExtendableObject.config.agentName,
                                     'X-Remote-Api-Url': ExtendableObject.config.remoteApiUrl,
                                     'X-Transaction-Referer': window.location.href,
                                     'X-Transaction-Id': (ExtendableObject.hasLoadedExtension('SessionExtension'))?ExtendableObject.sessionId:'not_required'
@@ -1190,6 +1194,10 @@ var AddressCheckExtension = {
                                 if (undefined !== response.data.result && undefined !== response.data.result.predictions) {
                                     var copyOfPredictions = [];
                                     var addressCounter = 0;
+
+                                    if (addressCheckRequestIndex !== ExtendableObject._addressCheckRequestIndex) {
+                                        return;
+                                    }
 
                                     // If session counter is set, increase it.
                                     if (ExtendableObject.hasLoadedExtension('SessionExtension')) {

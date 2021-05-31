@@ -12,6 +12,7 @@ var LocalityAutocompleteExtension = {
                 var $localityPredictionTimeout;
 
                 // Add fields.
+                ExtendableObject._localityAutocompleteRequestIndex = 1;
                 ExtendableObject._localityChunk = '';
                 ExtendableObject._localityPredictions = [];
                 ExtendableObject._localityPredictionsIndex = 0;
@@ -198,9 +199,11 @@ var LocalityAutocompleteExtension = {
                                 if (ExtendableObject.active) {
                                     clearTimeout(ExtendableObject._localityTimeout);
                                     ExtendableObject._localityTimeout = setTimeout(function() {
+                                        ExtendableObject._localityAutocompleteRequestIndex++;
+                                        var autocompleteRequestIndex = ExtendableObject._localityAutocompleteRequestIndex * 1; // Create a copy.
                                         var message = {
                                             'jsonrpc': '2.0',
-                                            'id': 1,
+                                            'id': ExtendableObject._localityAutocompleteRequestIndex,
                                             'method': 'cityNameAutocomplete',
                                             'params': {
                                                 'country': ExtendableObject.countryCode,
@@ -218,6 +221,7 @@ var LocalityAutocompleteExtension = {
                                             timeout: ExtendableObject.config.ux.requestTimeout,
                                             headers: {
                                                 'X-Auth-Key': ExtendableObject.config.apiKey,
+                                                'X-Agent': ExtendableObject.config.agentName,
                                                 'X-Remote-Api-Url': ExtendableObject.config.remoteApiUrl,
                                                 'X-Transaction-Referer': window.location.href,
                                                 'X-Transaction-Id': (ExtendableObject.hasLoadedExtension('SessionExtension'))?ExtendableObject.sessionId:'not_required'
@@ -225,6 +229,12 @@ var LocalityAutocompleteExtension = {
                                         })
                                             .then(function(response) {
                                                 if (undefined !== response.data.result && undefined !== response.data.result.predictions) {
+
+                                                    // Is still actual?
+                                                    if (autocompleteRequestIndex !== ExtendableObject._localityAutocompleteRequestIndex) {
+                                                        return;
+                                                    }
+
                                                     var counter = 0;
                                                     var tempLocalityContainer, diff, localityHtml;
                                                     var localityPredictionsTemp = [];

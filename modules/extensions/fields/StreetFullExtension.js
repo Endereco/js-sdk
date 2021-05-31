@@ -8,7 +8,7 @@ var StreetFullExtension = {
         return new ExtendableObject.util.Promise(function(resolve, reject) {
             ExtendableObject._streetFull = '';
             ExtendableObject._subscribers.streetFull = [];
-
+            ExtendableObject._streetFullSplitRequestIndex = 1;
             ExtendableObject.config.templates.streetFull = streetFullTemplateFactory;
 
             ExtendableObject.cb.setStreetFull = function(streetFull) {
@@ -49,9 +49,12 @@ var StreetFullExtension = {
                 }
 
                 return new ExtendableObject.util.Promise(function(resolve, reject) {
+                    ExtendableObject._streetFullSplitRequestIndex++;
+                    var streetFullSplitRequestIndex = ExtendableObject._streetFullSplitRequestIndex * 1;
+
                     var message = {
                         'jsonrpc': '2.0',
-                        'id': 1,
+                        'id': ExtendableObject._streetFullSplitRequestIndex,
                         'method': 'splitStreet',
                         'params': {
                             'formatCountry': (!!ExtendableObject.countryCode)?ExtendableObject.countryCode:'de',
@@ -66,13 +69,14 @@ var StreetFullExtension = {
                         timeout: 2000,
                         headers: {
                             'X-Auth-Key': ExtendableObject.config.apiKey,
+                            'X-Agent': ExtendableObject.config.agentName,
                             'X-Remote-Api-Url': ExtendableObject.config.remoteApiUrl,
                             'X-Transaction-Referer': window.location.href,
                             'X-Transaction-Id': 'not_required'
                         }
                     })
                         .then(function(response) {
-                            if (undefined !== response.data.result) {
+                            if (undefined !== response.data.result && (streetFullSplitRequestIndex === ExtendableObject._streetFullSplitRequestIndex)) {
                                 resolve(response.data.result);
                             } else {
                                 reject(response.data)
