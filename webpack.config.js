@@ -1,17 +1,15 @@
 var path = require('path');
-var webpack = require('webpack');
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
-const TerserPlugin = require('terser-webpack-plugin');
+var TerserPlugin = require('terser-webpack-plugin');
 
 module.exports = {
   mode: process.env.NODE_ENV,
   entry: {
-    'endereco-js-agent': './index.js'
+    'endereco': './bundle.js',
   },
   output: {
     path: path.resolve(__dirname, './dist/'),
     publicPath: '/',
-    filename: '[name].js'
+    filename: 'endereco.min.js'
   },
   optimization: {
     minimize: true,
@@ -71,9 +69,9 @@ module.exports = {
     ]
   },
   devServer: {
-    historyApiFallback: true,
-    noInfo: true,
-    overlay: true
+    contentBase: path.join(__dirname, '/'),
+    compress: true,
+    port: 9000,
   },
   performance: {
     hints: false

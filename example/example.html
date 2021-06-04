@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Title</title>
+	<style>
+		.form-container {
+			width: 500px;
+			margin: 100px auto;
+			padding: 16px;
+			border-color: #e8e8e8;
+			background-color: #f3f3f3;
+			box-sizing: border-box;
+		}
+
+		.row {
+			display: flex;
+			margin: 8px 0;
+			justify-content: space-between;
+		}
+
+        .form-container .label {
+			display: inline-block;
+			font-size: 0.75em;
+			width: 100%;
+			cursor: pointer;
+		}
+
+        .form-container select,
+		.form-container input {
+			width: 100%;
+            box-sizing: border-box;
+		}
+
+		.row div:first-child {
+			margin-right: 20px;
+		}
+
+		.btn.btn-primary {
+			background-color: #0069ff;
+			border: 0;
+			border-radius: 3px;
+			color: #fff;
+			display: block;
+			font-size: 16px;
+			font-weight: 400;
+			padding: 6px 18px;
+			text-align: center;
+			text-decoration: none;
+			cursor: pointer;
+		}
+
+		.btn.btn-secondary {
+			background-color: #999999;
+			border: 0;
+			border-radius: 3px;
+			color: #fff;
+			display: block;
+			font-size: 16px;
+			font-weight: 400;
+			padding: 6px 18px;
+			text-align: center;
+			text-decoration: none;
+			cursor: pointer;
+		}
+	</style>
+	<script>
+		// Konfiguration und spezifische Anpassungen.
+        if (undefined === window.EnderecoIntegrator) {
+            window.EnderecoIntegrator = {};
+        }
+        if (!window.EnderecoIntegrator.onLoad) {
+            window.EnderecoIntegrator.onLoad = [];
+        }
+
+		// Hilfsfunktion. Damit lässt sich initAMS aufrufen, auch wenn die funktion noch nicht initiert ist.
+		// Bessere Art und Weise wäre ein Proxy Objekt.
+        function enderecoInitAMS(prefix, config) {
+            if (undefined !== window.EnderecoIntegrator.initAMS) {
+                window.EnderecoIntegrator.initAMS(prefix, config);
+            } else {
+                window.EnderecoIntegrator.onLoad.push(function () {
+                    window.EnderecoIntegrator.initAMS(prefix, config);
+                });
+            }
+        }
+
+		function enderecoLoadAMSConfig() {
+            window.EnderecoIntegrator.defaultCountry = 'DE';
+            window.EnderecoIntegrator.themeName = 'my-theme';
+            window.EnderecoIntegrator.defaultCountrySelect = true; // Feature "Preselect country"
+            window.EnderecoIntegrator.config.apiUrl = 'http://localhost:8000/proxyfile';
+            window.EnderecoIntegrator.config.apiKey = '75c8dceb30b38c2988ac95d90eef9e973df2df5955c1a36051f80912d1fd9ae7'; // Hier kommt Dein API Key.
+            window.EnderecoIntegrator.config.showDebugInfo = false;
+            window.EnderecoIntegrator.config.remoteApiUrl = 'http://endereco-service.de/rpc/v1';
+            window.EnderecoIntegrator.config.trigger.onblur = true;
+            window.EnderecoIntegrator.config.trigger.onsubmit = true;
+            window.EnderecoIntegrator.config.ux.smartFill = true;
+            window.EnderecoIntegrator.config.ux.checkExisting = true;
+            window.EnderecoIntegrator.config.ux.resumeSubmit = true;
+            window.EnderecoIntegrator.config.ux.useStandardCss = true;
+            window.EnderecoIntegrator.config.ux.showEmailStatus = true;
+            window.EnderecoIntegrator.config.ux.allowCloseModal = true;
+            window.EnderecoIntegrator.config.ux.confirmWithCheckbox = true;
+            window.EnderecoIntegrator.config.ux.changeFieldsOrder = true;
+            window.EnderecoIntegrator.countryMappingUrl = '';
+            window.EnderecoIntegrator.config.templates.primaryButtonClasses = 'btn btn-primary btn-lg';
+            window.EnderecoIntegrator.config.templates.secondaryButtonClasses = 'btn btn-secondary btn-lg';
+            window.EnderecoIntegrator.config.texts = {
+                popUpHeadline: 'Adresse prüfen',
+                popUpSubline: 'Die von Ihnen eingegebene Adresse scheint nicht korrekt oder unvollständig zu sein. Bitte wählen Sie die korrekte Adresse aus.',
+                mistakeNoPredictionSubline: 'Ihre Adresse konnte nicht verifiziert werden. Bitte prüfen Sie Ihre Eingabe und ändern oder bestätigen sie.',
+                notFoundSubline: 'Ihre Adresse konnte nicht verifiziert werden. Bitte prüfen Sie Ihre Eingabe und ändern oder bestätigen sie.',
+                confirmMyAddressCheckbox: 'Ich bestätige, dass meine Adresse korrekt und zustellbar ist.',
+                yourInput: 'Ihre Eingabe:',
+                editYourInput: '(bearbeiten)',
+                ourSuggestions: 'Unsere Vorschläge:',
+                useSelected: 'Auswahl übernehmen',
+                confirmAddress: 'Adresse bestätigen',
+                editAddress: 'Adresse bearbeiten',
+                warningText: 'Falsche Adressen können zu Problemen in der Zustellung führen und weitere Kosten verursachen.',
+                popupHeadlines: {
+                    general_address: 'Adresse prüfen',
+                    billing_address: 'Rechnungsadresse prüfen',
+                    shipping_address: 'Lieferadresse prüfen',
+                },
+                statuses: {
+                    email_not_correct: 'Die E-Mail Adresse scheint nicht korrekt zu sein.',
+                    email_cant_receive: 'Das E-Mail Postfach ist nicht erreichbar.',
+                    email_syntax_error: 'Prüfen Sie die Schreibweise.',
+                    email_no_mx: 'Die E-Mail Adresse existiert nicht. Prüfen Sie die Schreibweise.',
+                    building_number_is_missing: 'Keine Hausnummer enthalten.',
+                    building_number_not_found: 'Diese Hausnummer wurde nicht gefunden.',
+                    street_name_needs_correction: 'Die Schreibweise der Straße ist fehlerhaft.',
+                    locality_needs_correction: 'Die Schreibweise des Ortes ist fehlerhaft.',
+                    postal_code_needs_correction: 'Die PLZ ist ungültig.',
+                    country_code_needs_correction: 'Die eingegebene Adresse wurde in einem anderen Land gefunden.'
+                }
+            };
+            window.EnderecoIntegrator.activeServices = {
+                ams: true,
+                emailService: true,
+                personService: true
+            }
+            window.EnderecoIntegrator.countryMapping = {
+                '1': 'DE',
+				'2': 'AT',
+				'3': 'CH'
+			};
+            window.EnderecoIntegrator.countryReverseMapping = {
+                'DE': 1,
+				'AT': 2,
+				'CH': 3
+            };
+
+            // Country matching functions.
+            EnderecoIntegrator.resolvers.countryCodeWrite = function (value) {
+                return new Promise(function (resolve, reject) {
+                    resolve(window.EnderecoIntegrator.countryReverseMapping[value]);
+                });
+            }
+            EnderecoIntegrator.resolvers.countryCodeRead = function (value) {
+                return new Promise(function (resolve, reject) {
+                    resolve(window.EnderecoIntegrator.countryMapping[value]);
+                });
+            }
+
+            // Execute all function that have been called throughout the page.
+            window.EnderecoIntegrator.onLoad.forEach(function (callback) {
+                callback();
+            });
+
+            window.EnderecoIntegrator.ready = true;
+		}
+	</script>
+</head>
+<body>
+<div class="form-container">
+	<form>
+		<div class="row">
+			<div>
+				<label class="label">
+					Land
+					<select class="country" id="country">
+						<option value="" disabled selected>-- Bitte das Land auswählen --</option>
+						<option value="1">Deutschland</option>
+						<option value="2">Österreich</option>
+						<option value="3">Schweiz</option>
+					</select>
+				</label>
+			</div>
+		</div>
+		<div class="row">
+			<div>
+				<label class="label">
+					Postleitzahl
+					<input type="text" id="zip">
+				</label>
+			</div>
+			<div>
+				<label class="label">
+					Ort
+					<input type="text" id="loc">
+				</label>
+			</div>
+		</div>
+		<div class="row">
+			<div>
+				<label class="label">
+					Straße
+					<input type="text" id="street">
+				</label>
+			</div>
+			<div>
+				<label class="label">
+					Hausnummer
+					<input type="text" id="street_n">
+				</label>
+			</div>
+		</div>
+		<div class="row">
+			<div>
+				<label class="label">
+					Zusatzinformationen (Appartment, Tür)
+					<input type="text" id="address_1">
+				</label>
+			</div>
+		</div>
+		<div style="display: none">
+			<!-- unsichtbare felder, die ein modul hinzufügen soll -->
+			<input type="hidden" name="enderecoamsstatus" value="">
+			<input type="hidden" name="enderecoamsts" value="">
+			<input type="hidden" name="enderecoamsapredictions" value="">
+		</div>
+		<div class="row">
+			<div style="margin-left: auto;">
+				<button class="btn btn-primary">Weiter</button>
+			</div>
+		</div>
+		<script>
+            enderecoInitAMS({
+                countryCode: '#country',
+                postalCode: '#zip',
+                locality: '#loc',
+                streetFull: '',
+                streetName: '#street',
+                buildingNumber: '#street_n',
+                additionalInfo: '#address_1',
+                addressStatus: '[name="enderecoamsstatus"]',
+                addressTimestamp: '[name="enderecoamsts"]',
+                addressPredictions: '[name="enderecoamsapredictions"]',
+            }, {
+                name: 'irgendein_name_am_besten_mit_underscores',
+                addressType: 'general_address'
+            });
+		</script>
+	</form>
+</div>
+
+<script
+		defer
+		async
+		src="dist/endereco.min.js"
+		onload="if(typeof enderecoLoadAMSConfig === 'function'){enderecoLoadAMSConfig();}"
+></script>
+</body>
+</html>
