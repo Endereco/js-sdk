@@ -247,3 +247,27 @@ Zum Beispiel:
     }
 </script>
 ```
+
+Wenn die Konfiguration erfolgt hat, kann das Endereco AMS an die Form angeschloßen werden. Dafür soll die funktion `initAMS` genutzt werden.
+
+Zum Beispiel:
+
+```html
+<script>
+    enderecoInitAMS({
+        countryCode: '#country',
+        postalCode: '#zip',
+        locality: '#loc',
+        streetFull: '',
+        streetName: '#street',
+        buildingNumber: '#street_n',
+        additionalInfo: '#address_1',
+        addressStatus: '[name="enderecoamsstatus"]',
+        addressTimestamp: '[name="enderecoamsts"]',
+        addressPredictions: '[name="enderecoamsapredictions"]',
+    }, {
+        name: 'irgendein_name_am_besten_mit_underscores',
+        addressType: 'general_address' // Möglich sind noch: "billing_address" und "shipping_address"
+    });
+</script>
+```
