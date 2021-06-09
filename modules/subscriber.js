@@ -79,25 +79,27 @@ function EnderecoSubscriber(propertyName, observableObject, options = {}) {
             }
 
             // Add autocomplete subsriber.
-            if (this.options.displayAutocompleteDropdown) {
-                subject.addSubscriber(new EnderecoSubscriber(
-                    this.propertyName + 'Chunk',
-                    this.object // Subscribe to the same element
-                ));
-            }
+            // Skip for hidden type inputs.
+            if (!!this.object && ('hidden' !== this.object.type)) {
+                if (this.options.displayAutocompleteDropdown) {
+                    subject.addSubscriber(new EnderecoSubscriber(
+                        this.propertyName + 'Chunk',
+                        this.object // Subscribe to the same element
+                    ));
+                }
 
-            // Subscribe to status.
-            // If is fieldName -> subscribe to parent
-            if (subject.fieldNames.includes(this.propertyName) && this.options.autosubscribeToStatus) {
-                subject.addSubscriber(new EnderecoSubscriber(
-                    this.propertyName + 'Status',
-                    this.object.parentNode, // Subscribe to the parent,
-                    {
-                        valueContainer: 'classList'
-                    }
-                ));
+                // Subscribe to status.
+                // If is fieldName -> subscribe to next visible parent.
+                if (subject.fieldNames.includes(this.propertyName) && this.options.autosubscribeToStatus) {
+                    subject.addSubscriber(new EnderecoSubscriber(
+                        this.propertyName + 'Status',
+                        this.object.parentNode, // Subscribe to the parent,
+                        {
+                            valueContainer: 'classList'
+                        }
+                    ));
+                }
             }
-
 
             // Add autocomplete subscriber.
             if (this.options.syncValue) {

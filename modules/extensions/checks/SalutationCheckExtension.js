@@ -78,7 +78,7 @@ var SalutationCheckExtension = {
                             timeout: 2000,
                             headers: {
                                 'X-Auth-Key': ExtendableObject.config.apiKey,
-                                                'X-Agent': ExtendableObject.config.agentName,
+                                'X-Agent': ExtendableObject.config.agentName,
                                 'X-Remote-Api-Url': ExtendableObject.config.remoteApiUrl,
                                 'X-Transaction-Referer': window.location.href,
                                 'X-Transaction-Id': (ExtendableObject.hasLoadedExtension('SessionExtension'))?ExtendableObject.sessionId:'not_required'

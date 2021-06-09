@@ -402,12 +402,15 @@ var EnderecoIntegrator = {
 
                             // If automated check is active, render the address selection field.
                             if (
-                                EAO.config.ux.checkExisting && (
+                                (
                                     EAO.addressStatus.includes('address_needs_correction') ||
                                     EAO.addressStatus.includes('address_multiple_variants') ||
-                                    EAO.addressStatus.includes('address_not_checked')
+                                    EAO.addressStatus.includes('address_not_found')
                                 ) &&
-                                !EAO.addressStatus.includes('address_selected_by_customer')
+                                (
+                                    !EAO.addressStatus.includes('address_selected_by_customer') &&
+                                    !EAO.addressStatus.includes('address_selected_automatically')
+                                )
                             ) {
                                 EAO.util.renderAddressPredictionsPopup();
                             }
