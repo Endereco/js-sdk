@@ -185,7 +185,10 @@ var AddressCheckExtension = {
                                 !(
                                     ExtendableObject.addressStatus.includes('building_number_is_missing')
                                     || ExtendableObject.addressStatus.includes('building_number_not_found')
-                                    || ExtendableObject.addressStatus.includes('address_minor_correction')
+                                    || (
+                                        ExtendableObject.addressStatus.includes('address_minor_correction') &&
+                                        (2 === ExtendableObject._addressCheckRequestIndex)
+                                    )
                                 )
                             ) {
                                 // Popup needed.
@@ -400,6 +403,7 @@ var AddressCheckExtension = {
                             // Render popup for address correction without predictions.
                             if (
                                 ExtendableObject.addressStatus.includes('address_minor_correction') &&
+                                (2 === ExtendableObject._addressCheckRequestIndex) &&
                                 (0 < ExtendableObject.addressPredictions.length)
                             ) {
                                 ExtendableObject._awaits++;
@@ -1196,6 +1200,10 @@ var AddressCheckExtension = {
                                     var addressCounter = 0;
 
                                     if (addressCheckRequestIndex !== ExtendableObject._addressCheckRequestIndex) {
+                                        return;
+                                    }
+
+                                    if (ExtendableObject.anyMissing()) {
                                         return;
                                     }
 

@@ -14,6 +14,12 @@
 	.endereco-span--remove {
 		display: none!important;
 	}
+
+	&--longlist {
+		.endereco-predictions {
+			overflow-y: scroll;
+		}
+	}
 }
 
 .endereco-predictions-wrapper-inner {
@@ -34,7 +40,6 @@
 	position: absolute;
 	max-height: 240px;
 	overflow-y: auto;
-	scrollbar-width: thin;
 
 	.endereco-predictions__item.endereco-predictions__item.endereco-predictions__item {
 		white-space: nowrap;

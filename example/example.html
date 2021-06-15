@@ -100,7 +100,7 @@
             window.EnderecoIntegrator.config.ux.resumeSubmit = true;
             window.EnderecoIntegrator.config.ux.useStandardCss = true;
             window.EnderecoIntegrator.config.ux.showEmailStatus = true;
-            window.EnderecoIntegrator.config.ux.allowCloseModal = true;
+            window.EnderecoIntegrator.config.ux.allowCloseModal = false;
             window.EnderecoIntegrator.config.ux.confirmWithCheckbox = true;
             window.EnderecoIntegrator.config.ux.changeFieldsOrder = true;
             window.EnderecoIntegrator.countryMappingUrl = '';
@@ -177,16 +177,18 @@
 <body>
 <div class="form-container">
 	<form>
+
 		<div class="row">
 			<div>
 				<label class="label">
-					Land
-					<select class="country" id="country">
-						<option value="" disabled selected>-- Bitte das Land auswählen --</option>
-						<option value="1">Deutschland</option>
-						<option value="2">Österreich</option>
-						<option value="3">Schweiz</option>
-					</select>
+					Straße
+					<input type="text" id="street">
+				</label>
+			</div>
+			<div>
+				<label class="label">
+					Hausnummer
+					<input type="text" id="street_n">
 				</label>
 			</div>
 		</div>
@@ -207,22 +209,21 @@
 		<div class="row">
 			<div>
 				<label class="label">
-					Straße
-					<input type="text" id="street">
-				</label>
-			</div>
-			<div>
-				<label class="label">
-					Hausnummer
-					<input type="text" id="street_n">
+					Zusatzinformationen (Appartment, Tür)
+					<input type="text" id="address_1">
 				</label>
 			</div>
 		</div>
 		<div class="row">
 			<div>
 				<label class="label">
-					Zusatzinformationen (Appartment, Tür)
-					<input type="text" id="address_1">
+					Land
+					<select class="country" id="country">
+						<option value="" disabled selected>-- Bitte das Land auswählen --</option>
+						<option value="1">Deutschland</option>
+						<option value="2">Österreich</option>
+						<option value="3">Schweiz</option>
+					</select>
 				</label>
 			</div>
 		</div>

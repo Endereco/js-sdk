@@ -77,6 +77,7 @@ var PostalCodeAutocompleteExtension = {
                                 offsetLeft: subscriber.object.offsetLeft,
                                 width: subscriber.object.offsetWidth,
                                 direction: getComputedStyle(subscriber.object).direction,
+                                longList: (preparedPredictions.length > 6),
                                 index: function() {
                                     return (startingIndex-1); // TODO: add loop finishing function to increase counter.
                                 },
