@@ -154,7 +154,7 @@ function EnderecoBase() {
             $self.fieldNames.forEach( function(fieldName) {
                 if ($self._subscribers[fieldName]) {
                     $self._subscribers[fieldName].forEach( function(subscriber) {
-                        if (null == subscriber.object.offsetParent) {
+                        if (!subscriber.object.isConnected) {
                             hasAny = true;
                         }
                     });
