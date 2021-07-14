@@ -107,6 +107,8 @@ var AddressCheckExtension = {
 
                     if (!address) {
                         address = JSON.parse(JSON.stringify(ExtendableObject.address));
+                    } else {
+                        address = JSON.parse(JSON.stringify(address));
                     }
 
                     // Format current address.
@@ -123,7 +125,7 @@ var AddressCheckExtension = {
                         address.showCountry = forceCountryDisplay || ExtendableObject.addressStatus.includes('country_code_needs_correction')
                     }
 
-                    if (!(address.buildingNumber.trim())) {
+                    if (!address.buildingNumber || !(address.buildingNumber.trim())) {
                         address.buildingNumber = '&nbsp;';
                     }
 
