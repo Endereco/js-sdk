@@ -549,9 +549,6 @@ var AddressCheckExtension = {
                                     DOMElement.addEventListener('click', function(e) {
                                         e.preventDefault();
                                         e.stopPropagation();
-                                        $self.util.removePopup();
-                                        window.EnderecoIntegrator.submitResume = undefined;
-                                        window.EnderecoIntegrator.hasSubmit = false;
                                         var statusTemp = JSON.parse(JSON.stringify(ExtendableObject.addressStatus));
                                         statusTemp.push('address_selected_by_customer')
                                         ExtendableObject.addressStatus = statusTemp;
@@ -560,6 +557,18 @@ var AddressCheckExtension = {
                                                 cb($self);
                                             });
                                         }).catch();
+                                        $self.waitForAllPopupsToClose().then(function() {
+                                            $self.waitUntilReady().then(function() {
+                                                if (window.EnderecoIntegrator && window.EnderecoIntegrator.submitResume) {
+                                                    window.EnderecoIntegrator.submitResume();
+                                                }
+                                            }).catch(function() {
+                                                if (window.EnderecoIntegrator && window.EnderecoIntegrator.submitResume) {
+                                                    window.EnderecoIntegrator.submitResume();
+                                                }
+                                            })
+                                        }).catch()
+                                        $self.util.removePopup();
                                     })
                                 });
 
@@ -657,15 +666,24 @@ var AddressCheckExtension = {
                                     DOMElement.addEventListener('click', function(e) {
                                         e.preventDefault();
                                         e.stopPropagation();
-                                        $self.util.removePopup();
-                                        window.EnderecoIntegrator.submitResume = undefined;
-                                        window.EnderecoIntegrator.hasSubmit = false;
                                         ExtendableObject.addressStatus = ['address_not_found','address_selected_by_customer'];
                                         $self.waitUntilReady().then( function(){
                                             $self.onConfirmAddress.forEach(function(cb) {
                                                 cb($self);
                                             });
                                         }).catch();
+                                        $self.waitForAllPopupsToClose().then(function() {
+                                            $self.waitUntilReady().then(function() {
+                                                if (window.EnderecoIntegrator && window.EnderecoIntegrator.submitResume) {
+                                                    window.EnderecoIntegrator.submitResume();
+                                                }
+                                            }).catch(function() {
+                                                if (window.EnderecoIntegrator && window.EnderecoIntegrator.submitResume) {
+                                                    window.EnderecoIntegrator.submitResume();
+                                                }
+                                            })
+                                        }).catch()
+                                        $self.util.removePopup();
                                     })
                                 });
 
