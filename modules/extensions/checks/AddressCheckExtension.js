@@ -712,7 +712,6 @@ var AddressCheckExtension = {
                                         })
                                     });
                                 }
-
                                 return;
                             }
                         }).catch();
@@ -725,6 +724,8 @@ var AddressCheckExtension = {
                         document.querySelector('body').classList.remove('endereco-no-scroll');
                         ExtendableObject.addressPredictionsIndex = 0;
                         window.EnderecoIntegrator.popupQueue--;
+
+                        ExtendableObject.modalClosed();
                     }
                 };
 
@@ -1173,11 +1174,11 @@ var AddressCheckExtension = {
                     }
                 });
 
-                ExtendableObject.util.checkAddress = function(address = null) {
+                ExtendableObject.util.checkAddress = function(address = null, render = true) {
                     if (!address) {
                         address = ExtendableObject.address;
                     }
-                    ExtendableObject._changed = false;
+
                     return new ExtendableObject.util.Promise(function(resolve, reject) {
 
                         ExtendableObject.waitUntilReady().then(function() {
@@ -1261,7 +1262,7 @@ var AddressCheckExtension = {
                                     ExtendableObject.addressPredictions = copyOfPredictions;
 
                                     // If specific status - render popup.
-                                    if (true) {
+                                    if (render) {
                                         ExtendableObject.util.renderAddressPredictionsPopup();
                                     }
 
@@ -1274,6 +1275,8 @@ var AddressCheckExtension = {
                                 reject(e.response);
                             }).finally(function() {
                                 ExtendableObject._awaits--;
+                                ExtendableObject._changed = false;
+                                ExtendableObject.submitUnblocked();
                             });
                         }).catch()
                     })

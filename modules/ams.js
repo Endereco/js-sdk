@@ -65,6 +65,14 @@ function EnderecoAddress(customConfig={}) {
     // Load extesions.
     base.loadExtensions();
 
+    base.onSubmitUnblock = [];
+    base.submitUnblocked = function() {
+        var $self = this;
+        this.onSubmitUnblock.forEach( function(cb) {
+            cb($self);
+        })
+    };
+
     base.onAddressSelect.push( function(AddressObject) {
         AddressObject.waitForAllPopupsToClose().then(function() {
             if (window.EnderecoIntegrator && window.EnderecoIntegrator.submitResume) {
