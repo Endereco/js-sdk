@@ -402,6 +402,7 @@ var EnderecoIntegrator = {
 
                             // If automated check is active, render the address selection field.
                             if (
+                                EAO.active &&
                                 (
                                     EAO.addressStatus.includes('address_needs_correction') ||
                                     EAO.addressStatus.includes('address_multiple_variants') ||
