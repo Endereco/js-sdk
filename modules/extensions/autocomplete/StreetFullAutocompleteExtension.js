@@ -208,6 +208,7 @@ var StreetFullAutocompleteExtension = {
 
                                 // Get predictions.
                                 if (
+                                    ExtendableObject.config.useAutocomplete &&
                                     ExtendableObject.active &&
                                     ['general_address', 'shipping_address', 'billing_address'].includes(ExtendableObject.addressType)
                                 ) {

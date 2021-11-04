@@ -197,7 +197,7 @@ var PostalCodeAutocompleteExtension = {
                                 }
 
                                 // Get predictions.
-                                if (ExtendableObject.active) {
+                                if (ExtendableObject.config.useAutocomplete && ExtendableObject.active) {
                                     clearTimeout(ExtendableObject._postalCodeTimeout);
                                     ExtendableObject._postalCodeTimeout = setTimeout(function() {
                                         ExtendableObject._postalCodeAutocompleteRequestIndex++;

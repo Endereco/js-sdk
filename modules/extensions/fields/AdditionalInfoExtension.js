@@ -30,7 +30,7 @@ var AdditionalInfoExtension = {
                             if (ExtendableObject.config.trigger.onblur && !ExtendableObject.anyActive() && ExtendableObject.util.shouldBeChecked() && !window.EnderecoIntegrator.hasSubmit) {
                                 // Second. Check Address.
                                 ExtendableObject.onBlurTimeout = null;
-                                ExtendableObject.util.checkAddress();
+                                ExtendableObject.util.checkAddress().catch();
                             }
                         }, 300);
                     }).catch()

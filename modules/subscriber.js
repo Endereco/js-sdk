@@ -196,13 +196,35 @@ function EnderecoSubscriber(propertyName, observableObject, options = {}) {
                 } else {
                     newValue = false;
                 }
-                this.object.checked = newValue;
 
+                if (!!this._subject) {
+                    this.object.checked = newValue;
+                    new this._subject.util.CustomEvent(
+                        'blur',
+                        {
+                            'bubbles': true
+                        }
+                    )
+                } else {
+                    this.object.checked = newValue;
+                }
             } else {
                 if (Array.isArray(value)) {
                     this.object.value = value.join(',');
                 } else {
-                    this.object.value = value;
+
+                    if (!!this._subject) {
+                        this.object.value = value;
+                        new this._subject.util.CustomEvent(
+                            'blur',
+                            {
+                                'bubbles': true
+                            }
+                        )
+                    } else {
+                        this.object.value = value;
+                    }
+
                     if (this.subject && this.subject.config.ux.smartFill) {
                         var blockFunc = function(e) {
                             e.preventDefault();

@@ -14,6 +14,7 @@ function EnderecoBase() {
             showDebugInfo: true,
             lang: 'de',
             splitStreet: true,
+            useAutocomplete: true,
             ux: {
                 smartFill: true,
                 smartFillBlockTime: 600,

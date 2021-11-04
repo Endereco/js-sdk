@@ -197,7 +197,7 @@ var LocalityAutocompleteExtension = {
                                 }
 
                                 // Get predictions.
-                                if (ExtendableObject.active) {
+                                if (ExtendableObject.config.useAutocomplete && ExtendableObject.active) {
                                     clearTimeout(ExtendableObject._localityTimeout);
                                     ExtendableObject._localityTimeout = setTimeout(function() {
                                         ExtendableObject._localityAutocompleteRequestIndex++;
