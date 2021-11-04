@@ -198,13 +198,23 @@ function EnderecoSubscriber(propertyName, observableObject, options = {}) {
                 }
 
                 if (!!this._subject) {
-                    this.object.checked = newValue;
-                    new this._subject.util.CustomEvent(
-                        'blur',
-                        {
-                            'bubbles': true
-                        }
-                    )
+                    if (!!this.object.dispatchEvent(
+                        new this._subject.util.CustomEvent(
+                            'endereco-change',
+                            {
+                                'bubbles': true,
+                                'cancelable': true
+                            }
+                        )
+                    )) {
+                        this.object.checked = newValue;
+                        this.object.dispatchEvent(new this._subject.util.CustomEvent(
+                            'endereco-blur',
+                            {
+                                'bubbles': true
+                            }
+                        ));
+                    }
                 } else {
                     this.object.checked = newValue;
                 }
@@ -212,15 +222,24 @@ function EnderecoSubscriber(propertyName, observableObject, options = {}) {
                 if (Array.isArray(value)) {
                     this.object.value = value.join(',');
                 } else {
-
                     if (!!this._subject) {
-                        this.object.value = value;
-                        new this._subject.util.CustomEvent(
-                            'blur',
-                            {
-                                'bubbles': true
-                            }
-                        )
+                        if (!!this.object.dispatchEvent(
+                            new this._subject.util.CustomEvent(
+                                'endereco-change',
+                                {
+                                    'bubbles': true,
+                                    'cancelable': true
+                                }
+                            )
+                        )) {
+                            this.object.value = value;
+                            this.object.dispatchEvent(new this._subject.util.CustomEvent(
+                                'endereco-blur',
+                                {
+                                    'bubbles': true
+                                }
+                            ));
+                        }
                     } else {
                         this.object.value = value;
                     }
