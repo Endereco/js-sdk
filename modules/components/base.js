@@ -146,6 +146,10 @@ function EnderecoBase() {
                 }
             });
 
+            if (!!window.EnderecoIntegrator.$globalFilters && !!window.EnderecoIntegrator.$globalFilters.anyActive) {
+                hasAny = window.EnderecoIntegrator.$globalFilters.anyActive(hasAny, $self);
+            }
+
             return hasAny;
         },
         anyMissing: function() {
@@ -161,6 +165,10 @@ function EnderecoBase() {
                     });
                 }
             });
+
+            if (!!window.EnderecoIntegrator.$globalFilters && !!window.EnderecoIntegrator.$globalFilters.anyMissing) {
+                hasAny = window.EnderecoIntegrator.$globalFilters.anyMissing(hasAny, $self);
+            }
 
             return hasAny;
         },
