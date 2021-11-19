@@ -147,7 +147,9 @@ function EnderecoBase() {
             });
 
             if (!!window.EnderecoIntegrator.$globalFilters && !!window.EnderecoIntegrator.$globalFilters.anyActive) {
-                hasAny = window.EnderecoIntegrator.$globalFilters.anyActive(hasAny, $self);
+                window.EnderecoIntegrator.$globalFilters.anyActive.forEach( function(callback) {
+                    hasAny = callback(hasAny, $self);
+                });
             }
 
             return hasAny;
@@ -167,7 +169,9 @@ function EnderecoBase() {
             });
 
             if (!!window.EnderecoIntegrator.$globalFilters && !!window.EnderecoIntegrator.$globalFilters.anyMissing) {
-                hasAny = window.EnderecoIntegrator.$globalFilters.anyMissing(hasAny, $self);
+                window.EnderecoIntegrator.$globalFilters.anyMissing.forEach( function(callback) {
+                    hasAny = callback(hasAny, $self);
+                });
             }
 
             return hasAny;
