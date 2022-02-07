@@ -15,6 +15,10 @@ var EnderecoIntegrator = {
     defaultCountrySelect: false,
     billingAutocheck: false,
     shippingAutocheck: false,
+    subdivisionMapping: {},
+    subdivisionMappingReverse: {},
+    countryMapping: {},
+    countryMappingReverse: {},
     globalSpace: {
         reloadPage: function() {
             location.reload();
@@ -232,6 +236,36 @@ var EnderecoIntegrator = {
                     EAO.addSubscriber(countryCodeSubscriber);
 
                     $self.dispatchEvent('endereco.ams.after-adding-country-code-subscriber'); // Add after hook.
+                }
+
+                if (
+                  document.querySelector($self.getSelector(postfix.subdivisionCode)) &&
+                  $self.dispatchEvent('endereco.ams.before-adding-subdivision-code-subscriber')
+                ) {
+                    var subdivisionCodeSubscriberOptions = {};
+                    if (!!$self.resolvers.subdivisionCodeWrite) {
+                        subdivisionCodeSubscriberOptions['writeFilterCb'] = function(value) {
+                            return $self.resolvers.subdivisionCodeWrite(value);
+                        }
+                    }
+                    if (!!$self.resolvers.subdivisionCodeRead) {
+                        subdivisionCodeSubscriberOptions['readFilterCb'] = function(value) {
+                            return $self.resolvers.subdivisionCodeRead(value);
+                        }
+                    }
+                    if (!!$self.resolvers.subdivisionCodeSetValue) {
+                        subdivisionCodeSubscriberOptions['customSetValue'] = function(subscriber, value) {
+                            return $self.resolvers.subdivisionCodeSetValue(subscriber, value);
+                        }
+                    }
+                    var subdivisionCodeSubscriber = new EnderecoSubscriber(
+                      'subdivisionCode',
+                      document.querySelector($self.getSelector(postfix.subdivisionCode)),
+                      subdivisionCodeSubscriberOptions
+                    )
+                    EAO.addSubscriber(subdivisionCodeSubscriber);
+
+                    $self.dispatchEvent('endereco.ams.after-adding-subdivision-code-subscriber'); // Add after hook.
                 }
 
                 if (
@@ -775,7 +809,7 @@ var EnderecoIntegrator = {
         }
     },
     _test: {},
-    changeFieldsOrder: function(collection, fieldNamesOrder = ['countryCode', 'postalCode', 'locality', 'streetFull', 'streetName','buildingNumber', 'additionalInfo']) {
+    changeFieldsOrder: function(collection, fieldNamesOrder = ['countryCode', 'postalCode', 'locality', 'streetFull', 'streetName','buildingNumber', 'additionalInfo', 'subdivisionCode']) {
         var myStructure = {};
 
         // Create parent line for additional info if it exists.
@@ -786,6 +820,7 @@ var EnderecoIntegrator = {
         this._createParentLine('locality', this._test, collection);
         this._createParentLine('postalCode', this._test, collection);
         this._createParentLine('countryCode', this._test, collection);
+        this._createParentLine('subdivisionCode', this._test, collection);
 
         // Ensure position.
         var reversedArray = new Array;
@@ -807,7 +842,7 @@ var EnderecoIntegrator = {
     }
 }
 
-EnderecoIntegrator.waitUntilReady("test2").then( function() {
+EnderecoIntegrator.waitUntilReady().then( function() {
     EnderecoIntegrator.addCss();
     EnderecoIntegrator.addBodyClass();
 }).catch();

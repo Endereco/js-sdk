@@ -9,7 +9,8 @@
 	&--street_full_correct,
 	&--building_number_correct,
 	&--additional_info_correct,
-	&--country_code_correct{
+	&--country_code_correct,
+	&--subdivision_code_correct {
 		input,
 		select,
 		.form-control,
@@ -31,7 +32,8 @@
 	&--street_full_needs_correction,
 	&--building_number_needs_correction,
 	&--additional_info_needs_correction,
-	&--country_code_needs_correction {
+	&--country_code_needs_correction,
+	&--subdivision_code_needs_correction {
 		input,
 		select,
 		.form-control,

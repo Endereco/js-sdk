@@ -118,6 +118,18 @@
 				min-height: 1em;
 			}
 		}
+
+		&.subdivision_code_needs_correction {
+			.endereco-subdivision-code,
+			.endereco-subdivision-name {
+				display: inline-block;
+				background-color: rgba(255, 0, 0, 0.125);
+				border-bottom: 1px solid red;
+				padding: 0 3px;
+				min-width: 20px;
+				min-height: 1em;
+			}
+		}
 	}
 
 	&__errors {

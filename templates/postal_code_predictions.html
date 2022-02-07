@@ -2,7 +2,14 @@
 	<div class="endereco-predictions-wrapper-inner">
 		<ul class="endereco-predictions">
 			{{#predictions}}
-			<li class="endereco-predictions__item {{#isActive}}active{{/isActive}}" endereco-postal-code-prediction data-prediction-index="{{index}}" data-prediction-type="postalCode">{{{postalCodeDiff}}}{{#locality}}, {{{locality}}}{{/locality}}</li>
+			<li
+					class="endereco-predictions__item {{#isActive}}active{{/isActive}}"
+					endereco-postal-code-prediction
+					data-prediction-index="{{index}}"
+					data-prediction-type="postalCode"
+			>
+				{{{postalCodeDiff}}}{{#locality}}, {{{locality}}}{{/locality}}{{#subdivisionName}}<span class="endereco-text-gray">, {{{subdivisionName}}}</span> {{/subdivisionName}}
+			</li>
 			{{/predictions}}
 		</ul>
 	</div>

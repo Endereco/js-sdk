@@ -116,7 +116,7 @@ var AddressCheckExtension = {
                         useTemplate = $self.countryCode;
                     }
 
-                    if (!!address.countryCode) {
+                    if (address.hasOwnProperty('countryCode')) {
                         if (!!window.EnderecoIntegrator.countryCodeToNameMapping && !!window.EnderecoIntegrator.countryCodeToNameMapping[address.countryCode.toUpperCase()]) {
                             address.countryName = window.EnderecoIntegrator.countryCodeToNameMapping[address.countryCode.toUpperCase()].toUpperCase();
                         } else {
@@ -125,8 +125,21 @@ var AddressCheckExtension = {
                         address.showCountry = forceCountryDisplay || ExtendableObject.addressStatus.includes('country_code_needs_correction')
                     }
 
+                    if (address.hasOwnProperty('subdivisionCode')) {
+                        if (!!window.EnderecoIntegrator.subdivisionCodeToNameMapping && !!window.EnderecoIntegrator.subdivisionCodeToNameMapping[address.subdivisionCode.toUpperCase()]) {
+                            address.subdivisionName = window.EnderecoIntegrator.subdivisionCodeToNameMapping[address.subdivisionCode.toUpperCase()];
+                        } else {
+                            if (address.subdivisionCode.toUpperCase()) {
+                                address.subdivisionName = address.subdivisionCode.toUpperCase().split("-")[1];
+                            } else {
+                                address.subdivisionName = "&nbsp;";
+                            }
+                        }
+                        address.showSubdisivion = !!address.subdivisionName && ExtendableObject.addressStatus.includes('subdivision_code_needs_correction')
+                    }
+
                     if (!address.buildingNumber || !(address.buildingNumber.trim())) {
-                        address.buildingNumber = '&nbsp;';
+                        address.buildingNumber = ' ';
                     }
 
                     address.useHtml = useHtml;
@@ -759,6 +772,22 @@ var AddressCheckExtension = {
                         }).catch()
 
                     }
+                    if (ExtendableObject.hasLoadedExtension('SubdivisionCodeExtension')) {
+                        var subdivisionCodes = [];
+                        if (ExtendableObject.subdivisionCode) {
+                            if (value.includes('subdivision_code_correct') || value.includes('address_correct')) {
+                                subdivisionCodes.push('subdivision_code_correct');
+                            }
+                            if (value.includes('subdivision_code_needs_correction')) {
+                                subdivisionCodes.push('subdivision_code_needs_correction');
+                            } else if (value.includes('address_needs_correction') && !value.includes('subdivision_code_correct')) {
+                                subdivisionCodes.push('subdivision_code_needs_correction');
+                            }
+                            ExtendableObject.waitForActive().then(function() {
+                                ExtendableObject.subdivisionCodeStatus = subdivisionCodes;
+                            }).catch()
+                        }
+                    }
                     if (ExtendableObject.hasLoadedExtension('PostalCodeExtension')) {
                         var postalCodeStatus = [];
                         if (value.includes('address_correct')) {
@@ -1204,6 +1233,10 @@ var AddressCheckExtension = {
                                 message.params.houseNumber = address.buildingNumber;
                             }
 
+                            if (ExtendableObject._subscribers.subdivisionCode.length >= 1) {
+                                message.params.subdivisionCode = address.subdivisionCode;
+                            }
+
                             ExtendableObject._awaits++;
                             ExtendableObject.util.axios.post(ExtendableObject.config.apiUrl, message, {
                                 timeout: ExtendableObject.config.ux.requestTimeout,
@@ -1248,6 +1281,10 @@ var AddressCheckExtension = {
                                             locality: address.cityName,
                                             streetName: address.street,
                                             buildingNumber: address.houseNumber
+                                        }
+
+                                        if (address.hasOwnProperty('subdivisionCode')) {
+                                            tempAddressContainer.subdivisionCode = address.subdivisionCode;
                                         }
 
                                         // Filter out identical copy.

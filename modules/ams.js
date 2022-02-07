@@ -4,6 +4,8 @@ import EnderecoBase from './components/base.js'
 // Extensions.
 import CountryCodeExtension from './extensions/fields/CountryCodeExtension.js';
 import CountryCodeCheckExtension from './extensions/checks/CountryCodeCheckExtension.js';
+import SubdivisionCodeExtension from "./extensions/fields/SubdivisionCodeExtension";
+import SubdivisionCodeCheckExtension from "./extensions/checks/SubdivisionCodeCheckExtension";
 import PostalCodeExtension from './extensions/fields/PostalCodeExtension.js';
 import PostalCodeCheckExtension from './extensions/checks/PostalCodeCheckExtension.js';
 import PostalCodeAutocompleteExtension from './extensions/autocomplete/PostalCodeAutocompleteExtension.js';
@@ -41,6 +43,8 @@ function EnderecoAddress(customConfig={}) {
     base.extensions = [
         CountryCodeExtension,
         CountryCodeCheckExtension,
+        SubdivisionCodeExtension,
+        SubdivisionCodeCheckExtension,
         PostalCodeExtension,
         PostalCodeCheckExtension,
         PostalCodeAutocompleteExtension,

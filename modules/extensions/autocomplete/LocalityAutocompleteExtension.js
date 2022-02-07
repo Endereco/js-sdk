@@ -62,11 +62,27 @@ var LocalityAutocompleteExtension = {
                                     localityHtml += '<span class="' + markClass + '">' + part.value.replace(/[ ]/g,  '&nbsp;') + '</span>';
                                 });
 
-                                preparedPredictions.push({
-                                    locality: prediction.locality,
+                                var tempData = {
                                     postalCode: prediction.postalCode,
+                                    locality: prediction.locality,
                                     localityDiff: localityHtml
-                                });
+                                }
+
+                                if (!!prediction.subdivisionCode) {
+                                    tempData.subdivisionCode = prediction.subdivisionCode;
+
+                                    if (!!window.EnderecoIntegrator.subdivisionCodeToNameMapping && !!window.EnderecoIntegrator.subdivisionCodeToNameMapping[prediction.subdivisionCode.toUpperCase()]) {
+                                        tempData.subdivisionName = window.EnderecoIntegrator.subdivisionCodeToNameMapping[prediction.subdivisionCode.toUpperCase()];
+                                    } else {
+                                        if (prediction.subdivisionCode.toUpperCase()) {
+                                            tempData.subdivisionName = prediction.subdivisionCode.split("-")[1]
+                                        } else {
+                                            tempData.subdivisionName = "&nbsp;";
+                                        }
+                                    }
+                                }
+
+                                preparedPredictions.push(tempData);
                             })
 
                             // Prepare dropdown.
@@ -255,6 +271,10 @@ var LocalityAutocompleteExtension = {
                                                             countryCode: (localityPrediction.country)?localityPrediction.country: ExtendableObject._countryCode,
                                                             postalCode: (localityPrediction.postCode)?localityPrediction.postCode:'',
                                                             locality: (localityPrediction.cityName)?localityPrediction.cityName:''
+                                                        }
+
+                                                        if (!!localityPrediction.subdivisionCode) {
+                                                            tempLocalityContainer.subdivisionCode = localityPrediction.subdivisionCode;
                                                         }
 
                                                         localityPredictionsTemp.push(tempLocalityContainer);

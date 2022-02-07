@@ -62,11 +62,27 @@ var PostalCodeAutocompleteExtension = {
                                     postalCodeHtml += '<span class="' + markClass + '">' + part.value.replace(/[ ]/g,  '&nbsp;') + '</span>';
                                 });
 
-                                preparedPredictions.push({
+                                var tempData = {
                                     postalCode: prediction.postalCode,
                                     locality: prediction.locality,
                                     postalCodeDiff: postalCodeHtml
-                                });
+                                }
+
+                                if (!!prediction.subdivisionCode) {
+                                    tempData.subdivisionCode = prediction.subdivisionCode;
+
+                                    if (!!window.EnderecoIntegrator.subdivisionCodeToNameMapping && !!window.EnderecoIntegrator.subdivisionCodeToNameMapping[prediction.subdivisionCode.toUpperCase()]) {
+                                        tempData.subdivisionName = window.EnderecoIntegrator.subdivisionCodeToNameMapping[prediction.subdivisionCode.toUpperCase()];
+                                    } else {
+                                        if (prediction.subdivisionCode.toUpperCase()) {
+                                            tempData.subdivisionName = prediction.subdivisionCode.split("-")[1]
+                                        } else {
+                                            tempData.subdivisionName = "&nbsp;";
+                                        }
+                                    }
+                                }
+
+                                preparedPredictions.push(tempData);
                             })
 
                             // Prepare dropdown.
@@ -255,6 +271,10 @@ var PostalCodeAutocompleteExtension = {
                                                             countryCode: (postalCodePrediction.country)?postalCodePrediction.country: ExtendableObject._countryCode,
                                                             postalCode: (postalCodePrediction.postCode)?postalCodePrediction.postCode:'',
                                                             locality: (postalCodePrediction.cityName)?postalCodePrediction.cityName:''
+                                                        }
+
+                                                        if (!!postalCodePrediction.subdivisionCode) {
+                                                            tempPostalCodeContainer.subdivisionCode = postalCodePrediction.subdivisionCode;
                                                         }
 
                                                         postalCodePredictionsTemp.push(tempPostalCodeContainer);
