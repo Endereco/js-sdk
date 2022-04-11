@@ -1,17 +1,17 @@
-var FirstNameExtension = {
-    name: 'FirstNameExtension',
+var TitleExtension = {
+    name: 'TitleExtension',
     extend: function(ExtendableObject) {
         var $self = this;
         return new ExtendableObject.util.Promise(function(resolve, reject) {
 
             // Add email field.
-            ExtendableObject._firstName = '';
-            ExtendableObject._subscribers.firstName = [];
+            ExtendableObject._title = '';
+            ExtendableObject._subscribers.title = [];
 
             // Add change event hadler.
-            ExtendableObject.cb.firstNameBlur = function(subscriber) {
+            ExtendableObject.cb.titleBlur = function(subscriber) {
                 return function(e) {
-                    ExtendableObject.firstName = subscriber.value;
+                    ExtendableObject.title = subscriber.value;
                     ExtendableObject.waitUntilReady().then(function() {
                         if (ExtendableObject.onBlurTimeout) {
                             clearTimeout(ExtendableObject.onBlurTimeout);
@@ -29,21 +29,21 @@ var FirstNameExtension = {
             };
 
             // Add the "emaiL" property
-            Object.defineProperty(ExtendableObject, 'firstName', {
+            Object.defineProperty(ExtendableObject, 'title', {
                 get: function() {
-                    return this._firstName;
+                    return this._title;
                 },
                 set: function(value) {
-                    var oldValue = ExtendableObject._firstName;
+                    var oldValue = ExtendableObject._title;
                     ExtendableObject._awaits++;
                     ExtendableObject.util.Promise.resolve(value).then(function(value) {
                         var newValue = value;
                         if (oldValue !== newValue) {
-                            ExtendableObject._firstName = newValue;
+                            ExtendableObject._title = newValue;
                             ExtendableObject._changed = true;
 
                             // Inform all subscribers about the change.
-                            ExtendableObject._subscribers.firstName.forEach(function (subscriber) {
+                            ExtendableObject._subscribers.title.forEach(function (subscriber) {
                                 subscriber.value = value;
                             });
 
@@ -54,7 +54,7 @@ var FirstNameExtension = {
                                         'change',
                                         {
                                             detail: {
-                                                fieldName: 'firstName',
+                                                fieldName: 'title',
                                                 oldValue: oldValue,
                                                 newValue: newValue,
                                                 object: ExtendableObject
@@ -70,10 +70,10 @@ var FirstNameExtension = {
                 }
             });
 
-            ExtendableObject.fieldNames.push('firstName');
+            ExtendableObject.fieldNames.push('title');
 
             if (ExtendableObject.config.showDebugInfo) {
-                console.log('FirstNameExtension applied');
+                console.log('TitleExtension applied');
             }
 
             resolve($self);
@@ -81,4 +81,4 @@ var FirstNameExtension = {
     }
 }
 
-export default FirstNameExtension
+export default TitleExtension

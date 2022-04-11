@@ -1,0 +1,11 @@
+<div data-id="{{ExtendableObject.id}}" class="endereco-status-wrapper">
+	<ul class="endereco-status-wrapper-list">
+		{{#statuses}}
+		<li class="endereco-status-wrapper-list__item endereco-status-wrapper-list__item--{{status}}">{{text}}</li>
+		{{/statuses}}
+
+		{{#requiredFormat}}
+		<li class="endereco-status-wrapper-list__item endereco-status-wrapper-list__item--phone_format_hint">{{{requiredFormat}}}</li>
+		{{/requiredFormat}}
+	</ul>
+</div>

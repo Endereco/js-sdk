@@ -24,6 +24,16 @@ var PostalCodeAutocompleteExtension = {
 
                 // Add util function
                 ExtendableObject.util.renderPostalCodePredictionsDropdown = function() {
+
+                    // Is subdivision visible?
+                    var $subdivVisible = false;
+                    if ((0 < ExtendableObject._subscribers.subdivisionCode.length)
+                        && !ExtendableObject._subscribers.subdivisionCode[0].object.disabled
+                        && ExtendableObject._subscribers.subdivisionCode[0].object.isConnected
+                    ) {
+                        $subdivVisible = true;
+                    }
+
                     // Render dropdown under the input element
                     ExtendableObject._subscribers.postalCodeChunk.forEach( function(subscriber) {
                         if (document.querySelector('[endereco-predictions]')) {
@@ -71,13 +81,15 @@ var PostalCodeAutocompleteExtension = {
                                 if (!!prediction.subdivisionCode) {
                                     tempData.subdivisionCode = prediction.subdivisionCode;
 
-                                    if (!!window.EnderecoIntegrator.subdivisionCodeToNameMapping && !!window.EnderecoIntegrator.subdivisionCodeToNameMapping[prediction.subdivisionCode.toUpperCase()]) {
-                                        tempData.subdivisionName = window.EnderecoIntegrator.subdivisionCodeToNameMapping[prediction.subdivisionCode.toUpperCase()];
-                                    } else {
-                                        if (prediction.subdivisionCode.toUpperCase()) {
-                                            tempData.subdivisionName = prediction.subdivisionCode.split("-")[1]
+                                    if ($subdivVisible) {
+                                        if (!!window.EnderecoIntegrator.subdivisionCodeToNameMapping && !!window.EnderecoIntegrator.subdivisionCodeToNameMapping[prediction.subdivisionCode.toUpperCase()]) {
+                                            tempData.subdivisionName = window.EnderecoIntegrator.subdivisionCodeToNameMapping[prediction.subdivisionCode.toUpperCase()];
                                         } else {
-                                            tempData.subdivisionName = "&nbsp;";
+                                            if (prediction.subdivisionCode.toUpperCase()) {
+                                                tempData.subdivisionName = prediction.subdivisionCode.split("-")[1]
+                                            } else {
+                                                tempData.subdivisionName = "&nbsp;";
+                                            }
                                         }
                                     }
                                 }
@@ -129,6 +141,9 @@ var PostalCodeAutocompleteExtension = {
                     }
                     if (0 <= index && ExtendableObject.postalCodePredictions[index].locality) {
                         ExtendableObject.locality = ExtendableObject.postalCodePredictions[index].locality;
+                    }
+                    if (0 <= index && ExtendableObject.postalCodePredictions[index].subdivisionCode) {
+                        ExtendableObject.subdivisionCode = ExtendableObject.postalCodePredictions[index].subdivisionCode;
                     }
 
                     ExtendableObject.postalCodePredictions = [];

@@ -1,6 +1,9 @@
 .endereco-s {
 	&--customer_verified,
 	&--salutation_correct,
+	&--first_name_correct,
+	&--last_name_correct,
+	&--title_correct,
 	&--email_correct,
 	&--address_correct,
 	&--postal_code_correct,
@@ -10,7 +13,8 @@
 	&--building_number_correct,
 	&--additional_info_correct,
 	&--country_code_correct,
-	&--subdivision_code_correct {
+	&--subdivision_code_correct,
+	&--phone_correct {
 		input,
 		select,
 		.form-control,
@@ -21,7 +25,10 @@
 	}
 
 
-	&--salutation_not_correct,
+	&--salutation_needs_correction,
+	&--first_name_needs_correction,
+	&--last_name_needs_correction,
+	&--title_needs_correction,
 	&--email_not_correct,
 	&--address_needs_correction,
 	&--address_multiple_variants,
@@ -33,7 +40,9 @@
 	&--building_number_needs_correction,
 	&--additional_info_needs_correction,
 	&--country_code_needs_correction,
-	&--subdivision_code_needs_correction {
+	&--subdivision_code_needs_correction,
+	&--phone_invalid,
+	&--phone_needs_correction {
 		input,
 		select,
 		.form-control,

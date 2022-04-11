@@ -104,6 +104,7 @@ var AddressCheckExtension = {
                     var $self = ExtendableObject;
                     var useTemplate = 'default';
                     var formattedAddress = '';
+                    var textArea;
 
                     if (!address) {
                         address = JSON.parse(JSON.stringify(ExtendableObject.address));
@@ -118,16 +119,24 @@ var AddressCheckExtension = {
 
                     if (address.hasOwnProperty('countryCode')) {
                         if (!!window.EnderecoIntegrator.countryCodeToNameMapping && !!window.EnderecoIntegrator.countryCodeToNameMapping[address.countryCode.toUpperCase()]) {
-                            address.countryName = window.EnderecoIntegrator.countryCodeToNameMapping[address.countryCode.toUpperCase()].toUpperCase();
+                            address.countryName = window.EnderecoIntegrator.countryCodeToNameMapping[address.countryCode.toUpperCase()];
+                            textArea = document.createElement('textarea');
+                            textArea.innerHTML = address.countryName;
+                            address.countryName = textArea.value.toUpperCase();
+
                         } else {
                             address.countryName = address.countryCode.toUpperCase();
                         }
+
                         address.showCountry = forceCountryDisplay || ExtendableObject.addressStatus.includes('country_code_needs_correction')
                     }
 
                     if (address.hasOwnProperty('subdivisionCode')) {
                         if (!!window.EnderecoIntegrator.subdivisionCodeToNameMapping && !!window.EnderecoIntegrator.subdivisionCodeToNameMapping[address.subdivisionCode.toUpperCase()]) {
                             address.subdivisionName = window.EnderecoIntegrator.subdivisionCodeToNameMapping[address.subdivisionCode.toUpperCase()];
+                            textArea = document.createElement('textarea');
+                            textArea.innerHTML = address.subdivisionName;
+                            address.subdivisionName = textArea.value;
                         } else {
                             if (address.subdivisionCode.toUpperCase()) {
                                 address.subdivisionName = address.subdivisionCode.toUpperCase().split("-")[1];
@@ -135,11 +144,20 @@ var AddressCheckExtension = {
                                 address.subdivisionName = "&nbsp;";
                             }
                         }
-                        address.showSubdisivion = !!address.subdivisionName && ExtendableObject.addressStatus.includes('subdivision_code_needs_correction')
+
+                        address.showSubdisivion = ("&nbsp;" !== address.subdivisionName)
+                          && (
+                            ExtendableObject.addressStatus.includes('subdivision_code_needs_correction') ||
+                            ExtendableObject.addressStatus.includes('address_multiple_variants')
+                          )
+                          && ((0 < ExtendableObject._subscribers.subdivisionCode.length)
+                            && !ExtendableObject._subscribers.subdivisionCode[0].object.disabled
+                            && ExtendableObject._subscribers.subdivisionCode[0].object.isConnected
+                          );
                     }
 
                     if (!address.buildingNumber || !(address.buildingNumber.trim())) {
-                        address.buildingNumber = ' ';
+                        address.buildingNumber = "&nbsp;";
                     }
 
                     address.useHtml = useHtml;
@@ -423,11 +441,16 @@ var AddressCheckExtension = {
                             ) {
                                 ExtendableObject._awaits++;
                                 var addressData = $self.addressPredictions[0];
+                                addressData.countryCode = addressData.countryCode.toUpperCase();
                                 $self.fieldNames.forEach( function(fieldName) {
-                                    if(undefined !== $self[fieldName] && undefined !== addressData[fieldName]) {
+                                    if ((undefined !== $self[fieldName])
+                                      && (undefined !== addressData[fieldName])
+                                      && ($self[fieldName] !== addressData[fieldName])
+                                    ) {
                                         $self[fieldName] = addressData[fieldName];
                                     }
                                 });
+
                                 $self.addressStatus = ['address_correct', 'address_selected_automatically'];
                                 $self.addressPredictions = [];
                                 $self.waitUntilReady().then( function() {
@@ -959,8 +982,12 @@ var AddressCheckExtension = {
                         return; // Dont copy, -1 is current values.
                     }
                     var addressData = $self.addressPredictions[index];
+                    addressData.countryCode = addressData.countryCode.toUpperCase();
                     $self.fieldNames.forEach( function(fieldName) {
-                        if(undefined !== $self[fieldName] && undefined !== addressData[fieldName]) {
+                        if ((undefined !== $self[fieldName])
+                          && (undefined !== addressData[fieldName])
+                          && ($self[fieldName] !== addressData[fieldName])
+                        ) {
                             $self[fieldName] = addressData[fieldName];
                         }
                     });
@@ -1233,7 +1260,10 @@ var AddressCheckExtension = {
                                 message.params.houseNumber = address.buildingNumber;
                             }
 
-                            if (ExtendableObject._subscribers.subdivisionCode.length >= 1) {
+                            if ((0 < ExtendableObject._subscribers.subdivisionCode.length)
+                              && !ExtendableObject._subscribers.subdivisionCode[0].object.disabled
+                              && ExtendableObject._subscribers.subdivisionCode[0].object.isConnected
+                            ) {
                                 message.params.subdivisionCode = address.subdivisionCode;
                             }
 

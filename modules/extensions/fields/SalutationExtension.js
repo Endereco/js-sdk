@@ -12,6 +12,20 @@ var SalutationExtension = {
             ExtendableObject.cb.salutationChange = function(subscriber) {
                 return function(e) {
                     ExtendableObject.salutation = subscriber.value;
+                    ExtendableObject.waitUntilReady().then(function() {
+
+                        if (ExtendableObject.onBlurTimeout) {
+                            clearTimeout(ExtendableObject.onBlurTimeout);
+                            ExtendableObject.onBlurTimeout = null;
+                        }
+                        ExtendableObject.onBlurTimeout = setTimeout( function() {
+                            if (ExtendableObject.config.trigger.onblur && !ExtendableObject.anyActive() && ExtendableObject.util.shouldBeChecked() && !window.EnderecoIntegrator.hasSubmit) {
+                                // Second. Check Address.
+                                ExtendableObject.onBlurTimeout = null;
+                                ExtendableObject.util.checkPerson().catch();
+                            }
+                        }, 300);
+                    }).catch()
                 }
             };
 
@@ -49,37 +63,6 @@ var SalutationExtension = {
                                         }
                                     )
                                 );
-                            }
-
-                            // Check address, if the extension is loaded.
-                            if (ExtendableObject.active && ExtendableObject.hasLoadedExtension('SalutationCheckExtension')) {
-                                ExtendableObject._awaits++;
-                                ExtendableObject.util.checkSalutation().then(function(data) {
-                                    if (data.gender === ExtendableObject.salutation) {
-                                        ExtendableObject.salutationStatus = ['salutation_correct']
-                                    } else if(
-                                        ['M','F'].includes(data.gender) &&
-                                        ['M','F'].includes(ExtendableObject.salutation) &&
-                                        data.gender !== ExtendableObject.salutation
-                                    ) {
-                                        ExtendableObject.salutationStatus = ['salutation_not_correct']
-                                    } else if(
-                                        'N' === data.gender &&
-                                        '' !== ExtendableObject.salutation
-                                    ) {
-                                        ExtendableObject.salutationStatus = ['salutation_correct']
-                                    } else {
-                                        ExtendableObject.salutationStatus = [];
-                                    }
-
-                                    if (!ExtendableObject.salutation && ['M','F'].includes(data.gender)) {
-                                        ExtendableObject.salutation = data.gender;
-                                    }
-                                }).catch(function(e) {
-                                    console.log('Failed checking email', e, ExtendableObject);
-                                }).finally(function() {
-                                    ExtendableObject._awaits--;
-                                })
                             }
                         }
                     }).catch().finally(function() {

@@ -19,6 +19,11 @@
 			color: red;
 			list-style: '✗ ' inside;
 		}
+
+		&--phone_invalid {
+			color: red;
+			list-style: '✗ ' inside;
+		}
 	}
 }
 

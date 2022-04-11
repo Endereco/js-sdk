@@ -1,18 +1,19 @@
-var FirstNameExtension = {
-    name: 'FirstNameExtension',
+var LastNameExtension = {
+    name: 'LastNameExtension',
     extend: function(ExtendableObject) {
         var $self = this;
         return new ExtendableObject.util.Promise(function(resolve, reject) {
 
             // Add email field.
-            ExtendableObject._firstName = '';
-            ExtendableObject._subscribers.firstName = [];
+            ExtendableObject._lastName = '';
+            ExtendableObject._subscribers.lastName = [];
 
             // Add change event hadler.
-            ExtendableObject.cb.firstNameBlur = function(subscriber) {
+            ExtendableObject.cb.lastNameBlur = function(subscriber) {
                 return function(e) {
-                    ExtendableObject.firstName = subscriber.value;
+                    ExtendableObject.lastName = subscriber.value;
                     ExtendableObject.waitUntilReady().then(function() {
+
                         if (ExtendableObject.onBlurTimeout) {
                             clearTimeout(ExtendableObject.onBlurTimeout);
                             ExtendableObject.onBlurTimeout = null;
@@ -29,21 +30,21 @@ var FirstNameExtension = {
             };
 
             // Add the "emaiL" property
-            Object.defineProperty(ExtendableObject, 'firstName', {
+            Object.defineProperty(ExtendableObject, 'lastName', {
                 get: function() {
-                    return this._firstName;
+                    return this._lastName;
                 },
                 set: function(value) {
-                    var oldValue = ExtendableObject._firstName;
+                    var oldValue = ExtendableObject._lastName;
                     ExtendableObject._awaits++;
                     ExtendableObject.util.Promise.resolve(value).then(function(value) {
                         var newValue = value;
                         if (oldValue !== newValue) {
-                            ExtendableObject._firstName = newValue;
+                            ExtendableObject._lastName = newValue;
                             ExtendableObject._changed = true;
 
                             // Inform all subscribers about the change.
-                            ExtendableObject._subscribers.firstName.forEach(function (subscriber) {
+                            ExtendableObject._subscribers.lastName.forEach(function (subscriber) {
                                 subscriber.value = value;
                             });
 
@@ -54,7 +55,7 @@ var FirstNameExtension = {
                                         'change',
                                         {
                                             detail: {
-                                                fieldName: 'firstName',
+                                                fieldName: 'lastName',
                                                 oldValue: oldValue,
                                                 newValue: newValue,
                                                 object: ExtendableObject
@@ -70,10 +71,10 @@ var FirstNameExtension = {
                 }
             });
 
-            ExtendableObject.fieldNames.push('firstName');
+            ExtendableObject.fieldNames.push('lastName');
 
             if (ExtendableObject.config.showDebugInfo) {
-                console.log('FirstNameExtension applied');
+                console.log('LastNameExtension applied');
             }
 
             resolve($self);
@@ -81,4 +82,4 @@ var FirstNameExtension = {
     }
 }
 
-export default FirstNameExtension
+export default LastNameExtension

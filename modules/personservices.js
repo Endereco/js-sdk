@@ -3,9 +3,11 @@ import EnderecoBase from './components/base.js'
 
 // Extensions.
 import SalutationExtension from './extensions/fields/SalutationExtension.js';
-import SalutationCheckExtension from './extensions/checks/SalutationCheckExtension.js';
+import LastNameExtension from './extensions/fields/LastNameExtension.js';
 import FirstNameExtension from "./extensions/fields/FirstNameExtension.js";
+import TitleExtension from "./extensions/fields/TitleExtension.js";
 import SessionExtension from "./extensions/session/SessionExtension";
+import NameCheckExtension from "./extensions/checks/NameCheckExtension";
 
 function EnderecoPerson(customConfig={}) {
 
@@ -20,9 +22,11 @@ function EnderecoPerson(customConfig={}) {
     // Add extensions.
     base.extensions = [
         SalutationExtension,
-        SalutationCheckExtension,
         FirstNameExtension,
-        SessionExtension
+        LastNameExtension,
+        TitleExtension,
+        SessionExtension,
+        NameCheckExtension
     ]
 
     // Load extesions.

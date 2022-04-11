@@ -17,6 +17,15 @@ var CountryCodeExtension = {
             ExtendableObject.cb.countryCodeChange = function(subscriber) {
                 return function(e) {
                     ExtendableObject.countryCode = subscriber.value;
+
+                    if (ExtendableObject.hasLoadedExtension('SubdivisionCodeExtension')) {
+                        if (!((0 < ExtendableObject._subscribers.subdivisionCode.length)
+                          && !ExtendableObject._subscribers.subdivisionCode[0].object.disabled
+                          && ExtendableObject._subscribers.subdivisionCode[0].object.isConnected
+                        )) {
+                            ExtendableObject.subdivisionCode = '';
+                        }
+                    }
                 }
             };
 
