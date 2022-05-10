@@ -42,7 +42,7 @@ var PhoneExtension = {
                                             if (data.status.includes('phone_needs_correction')
                                                 && (2 >= ExtendableObject.phoneCheckRequestCounter)
                                             ) {
-                                                ExtendableObject.phone = data.predictions[0].phone ?? ExtendableObject.phone;
+                                                ExtendableObject.phone = data.predictions[0].phone;
                                                 ExtendableObject.phoneStatus = ['phone_correct', 'phone_selected_automatically'];
                                             } else {
                                                 ExtendableObject.phoneStatus = data.status;

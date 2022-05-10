@@ -1,7 +1,7 @@
 {
-  "name": "js-sdk",
+  "name": "@endereco/js-sdk",
   "version": "1.0.0",
-  "description": "",
+  "description": "## Einleitung",
   "main": "index.js",
   "scripts": {
     "build": "cross-env NODE_ENV=production webpack --progress --hide-modules",
@@ -43,5 +43,16 @@
   ],
   "devDependencies": {},
   "author": "ilja_weber <info@ilja-weber.de>",
-  "license": "ISC"
+  "license": "ISC",
+  "directories": {
+    "example": "example"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Endereco/js-sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Endereco/js-sdk/issues"
+  },
+  "homepage": "https://github.com/Endereco/js-sdk#readme"
 }
