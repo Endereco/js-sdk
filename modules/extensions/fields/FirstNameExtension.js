@@ -18,7 +18,7 @@ var FirstNameExtension = {
                             ExtendableObject.onBlurTimeout = null;
                         }
                         ExtendableObject.onBlurTimeout = setTimeout( function() {
-                            if (ExtendableObject.config.trigger.onblur && !ExtendableObject.anyActive() && ExtendableObject.util.shouldBeChecked() && !window.EnderecoIntegrator.hasSubmit) {
+                            if (!ExtendableObject.anyActive() && ExtendableObject.util.shouldBeChecked() && !window.EnderecoIntegrator.hasSubmit) {
                                 // Second. Check Address.
                                 ExtendableObject.onBlurTimeout = null;
                                 ExtendableObject.util.checkPerson().catch();
