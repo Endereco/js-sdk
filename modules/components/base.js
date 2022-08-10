@@ -158,13 +158,10 @@ function EnderecoBase() {
             var $self = this;
             var hasAny = false;
 
-            $self.fieldNames.forEach( function(fieldName) {
-                if ($self._subscribers[fieldName]) {
-                    $self._subscribers[fieldName].forEach( function(subscriber) {
-                        if (!subscriber.object.isConnected) {
-                            hasAny = true;
-                        }
-                    });
+            hasAny = false;
+            $self.forms.forEach( function(form) {
+                if (form.isConnected) {
+                    hasAny = true;
                 }
             });
 
@@ -174,7 +171,7 @@ function EnderecoBase() {
                 });
             }
 
-            return hasAny;
+            return !hasAny;
         },
 
         onAfterCreate: [],
@@ -244,14 +241,19 @@ function EnderecoBase() {
 
                 // Check if has form. Add to forms.
                 if (
-                    EnderecoSubscriberObject.object &&
-                    EnderecoSubscriberObject.object.form
+                    !!EnderecoSubscriberObject.object &&
+                    !!EnderecoSubscriberObject.object.form
                 ) {
 
                     if (EnderecoSubscriberObject.subject.config.trigger.onsubmit) {
                         setTimeout(function() {
-                            EnderecoSubscriberObject.object.form.removeEventListener('submit', $self.cb.onFormSubmit);
-                            EnderecoSubscriberObject.object.form.addEventListener('submit', $self.cb.onFormSubmit);
+                            if (
+                                !!EnderecoSubscriberObject.object &&
+                                !!EnderecoSubscriberObject.object.form
+                            ) {
+                                EnderecoSubscriberObject.object.form.removeEventListener('submit', $self.cb.onFormSubmit);
+                                EnderecoSubscriberObject.object.form.addEventListener('submit', $self.cb.onFormSubmit);
+                            }
                         }, 1000);
                     }
 

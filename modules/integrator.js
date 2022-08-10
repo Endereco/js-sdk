@@ -20,6 +20,13 @@ var EnderecoIntegrator = {
     subdivisionMappingReverse: {},
     countryMapping: {},
     countryMappingReverse: {},
+    constructors: {
+        "EnderecoAddressObject": EnderecoAddressObject,
+        "EnderecoSubscriber": EnderecoSubscriber,
+        "EnderecoEmailObject": EnderecoEmailObject,
+        "EnderecoPersonObject": EnderecoPersonObject,
+        "EnderecoPhoneObject": EnderecoPhoneObject
+    },
     globalSpace: {
         reloadPage: function() {
             location.reload();
