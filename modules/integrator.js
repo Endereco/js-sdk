@@ -205,6 +205,11 @@ var EnderecoIntegrator = {
         var EPHSO = new EnderecoPhoneObject(config);
         EPHSO.fullName = options.name + '_' + EPHSO.name;
 
+        // Start setting default values.
+        if (!!options.numberType) {
+            EPHSO.numberType = options.numberType
+        }
+
         EPHSO.waitForAllExtension().then( function() {
             // Add subscribers.
             if (
@@ -253,6 +258,8 @@ var EnderecoIntegrator = {
                             if (!!options.phoneType) {
                                 EPHSO._phoneType = options.phoneType
                             }
+
+                            EPHSO.renderFlags();
 
                             EPHSO._changed = false;
                             EPHSO.activate();

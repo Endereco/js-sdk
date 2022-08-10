@@ -5,3 +5,22 @@
 @import "./components/statuses";
 @import "./components/statuslist";
 @import "./components/button";
+
+.endereco-relative-container {
+  position: relative;
+}
+
+.endereco-big-flag {
+  position: absolute;
+  top: 0;
+  left: 0;
+  margin: 0 !important;
+  display: flex;
+  z-index: 900001;
+  cursor: pointer;
+}
+
+.endereco-cur-down {
+  max-width: 8px;
+  margin: 0 4px;
+}
