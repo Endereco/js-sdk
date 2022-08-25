@@ -44,7 +44,7 @@ function EnderecoSubscriber(propertyName, observableObject, options = {}) {
             if (undefined !== this._subject.cb[changeCallbackGenerator]) {
                 this.object.removeEventListener('change', this._subject.cb[changeCallbackGenerator](this));
 
-                if (!!window.jQuery) {
+                if (!!window.jQuery && !!window.jQuery.on) {
                     window.jQuery(this.object).on('change', this._subject.cb[changeCallbackGenerator](this));
                 } else {
                     this.object.addEventListener('change', this._subject.cb[changeCallbackGenerator](this));

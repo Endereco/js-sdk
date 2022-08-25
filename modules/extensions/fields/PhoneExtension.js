@@ -28,7 +28,7 @@ var PhoneExtension = {
                             ExtendableObject.onBlurTimeout = null;
                         }
                         ExtendableObject.onBlurTimeout = setTimeout( function() {
-
+                            var newStatus;
                             if (!ExtendableObject.anyActive() && ExtendableObject.util.shouldBeChecked() && !window.EnderecoIntegrator.hasSubmit) {
                                 // Second. Check Address.
                                 clearTimeout(ExtendableObject.onBlurTimeout);
@@ -39,11 +39,35 @@ var PhoneExtension = {
                                     ExtendableObject.util.checkPhone().then(function(data) {
                                         // If format is defined, rewrite field.
                                         if (ExtendableObject.config.phoneFormat) {
-                                            if (data.status.includes('phone_needs_correction')
-                                                && (2 >= ExtendableObject.phoneCheckRequestCounter)
-                                            ) {
+                                            if (data.status.includes('phone_format_needs_correction')) {
+                                                newStatus = data.status;
+
+                                                newStatus.push('phone_correct');
+                                                newStatus.push('phone_format_'+ExtendableObject.config.phoneFormat.toLowerCase());
+
+                                                if (newStatus.indexOf('phone_format_unknown') !== -1) {
+                                                    newStatus.splice(
+                                                        newStatus.indexOf('phone_format_unknown'),
+                                                        1
+                                                    );
+                                                }
+
+                                                if (newStatus.indexOf('phone_format_needs_correction') !== -1) {
+                                                    newStatus.splice(
+                                                        newStatus.indexOf('phone_format_needs_correction'),
+                                                        1
+                                                    );
+                                                }
+
+                                                if (newStatus.indexOf('phone_needs_correction') !== -1) {
+                                                    newStatus.splice(
+                                                        newStatus.indexOf('phone_needs_correction'),
+                                                        1
+                                                    );
+                                                }
+
                                                 ExtendableObject.phone = data.predictions[0].phone;
-                                                ExtendableObject.phoneStatus = ['phone_correct', 'phone_selected_automatically'];
+                                                ExtendableObject.phoneStatus = newStatus;
                                             } else {
                                                 ExtendableObject.phoneStatus = data.status;
                                             }

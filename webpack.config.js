@@ -50,6 +50,11 @@ module.exports = {
         use: {loader: 'html-loader'}
       },
       {
+        test: /\.svg$/,
+        exclude: /node_modules/,
+        use: {loader: 'html-loader'}
+      },
+      {
         test: /\.js$/,
         use: {
           loader: 'babel-loader',
