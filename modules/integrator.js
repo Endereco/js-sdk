@@ -249,6 +249,39 @@ var EnderecoIntegrator = {
                     $self.dispatchEvent('endereco.ams.after-adding-phone-subscriber'); // Add after hook.
                 }
 
+                // In general with every subscriber we first check, if the html element exists
+                // Then we trigger an event.
+                if (
+                    !! postfix.countryCode &&
+                    document.querySelector($self.getSelector(postfix.countryCode)) &&
+                    $self.dispatchEvent('endereco.ams.before-adding-country-code-subscriber')
+                ) {
+                    var countryCodeSubscriberOptions = {};
+                    if (!!$self.resolvers.countryCodeWrite) {
+                        countryCodeSubscriberOptions['writeFilterCb'] = function(value) {
+                            return $self.resolvers.countryCodeWrite(value);
+                        }
+                    }
+                    if (!!$self.resolvers.countryCodeRead) {
+                        countryCodeSubscriberOptions['readFilterCb'] = function(value) {
+                            return $self.resolvers.countryCodeRead(value);
+                        }
+                    }
+                    if (!!$self.resolvers.countryCodeSetValue) {
+                        countryCodeSubscriberOptions['customSetValue'] = function(subscriber, value) {
+                            return $self.resolvers.countryCodeSetValue(subscriber, value);
+                        }
+                    }
+                    var countryCodeSubscriber = new EnderecoSubscriber(
+                        'countryCode',
+                        document.querySelector($self.getSelector(postfix.countryCode)),
+                        countryCodeSubscriberOptions
+                    )
+                    EPHSO.addSubscriber(countryCodeSubscriber);
+
+                    $self.dispatchEvent('endereco.ams.after-adding-country-code-subscriber'); // Add after hook.
+                }
+
                 $self.dispatchEvent('endereco.ams.after-adding-subscribers')
 
                 EPHSO.waitUntilReady().then(function() {
@@ -256,7 +289,9 @@ var EnderecoIntegrator = {
                         EPHSO.waitUntilReady().then(function() {
                             // Start setting default values.
                             if (!!options.phoneType) {
-                                EPHSO._phoneType = options.phoneType
+                                EPHSO.numberType = options.phoneType
+                            } else if (!!window.EnderecoIntegrator.config.defaultPhoneType) {
+                                EPHSO.numberType = window.EnderecoIntegrator.config.defaultPhoneType;
                             }
 
                             EPHSO.renderFlags();

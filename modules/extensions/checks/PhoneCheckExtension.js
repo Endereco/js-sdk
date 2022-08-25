@@ -52,21 +52,13 @@ var PhoneCheckExtension = {
                                 if ('mobile' === ExtendableObject.numberType
                                     && !newValue.includes('phone_is_mobile')
                                 ) {
-                                    var index = newValue.indexOf('phone_correct');
-                                    if (index !== -1) {
-                                        newValue.splice(index, 1);
-                                        newValue.push('phone_invalid')
-                                        newValue.push('phone_wrong_type')
-                                    }
+                                    newValue.push('phone_wrong_type')
+                                    newValue.push('phone_should_be_mobile')
                                 } else if ('fixedLine' === ExtendableObject.numberType
                                     && !newValue.includes('phone_is_fixed_line')
                                 ) {
-                                    var index = newValue.indexOf('phone_correct');
-                                    if (index !== -1) {
-                                        newValue.splice(index, 1);
-                                        newValue.push('phone_invalid');
-                                        newValue.push('phone_wrong_type');
-                                    }
+                                    newValue.push('phone_wrong_type');
+                                    newValue.push('phone_should_be_fixed')
                                 }
 
                                 ExtendableObject._phoneStatus = newValue;
@@ -122,7 +114,8 @@ var PhoneCheckExtension = {
 
                     if (0 < statuses.length) {
                         if (ExtendableObject.config.phoneFormat &&
-                          ExtendableObject.config.texts.requiredFormat[ExtendableObject.config.phoneFormat]
+                          ExtendableObject.config.texts.requiredFormat[ExtendableObject.config.phoneFormat] &&
+                            ExtendableObject.phoneStatus.includes('phone_format_needs_correction')
                         ) {
                             formatMessage = ExtendableObject.config.texts.requiredFormat[ExtendableObject.config.phoneFormat]
                         }
@@ -157,9 +150,14 @@ var PhoneCheckExtension = {
                             'method': 'phoneCheck',
                             'params': {
                                 'phone': phone,
-                                'countryCode': window.EnderecoIntegrator.defaultCountry
                             }
                         };
+
+                        if (!!ExtendableObject.countryCode) {
+                            message.params.countryCode = ExtendableObject.countryCode;
+                        } else {
+                            message.params.countryCode = window.EnderecoIntegrator.defaultCountry ?? 'DE';
+                        }
 
                         if (ExtendableObject.config.phoneFormat) {
                             message.params.format = ExtendableObject.config.phoneFormat;

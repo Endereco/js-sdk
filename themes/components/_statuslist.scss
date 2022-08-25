@@ -24,6 +24,16 @@
 			color: red;
 			list-style: '✗ ' inside;
 		}
+
+		&--phone_should_be_fixed {
+			color: red;
+			list-style: '✗ ' inside;
+		}
+
+		&--phone_should_be_mobile {
+			color: red;
+			list-style: '✗ ' inside;
+		}
 	}
 }
 

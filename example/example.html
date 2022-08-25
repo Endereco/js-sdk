@@ -113,6 +113,9 @@
             window.EnderecoIntegrator.config.ux.allowCloseModal = false;
             window.EnderecoIntegrator.config.ux.confirmWithCheckbox = true;
             window.EnderecoIntegrator.config.ux.changeFieldsOrder = true;
+			window.EnderecoIntegrator.config.ux.showPhoneErrors = true;
+			window.EnderecoIntegrator.config.phoneFormat = "E164";
+			window.EnderecoIntegrator.config.ux.showPhoneFlag = true;
             window.EnderecoIntegrator.countryMappingUrl = '';
             window.EnderecoIntegrator.config.templates.primaryButtonClasses = 'btn btn-primary btn-lg';
             window.EnderecoIntegrator.config.templates.secondaryButtonClasses = 'btn btn-secondary btn-lg';
@@ -144,8 +147,17 @@
                     street_name_needs_correction: 'Die Schreibweise der Straße ist fehlerhaft.',
                     locality_needs_correction: 'Die Schreibweise des Ortes ist fehlerhaft.',
                     postal_code_needs_correction: 'Die PLZ ist ungültig.',
-                    country_code_needs_correction: 'Die eingegebene Adresse wurde in einem anderen Land gefunden.'
-                }
+                    country_code_needs_correction: 'Die eingegebene Adresse wurde in einem anderen Land gefunden.',
+					phone_invalid: "Die Rufnummer existiert nicht oder ist nicht erreichbar.",
+					phone_format_needs_correction: "Die Rufnummer ist falsch geschrieben.",
+					phone_should_be_fixed: "Es wird eine Festnetznummer erwartet",
+					phone_should_be_mobile: "Es wird eine Mobilfunknummer erwartet"
+                },
+				"requiredFormat": {
+					"E164": "Format E.164 wird erwartet",
+					"INTERNATIONAL": "Internationaler format wird erwartet",
+					"NATIONAL": "Nationaler Format wird erwartet",
+				}
             };
             window.EnderecoIntegrator.activeServices = {
                 ams: true,
@@ -282,6 +294,22 @@
 		</div>
 		<div class="row">
 			<div>
+				<label class="label" style="padding-bottom: 20px;">
+					Mobilefunknummer #2
+					<input type="text" id="mobilephone2" style="padding: 8px 16px;">
+				</label>
+			</div>
+		</div>
+		<div class="row">
+			<div>
+				<label class="label" style="padding-bottom: 10px;">
+					Mobilefunknummer #3
+					<input type="text" id="mobilephone3" style="padding: 32px 64px; font-size: 20px;">
+				</label>
+			</div>
+		</div>
+		<div class="row">
+			<div>
 				<label class="label">
 					Festnetznummer
 					<input type="text" id="fixedlinephone">
@@ -292,6 +320,7 @@
 	<script>
 		enderecoInitPhoneServices({
 			phone: '#mobilephone',
+			countryCode: '#country',
 		}, {
 			name: 'first_number',
 			numberType: 'mobile',
@@ -300,7 +329,28 @@
 	</script>
 	<script>
 		enderecoInitPhoneServices({
+			phone: '#mobilephone2',
+			countryCode: '#country',
+		}, {
+			name: 'first_number_2',
+			numberType: 'mobile',
+			group: 'form-1'
+		});
+	</script>
+	<script>
+		enderecoInitPhoneServices({
+			phone: '#mobilephone3',
+			countryCode: '#country',
+		}, {
+			name: 'first_number_3',
+			numberType: 'mobile',
+			group: 'form-1'
+		});
+	</script>
+	<script>
+		enderecoInitPhoneServices({
 			phone: '#fixedlinephone',
+			countryCode: '#country',
 		}, {
 			name: 'second_number',
 			numberType: 'fixedLine',
