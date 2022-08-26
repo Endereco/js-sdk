@@ -36,6 +36,7 @@ var PhoneExtension = {
 
                                 if (ExtendableObject.active && ExtendableObject.hasLoadedExtension('PhoneCheckExtension')) {
                                     ExtendableObject._awaits++;
+                                    ExtendableObject.phoneStatus = [];
                                     ExtendableObject.util.checkPhone().then(function(data) {
                                         // If format is defined, rewrite field.
                                         if (ExtendableObject.config.phoneFormat) {
