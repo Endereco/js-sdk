@@ -46,6 +46,7 @@ var PhoneCheckExtension = {
                         var oldValue = ExtendableObject._phoneStatus;
                         ExtendableObject._awaits++;
                         ExtendableObject.util.Promise.resolve(value).then(function(value) {
+                            var index;
                             var newValue = value;
                             if (oldValue !== newValue) {
                                 // Check if the type of phone is fitting in.
@@ -53,12 +54,20 @@ var PhoneCheckExtension = {
                                     && !newValue.includes('phone_is_mobile')
                                     && newValue.length > 0
                                 ) {
+                                    index = newValue.indexOf('phone_correct');
+                                    if (index !== -1) {
+                                        newValue.splice(index, 1);
+                                    }
                                     newValue.push('phone_wrong_type')
                                     newValue.push('phone_should_be_mobile')
                                 } else if ('fixedLine' === ExtendableObject.numberType
                                     && !newValue.includes('phone_is_fixed_line')
                                     && newValue.length > 0
                                 ) {
+                                    index = newValue.indexOf('phone_correct');
+                                    if (index !== -1) {
+                                        newValue.splice(index, 1);
+                                    }
                                     newValue.push('phone_wrong_type');
                                     newValue.push('phone_should_be_fixed')
                                 }

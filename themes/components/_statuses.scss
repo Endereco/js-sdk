@@ -42,7 +42,8 @@
 	&--country_code_needs_correction,
 	&--subdivision_code_needs_correction,
 	&--phone_invalid,
-	&--phone_needs_correction {
+	&--phone_needs_correction,
+	&--phone_wrong_type {
 		input,
 		select,
 		.form-control,
