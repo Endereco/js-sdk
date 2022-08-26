@@ -51,11 +51,13 @@ var PhoneCheckExtension = {
                                 // Check if the type of phone is fitting in.
                                 if ('mobile' === ExtendableObject.numberType
                                     && !newValue.includes('phone_is_mobile')
+                                    && newValue.length > 0
                                 ) {
                                     newValue.push('phone_wrong_type')
                                     newValue.push('phone_should_be_mobile')
                                 } else if ('fixedLine' === ExtendableObject.numberType
                                     && !newValue.includes('phone_is_fixed_line')
+                                    && newValue.length > 0
                                 ) {
                                     newValue.push('phone_wrong_type');
                                     newValue.push('phone_should_be_fixed')
@@ -97,14 +99,22 @@ var PhoneCheckExtension = {
                 ExtendableObject.util.renderStatusMessages = function() {
                     var statuses = [];
                     var formatMessage = '';
+                    var uniqueContainer = {};
                     ExtendableObject.phoneStatus.forEach( function(phoneStatus) {
-                        if (!!ExtendableObject.config.texts.statuses[phoneStatus]) {
+                        if (!!ExtendableObject.config.texts.statuses[phoneStatus] &&
+                            !uniqueContainer[phoneStatus]
+                        ) {
                             statuses.push({
                                 status: phoneStatus,
                                 text: ExtendableObject.config.texts.statuses[phoneStatus]
-                            })
+                            });
+                            uniqueContainer[phoneStatus] = true;
                         }
                     })
+
+                    statuses = statuses.filter(function(value, index, self) {
+                        return self.indexOf(value) === index;
+                    });
 
                     if (document.querySelectorAll('.endereco-status-wrapper[data-id="' + ExtendableObject.id + '"]')) {
                         document.querySelectorAll('.endereco-status-wrapper[data-id="' + ExtendableObject.id + '"]').forEach( function(DOMElement) {
@@ -142,6 +152,8 @@ var PhoneCheckExtension = {
                     if (!phone) {
                         phone = ExtendableObject.phone;
                     }
+
+                    ExtendableObject._phoneStatus = [];
 
                     return new ExtendableObject.util.Promise(function(resolve, reject) {
                         var message = {

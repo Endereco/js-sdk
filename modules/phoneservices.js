@@ -278,6 +278,11 @@ function EnderecoPhone(customConfig={}) {
             "flag":atFlag
         },
         {
+            "iso2":"CH",
+            "code":"+41",
+            "flag":chFlag
+        },
+        {
             "iso2":"AF",
             "code":"+93",
             "flag":afFlag
@@ -1324,11 +1329,6 @@ function EnderecoPhone(customConfig={}) {
             "flag":seFlag
         },
         {
-            "iso2":"CH",
-            "code":"+41",
-            "flag":chFlag
-        },
-        {
             "iso2":"SY",
             "code":"+963",
             "flag":syFlag
@@ -1580,6 +1580,7 @@ function EnderecoPhone(customConfig={}) {
                 var topOffset = 0;
                 var dropdownTopOffset = 0;
                 var leftOffset = 0;
+                var dividerSize = 0;
                 var widthOfFlag = 0;
 
                 if (!DOMElement.classList.contains('endereco-field-has-flags')) {
@@ -1596,7 +1597,11 @@ function EnderecoPhone(customConfig={}) {
                     base._flagContainerDom = flagElement;
                     offsetFromParent = DOMElement.offsetTop;
                     heightOfInput = DOMElement.offsetHeight;
-                    heightOfFlag = heightOfInput * 0.75;
+                    dividerSize = 0.80;
+                    if (heightOfInput > 30) {
+                        dividerSize = 0.5;
+                    }
+                    heightOfFlag = heightOfInput * dividerSize;
                     topOffset = offsetFromParent + ((heightOfInput - heightOfFlag) / 2);
                     leftOffset = ((heightOfInput - heightOfFlag) / 2);
                     dropdownTopOffset = topOffset+heightOfInput;
