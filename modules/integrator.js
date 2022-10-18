@@ -288,8 +288,8 @@ var EnderecoIntegrator = {
                     EPHSO.syncValues().then(function() {
                         EPHSO.waitUntilReady().then(function() {
                             // Start setting default values.
-                            if (!!options.phoneType) {
-                                EPHSO.numberType = options.phoneType
+                            if (!!options.numberType) {
+                                EPHSO.numberType = options.numberType
                             } else if (!!window.EnderecoIntegrator.config.defaultPhoneType) {
                                 EPHSO.numberType = window.EnderecoIntegrator.config.defaultPhoneType;
                             }
@@ -636,13 +636,20 @@ var EnderecoIntegrator = {
 
         var $self = this;
         var config = JSON.parse(JSON.stringify(this.config));
+
+        var originalPostfix = merge({}, $self.postfix.emailServices);
         var postfix;
 
         if ('object' === typeof prefix) {
-            postfix = merge($self.postfix.emailServices, prefix);
+            postfix = merge(originalPostfix, prefix);
             prefix = '';
         } else {
-            postfix = merge($self.postfix.emailServices, options.postfixCollection);
+            var newObject = {};
+            Object.keys(originalPostfix).forEach(function(key) {
+                newObject[key] = prefix + originalPostfix[key];
+
+            });
+            postfix = merge(newObject, options.postfixCollection);
         }
 
         var EEO = new EnderecoEmailObject(config);
@@ -980,6 +987,8 @@ var EnderecoIntegrator = {
     addBodyClass: function() {
         if (!!this.themeName) {
             document.querySelector('body').classList.add('endereco-theme--'+this.themeName);
+        } else {
+            document.querySelector('body').classList.add('endereco-theme--current-theme');
         }
     },
     dispatchEvent: function(event) {
