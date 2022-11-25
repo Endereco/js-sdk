@@ -19,11 +19,11 @@ var CountryCodeExtension = {
                     ExtendableObject.countryCode = subscriber.value;
 
                     if (ExtendableObject.hasLoadedExtension('SubdivisionCodeExtension')) {
-                        if (!((0 < ExtendableObject._subscribers.subdivisionCode.length)
-                          && !ExtendableObject._subscribers.subdivisionCode[0].object.disabled
-                          && ExtendableObject._subscribers.subdivisionCode[0].object.isConnected
-                        )) {
-                            ExtendableObject.subdivisionCode = '';
+                        if ((0 < ExtendableObject._subscribers.subdivisionCode.length)) {
+                            ExtendableObject._subdivisionCode = '';
+                            ExtendableObject._subscribers.subdivisionCode.forEach( function(subscriber) {
+                                subscriber.value = '';
+                            });
                         }
                     }
                 }

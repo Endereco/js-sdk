@@ -121,10 +121,13 @@ var StreetNameAutocompleteExtension = {
 
                 ExtendableObject.cb.streetNameChunkInput = function(subscriber) {
                     return function(e) {
-                        ExtendableObject._changed = true;
-                        ExtendableObject.streetNamePredictions = [];
-                        ExtendableObject._streetNamePredictionsIndex = 0;
-                        ExtendableObject.streetNameChunk = subscriber.value;
+                        clearTimeout(ExtendableObject._streetNameTimeout);
+                        ExtendableObject._streetNameTimeout = setTimeout(function() {
+                            ExtendableObject._changed = true;
+                            ExtendableObject.streetNamePredictions = [];
+                            ExtendableObject._streetNamePredictionsIndex = 0;
+                            ExtendableObject.streetNameChunk = subscriber.value;
+                        }, ExtendableObject.config.ux.delay.inputAssistant);
                     }
                 };
 
@@ -134,10 +137,6 @@ var StreetNameAutocompleteExtension = {
                         ExtendableObject._streetNamePredictionsIndex = 0;
                         if (document.querySelector('[endereco-predictions]')) {
                             document.querySelector('[endereco-predictions]').parentNode.removeChild(document.querySelector('[endereco-predictions]'));
-                        }
-
-                        if (!!$streetNameChunkTimeout) {
-                            clearTimeout($streetNameChunkTimeout)
                         }
                     }
                 };
@@ -185,7 +184,6 @@ var StreetNameAutocompleteExtension = {
                         return this._streetNameChunk;
                     },
                     set: function(value) {
-
                         ExtendableObject._awaits++;
                         ExtendableObject.util.Promise.resolve(value).then(function(value) {
                             if (ExtendableObject._streetNameChunk !== value) {
@@ -194,87 +192,80 @@ var StreetNameAutocompleteExtension = {
                                 }
                                 ExtendableObject._streetNameChunk = value;
 
-                                if (!!$streetNameChunkTimeout) {
-                                    clearTimeout($streetNameChunkTimeout)
-                                }
-
                                 // Get predictions.
                                 if (
                                     ExtendableObject.config.useAutocomplete &&
                                     ExtendableObject.active &&
                                     ['general_address', 'shipping_address', 'billing_address'].includes(ExtendableObject.addressType)
                                 ) {
-                                    clearTimeout(ExtendableObject._streetNameTimeout);
-                                    ExtendableObject._streetNameTimeout = setTimeout(function() {
-                                        ExtendableObject._streetNameAutocompleteRequestIndex++;
-                                        var autocompleteRequestIndex = ExtendableObject._streetNameAutocompleteRequestIndex * 1; // Create a copy.
-                                        var message = {
-                                            'jsonrpc': '2.0',
-                                            'id': ExtendableObject._streetNameAutocompleteRequestIndex,
-                                            'method': 'streetAutocomplete',
-                                            'params': {
-                                                'country': ExtendableObject.countryCode,
-                                                'language': ExtendableObject.config.lang,
-                                                'postCode': ExtendableObject.postalCode,
-                                                'cityName': ExtendableObject.locality,
-                                                'street': ExtendableObject.streetNameChunk,
-                                                'houseNumber': ExtendableObject.buildingNumber
-                                            }
-                                        };
+                                    ExtendableObject._streetNameAutocompleteRequestIndex++;
+                                    var autocompleteRequestIndex = ExtendableObject._streetNameAutocompleteRequestIndex * 1; // Create a copy.
+                                    var message = {
+                                        'jsonrpc': '2.0',
+                                        'id': ExtendableObject._streetNameAutocompleteRequestIndex,
+                                        'method': 'streetAutocomplete',
+                                        'params': {
+                                            'country': ExtendableObject.countryCode,
+                                            'language': ExtendableObject.config.lang,
+                                            'postCode': ExtendableObject.postalCode,
+                                            'cityName': ExtendableObject.locality,
+                                            'street': ExtendableObject.streetNameChunk,
+                                            'houseNumber': ExtendableObject.buildingNumber
+                                        }
+                                    };
 
-                                        // Send user data to remote server for validation.
-                                        ExtendableObject._awaits++;
-                                        ExtendableObject.util.axios.post(ExtendableObject.config.apiUrl, message, {
-                                            timeout: ExtendableObject.config.ux.requestTimeout,
-                                            headers: {
-                                                'X-Auth-Key': ExtendableObject.config.apiKey,
-                                                'X-Agent': ExtendableObject.config.agentName,
-                                                'X-Remote-Api-Url': ExtendableObject.config.remoteApiUrl,
-                                                'X-Transaction-Referer': window.location.href,
-                                                'X-Transaction-Id': (ExtendableObject.hasLoadedExtension('SessionExtension'))?ExtendableObject.sessionId:'not_required'
+                                    // Send user data to remote server for validation.
+                                    ExtendableObject._awaits++;
+                                    ExtendableObject.util.axios.post(ExtendableObject.config.apiUrl, message, {
+                                        timeout: ExtendableObject.config.ux.requestTimeout,
+                                        headers: {
+                                            'X-Auth-Key': ExtendableObject.config.apiKey,
+                                            'X-Agent': ExtendableObject.config.agentName,
+                                            'X-Remote-Api-Url': ExtendableObject.config.remoteApiUrl,
+                                            'X-Transaction-Referer': window.location.href,
+                                            'X-Transaction-Id': (ExtendableObject.hasLoadedExtension('SessionExtension'))?ExtendableObject.sessionId:'not_required'
+                                        }
+                                    })
+                                        .then(function(response) {
+                                            if (undefined !== response.data.result && undefined !== response.data.result.predictions) {
+
+                                                // Is still actual?
+                                                if (autocompleteRequestIndex !== ExtendableObject._streetNameAutocompleteRequestIndex) {
+                                                    return;
+                                                }
+
+                                                var counter = 0;
+                                                var tempStreetNameContainer, diff, streetNameHtml;
+                                                var streetNamePredictionsTemp = [];
+
+                                                // If session counter is set, increase it.
+                                                if (ExtendableObject.hasLoadedExtension('SessionExtension')) {
+                                                    ExtendableObject.sessionCounter++;
+                                                }
+
+                                                response.data.result.predictions.forEach( function(streetNamePrediction) {
+                                                    if (counter >= ExtendableObject.config.ux.maxAutocompletePredictionItems) {
+                                                        return false;
+                                                    }
+                                                    counter++;
+
+                                                    tempStreetNameContainer = {
+                                                        countryCode: (streetNamePrediction.country)?streetNamePrediction.country: ExtendableObject._countryCode,
+                                                        streetName: (streetNamePrediction.street)?streetNamePrediction.street:''
+                                                    }
+
+                                                    streetNamePredictionsTemp.push(tempStreetNameContainer);
+                                                })
+
+                                                ExtendableObject.streetNamePredictions = streetNamePredictionsTemp;
                                             }
                                         })
-                                            .then(function(response) {
-                                                if (undefined !== response.data.result && undefined !== response.data.result.predictions) {
-
-                                                    // Is still actual?
-                                                    if (autocompleteRequestIndex !== ExtendableObject._streetNameAutocompleteRequestIndex) {
-                                                        return;
-                                                    }
-
-                                                    var counter = 0;
-                                                    var tempStreetNameContainer, diff, streetNameHtml;
-                                                    var streetNamePredictionsTemp = [];
-
-                                                    // If session counter is set, increase it.
-                                                    if (ExtendableObject.hasLoadedExtension('SessionExtension')) {
-                                                        ExtendableObject.sessionCounter++;
-                                                    }
-
-                                                    response.data.result.predictions.forEach( function(streetNamePrediction) {
-                                                        if (counter >= ExtendableObject.config.ux.maxAutocompletePredictionItems) {
-                                                            return false;
-                                                        }
-                                                        counter++;
-
-                                                        tempStreetNameContainer = {
-                                                            countryCode: (streetNamePrediction.country)?streetNamePrediction.country: ExtendableObject._countryCode,
-                                                            streetName: (streetNamePrediction.street)?streetNamePrediction.street:''
-                                                        }
-
-                                                        streetNamePredictionsTemp.push(tempStreetNameContainer);
-                                                    })
-
-                                                    ExtendableObject.streetNamePredictions = streetNamePredictionsTemp;
-                                                }
-                                            })
-                                            .catch(function(e) {
-                                                console.log(e);
-                                            })
-                                            .finally(function() {
-                                                ExtendableObject._awaits--;
-                                            });
-                                    }, ExtendableObject.config.ux.delay.inputAssistant);
+                                        .catch(function(e) {
+                                            console.log(e);
+                                        })
+                                        .finally(function() {
+                                            ExtendableObject._awaits--;
+                                        });
                                 }
                             }
                         }).catch().finally(function() {

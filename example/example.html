@@ -36,12 +36,16 @@
 			margin-right: 20px;
 		}
 
+		.is--hidden {
+			display: none !important;
+		}
+
 		.btn.btn-primary {
 			background-color: #0069ff;
 			border: 0;
 			border-radius: 3px;
 			color: #fff;
-			display: block;
+			display: inline-block;
 			font-size: 16px;
 			font-weight: 400;
 			padding: 6px 18px;
@@ -55,7 +59,7 @@
 			border: 0;
 			border-radius: 3px;
 			color: #fff;
-			display: block;
+			display: inline-block;
 			font-size: 16px;
 			font-weight: 400;
 			padding: 6px 18px;
@@ -91,6 +95,16 @@
 			} else {
 				window.EnderecoIntegrator.onLoad.push(function () {
 					window.EnderecoIntegrator.initPhoneServices(prefix, config);
+				});
+			}
+		}
+
+		function enderecoInitEmailServices(prefix, config) {
+			if (undefined !== window.EnderecoIntegrator.initEmailServices) {
+				window.EnderecoIntegrator.initEmailServices(prefix, config);
+			} else {
+				window.EnderecoIntegrator.onLoad.push(function () {
+					window.EnderecoIntegrator.initEmailServices(prefix, config);
 				});
 			}
 		}
@@ -167,13 +181,13 @@
             }
             window.EnderecoIntegrator.countryMapping = {
                 '1': 'DE',
-				'2': 'AT',
-				'3': 'CH'
+				'2': 'FR',
+				'3': 'US'
 			};
             window.EnderecoIntegrator.countryReverseMapping = {
                 'DE': 1,
-				'AT': 2,
-				'CH': 3
+				'FR': 2,
+				'US': 3
             };
 
             // Country matching functions.
@@ -200,7 +214,6 @@
 <body>
 <div class="form-container">
 	<form>
-
 		<div class="row">
 			<div>
 				<label class="label">
@@ -242,10 +255,234 @@
 				<label class="label">
 					Land
 					<select class="country" id="country">
-						<option value="" disabled selected>-- Bitte das Land auswählen --</option>
+						<option value="" disabled selected>-- Bitte Region auswählen --</option>
 						<option value="1">Deutschland</option>
-						<option value="2">Österreich</option>
-						<option value="3">Schweiz</option>
+						<option value="2">Frankreich</option>
+						<option value="3">USA</option>
+					</select>
+				</label>
+			</div>
+		</div>
+		<div class="row">
+			<div>
+				<label class="label">
+					Region DE
+					<select class="region" id="country_1" data-country-id="1">
+						<option value="" disabled selected>-- Bitte Region auswählen --</option>
+						<option value="" selected="selected">Bundesstaat</option>
+						<option value="DE-BB" >Brandenburg</option>
+						<option value="DE-BE" >Berlin</option>
+						<option value="DE-BW" >Baden-Württemberg</option>
+						<option value="DE-BY" >Bayern</option>
+						<option value="DE-HB" >Bremen</option>
+						<option value="DE-HE" >Hessen</option>
+						<option value="DE-HH" >Hamburg</option>
+						<option value="DE-MV" >Mecklenburg-Vorpommern</option>
+						<option value="DE-NI" >Niedersachsen</option>
+						<option value="DE-NW">Nordrhein-Westfalen</option>
+						<option value="DE-RP" >Rheinland-Pfalz</option>
+						<option value="DE-SH" >Schleswig-Holstein</option>
+						<option value="DE-SL" >Saarland</option>
+						<option value="DE-SN" >Sachsen</option>
+						<option value="DE-ST" >Sachsen-Anhalt</option>
+						<option value="DE-TH" >Thüringen</option>
+					</select>
+				</label>
+			</div>
+			<div>
+				<label class="label">
+					Region FR
+					<select class="region" id="country_2" data-country-id="2">
+						<option value="" disabled selected>-- Bitte Region auswählen --</option>
+						<option value="FR-ARA">Auvergne-Rhône-Alpes</option>
+						<option value="FR-01">Ain</option>
+						<option value="FR-03">Allier</option>
+						<option value="FR-07">Ardèche</option>
+						<option value="FR-15">Cantal</option>
+						<option value="FR-26">Drôme</option>
+						<option value="FR-38">Isère</option>
+						<option value="FR-42">Loire</option>
+						<option value="FR-43">Haute-Loire</option>
+						<option value="FR-63">Puy-de-Dôme</option>
+						<option value="FR-69">Rhône</option>
+						<option value="FR-73">Savoie</option>
+						<option value="FR-74">Haute-Savoie</option>
+						<option value="FR-69M">Métropole de Lyon</option>
+						<option value="FR-BFC">Bourgogne-Franche-Comté</option>
+						<option value="FR-21">Côte-d'Or</option>
+						<option value="FR-25">Doubs</option>
+						<option value="FR-39">Jura</option>
+						<option value="FR-58">Nièvre</option>
+						<option value="FR-70">Haute-Saône</option>
+						<option value="FR-71">Saône-et-Loire</option>
+						<option value="FR-89">Yonne</option>
+						<option value="FR-90">Territoire de Belfort</option>
+						<option value="FR-BRE">Bretagne</option>
+						<option value="FR-22">Côtes-d'Armor</option>
+						<option value="FR-29">Finistère</option>
+						<option value="FR-35">Ille-et-Vilaine</option>
+						<option value="FR-56">Morbihan</option>
+						<option value="FR-CVL">Centre-Val de Loire</option>
+						<option value="FR-18">Cher</option>
+						<option value="FR-28">Eure-et-Loir</option>
+						<option value="FR-36">Indre</option>
+						<option value="FR-37">Indre-et-Loire</option>
+						<option value="FR-41">Loir-et-Cher</option>
+						<option value="FR-45">Loiret</option>
+						<option value="FR-GES">Grand-Est</option>
+						<option value="FR-08">Ardennes</option>
+						<option value="FR-10">Aube</option>
+						<option value="FR-51">Marne</option>
+						<option value="FR-52">Haute-Marne</option>
+						<option value="FR-54">Meurthe-et-Moselle</option>
+						<option value="FR-55">Meuse</option>
+						<option value="FR-57">Moselle</option>
+						<option value="FR-88">Vosges</option>
+						<option value="FR-6AE">Alsace</option>
+						<option value="FR-67">Bas-Rhin</option>
+						<option value="FR-68">Haut-Rhin</option>
+						<option value="FR-HDF">Hauts-de-France</option>
+						<option value="FR-02">Aisne</option>
+						<option value="FR-59">Nord</option>
+						<option value="FR-60">Oise</option>
+						<option value="FR-62">Pas-de-Calais</option>
+						<option value="FR-80">Somme</option>
+						<option value="FR-IDF">Île-de-France</option>
+						<option value="FR-77">Seine-et-Marne</option>
+						<option value="FR-78">Yvelines</option>
+						<option value="FR-91">Essonne</option>
+						<option value="FR-92">Hauts-de-Seine</option>
+						<option value="FR-93">Seine-Saint-Denis</option>
+						<option value="FR-94">Val-de-Marne</option>
+						<option value="FR-95">Val-d'Oise</option>
+						<option value="FR-75C">Paris</option>
+						<option value="FR-NAQ">Nouvelle-Aquitaine</option>
+						<option value="FR-16">Charente</option>
+						<option value="FR-17">Charente-Maritime</option>
+						<option value="FR-19">Corrèze</option>
+						<option value="FR-23">Creuse</option>
+						<option value="FR-24">Dordogne</option>
+						<option value="FR-33">Gironde</option>
+						<option value="FR-40">Landes</option>
+						<option value="FR-47">Lot-et-Garonne</option>
+						<option value="FR-64">Pyrénées-Atlantiques</option>
+						<option value="FR-79">Deux-Sèvres</option>
+						<option value="FR-86">Vienne</option>
+						<option value="FR-87">Haute-Vienne</option>
+						<option value="FR-NOR">Normandie</option>
+						<option value="FR-14">Calvados</option>
+						<option value="FR-27">Eure</option>
+						<option value="FR-50">Manche</option>
+						<option value="FR-61">Orne</option>
+						<option value="FR-76">Seine-Maritime</option>
+						<option value="FR-OCC">Occitanie</option>
+						<option value="FR-09">Ariège</option>
+						<option value="FR-11">Aude</option>
+						<option value="FR-12">Aveyron</option>
+						<option value="FR-30">Gard</option>
+						<option value="FR-31">Haute-Garonne</option>
+						<option value="FR-32">Gers</option>
+						<option value="FR-34">Hérault</option>
+						<option value="FR-46">Lot</option>
+						<option value="FR-48">Lozère</option>
+						<option value="FR-65">Hautes-Pyrénées</option>
+						<option value="FR-66">Pyrénées-Orientales</option>
+						<option value="FR-81">Tarn</option>
+						<option value="FR-82">Tarn-et-Garonne</option>
+						<option value="FR-PAC">Provence-Alpes-Côte-d’Azur</option>
+						<option value="FR-04">Alpes-de-Haute-Provence</option>
+						<option value="FR-05">Hautes-Alpes</option>
+						<option value="FR-06">Alpes-Maritimes</option>
+						<option value="FR-13">Bouches-du-Rhône</option>
+						<option value="FR-83">Var</option>
+						<option value="FR-84">Vaucluse</option>
+						<option value="FR-PDL">Pays-de-la-Loire</option>
+						<option value="FR-44">Loire-Atlantique</option>
+						<option value="FR-49">Maine-et-Loire</option>
+						<option value="FR-53">Mayenne</option>
+						<option value="FR-72">Sarthe</option>
+						<option value="FR-85">Vendée</option>
+						<option value="FR-CP">Clipperton</option>
+						<option value="FR-BL">Saint-Barthélemy</option>
+						<option value="FR-MF">Saint-Martin</option>
+						<option value="FR-PF">Polynésie française</option>
+						<option value="FR-PM">Saint-Pierre-et-Miquelon</option>
+						<option value="FR-WF">Wallis-et-Futuna</option>
+						<option value="FR-20R">Corse</option>
+						<option value="FR-2A">Corse-du-Sud</option>
+						<option value="FR-2B">Haute-Corse</option>
+						<option value="FR-NC">Nouvelle-Calédonie</option>
+						<option value="FR-TF">Terres australes françaises</option>
+						<option value="FR-972">Martinique</option>
+						<option value="FR-973">Guyane</option>
+						<option value="FR-971">Guadeloupe</option>
+						<option value="FR-974">La Réunion</option>
+						<option value="FR-976">Mayotte</option>
+					</select>
+				</label>
+			</div>
+			<div>
+				<label class="label">
+					Region USA
+					<select class="region" id="country_3" data-country-id="3">
+						<option value="" disabled selected>-- Bitte das Land auswählen --</option>
+						<option value="US-DC" >District of Columbia</option>
+						<option value="US-AS" >American Samoa</option>
+						<option value="US-GU" >Guam</option>
+						<option value="US-MP" >Northern Mariana Islands</option>
+						<option value="US-PR" >Puerto Rico</option>
+						<option value="US-UM" >United States Minor Outlying Islands</option>
+						<option value="US-VI" >Virgin Islands, U.S.</option>
+						<option value="US-AK" >Alaska</option>
+						<option value="US-AL" >Alabama</option>
+						<option value="US-AR" >Arkansas</option>
+						<option value="US-AZ" >Arizona</option>
+						<option value="US-CA" >California</option>
+						<option value="US-CO" >Colorado</option>
+						<option value="US-CT" >Connecticut</option>
+						<option value="US-DE" >Delaware</option>
+						<option value="US-FL" >Florida</option>
+						<option value="US-GA" >Georgia</option>
+						<option value="US-HI" >Hawaii</option>
+						<option value="US-IA" >Iowa</option>
+						<option value="US-ID" >Idaho</option>
+						<option value="US-IL" >Illinois</option>
+						<option value="US-IN" >Indiana</option>
+						<option value="US-KS" >Kansas</option>
+						<option value="US-KY" >Kentucky</option>
+						<option value="US-LA" >Louisiana</option>
+						<option value="US-MA" >Massachusetts</option>
+						<option value="US-MD" >Maryland</option>
+						<option value="US-ME" >Maine</option>
+						<option value="US-MI" >Michigan</option>
+						<option value="US-MN" >Minnesota</option>
+						<option value="US-MO" >Missouri</option>
+						<option value="US-MS" >Mississippi</option>
+						<option value="US-MT" >Montana</option>
+						<option value="US-NC" >North Carolina</option>
+						<option value="US-ND" >North Dakota</option>
+						<option value="US-NE" >Nebraska</option>
+						<option value="US-NH" >New Hampshire</option>
+						<option value="US-NJ" >New Jersey</option>
+						<option value="US-NM" >New Mexico</option>
+						<option value="US-NV" >Nevada</option>
+						<option value="US-NY" >New York</option>
+						<option value="US-OH" >Ohio</option>
+						<option value="US-OK" >Oklahoma</option>
+						<option value="US-OR" >Oregon</option>
+						<option value="US-PA" >Pennsylvania</option>
+						<option value="US-RI" >Rhode Island</option>
+						<option value="US-SC" >South Carolina</option>
+						<option value="US-SD" >South Dakota</option>
+						<option value="US-TN" >Tennessee</option>
+						<option value="US-TX" >Texas</option>
+						<option value="US-UT" >Utah</option>
+						<option value="US-VA" >Virginia</option>
+						<option value="US-VT" >Vermont</option>
+						<option value="US-WA" >Washington</option>
+						<option value="US-WI" >Wisconsin</option>
+						<option value="US-WV" >West Virginia</option>
+						<option value="US-WY" >Wyoming</option>
 					</select>
 				</label>
 			</div>
@@ -264,7 +501,7 @@
 		<script>
             enderecoInitAMS({
                 countryCode: '#country',
-				subdivisionCode: '',
+				subdivisionCode: '.region',
                 postalCode: '#zip',
                 locality: '#loc',
                 streetFull: '',
@@ -359,11 +596,75 @@
 	</script>
 </div>
 
+<div class="form-container">
+	<form>
+		<div class="row">
+			<div>
+				<label class="label">
+					Email #1
+					<input type="email" id="email1">
+				</label>
+			</div>
+		</div>
+		<div class="row">
+			<div>
+				<label class="label">
+					Email #2
+					<input type="email" id="email2">
+				</label>
+			</div>
+		</div>
+		<div class="row">
+			<div>
+				<label class="label">
+					Email #3
+					<input type="email" id="email3">
+				</label>
+			</div>
+		</div>
+	</form>
+	<script>
+		enderecoInitEmailServices({
+			email: '#email1',
+		}, {
+			name: 'first_email'
+		});
+	</script>
+	<script>
+		enderecoInitEmailServices({
+			email: '#email2',
+		}, {
+			name: 'second_email'
+		});
+	</script>
+	<script>
+		enderecoInitEmailServices({
+			email: '#email3',
+		}, {
+			name: 'third_email'
+		});
+	</script>
+</div>
+
 <script
-		defer
-		async
-		src="dist/endereco.min.js"
-		onload="if(typeof enderecoLoadAMSConfig === 'function'){enderecoLoadAMSConfig();}"
+	defer
+	async
+	src="dist/endereco.min.js"
 ></script>
+
+<script>
+	function setFields(e) {
+		var country = document.querySelector('#country');
+		country.closest('form').querySelectorAll('.region').forEach( function(selectDOM) {
+			if (parseInt(country.value) === parseInt(selectDOM.getAttribute('data-country-id'))) {
+				selectDOM.disabled = false;
+			} else {
+				selectDOM.disabled = true;
+			}
+		})
+	}
+	setFields();
+	document.querySelector('#country').addEventListener('change', setFields);
+</script>
 </body>
 </html>

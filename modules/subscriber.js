@@ -139,7 +139,12 @@ function EnderecoSubscriber(propertyName, observableObject, options = {}) {
             } else if ('innerHTML' === this.options.valueContainer) {
                 value = this.getInnerHTML();
             } else if ('value' === this.options.valueContainer) {
-                value = this.getValue();
+                if ($self.object.disabled) {
+                    value = '';
+                } else {
+                    value = this.getValue();
+                }
+
             } else {
                 value = this.get(this.options.valueContainer);
             }
@@ -147,6 +152,11 @@ function EnderecoSubscriber(propertyName, observableObject, options = {}) {
         },
         set value(value) {
             var $self = this;
+
+            if ($self.object.disabled && value !== '') {
+                return;
+            }
+
             if (!!$self._subject) {
                 $self._subject._awaits++;
             }

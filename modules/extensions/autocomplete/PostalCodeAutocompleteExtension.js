@@ -27,11 +27,13 @@ var PostalCodeAutocompleteExtension = {
 
                     // Is subdivision visible?
                     var $subdivVisible = false;
-                    if ((0 < ExtendableObject._subscribers.subdivisionCode.length)
-                        && !ExtendableObject._subscribers.subdivisionCode[0].object.disabled
-                        && ExtendableObject._subscribers.subdivisionCode[0].object.isConnected
-                    ) {
-                        $subdivVisible = true;
+                    if ((0 < ExtendableObject._subscribers.subdivisionCode.length)) {
+                        ExtendableObject._subscribers.subdivisionCode.forEach( function(listener) {
+                           if (!listener.object.disabled
+                               && listener.object.isConnected) {
+                               $subdivVisible = true;
+                           }
+                        });
                     }
 
                     // Render dropdown under the input element
@@ -152,10 +154,14 @@ var PostalCodeAutocompleteExtension = {
 
                 ExtendableObject.cb.postalCodeChunkInput = function(subscriber) {
                     return function(e) {
-                        ExtendableObject._changed = true;
-                        ExtendableObject.postalCodePredictions = [];
-                        ExtendableObject._postalCodePredictionsIndex = 0;
-                        ExtendableObject.postalCodeChunk = subscriber.value;
+                        clearTimeout(ExtendableObject._postalCodeTimeout);
+                        ExtendableObject._postalCodeTimeout = setTimeout(function() {
+                            ExtendableObject._changed = true;
+                            ExtendableObject.postalCodePredictions = [];
+                            ExtendableObject._postalCodePredictionsIndex = 0;
+                            ExtendableObject.postalCodeChunk = subscriber.value;
+                        }, ExtendableObject.config.ux.delay.inputAssistant);
+
                     }
                 };
 
@@ -229,82 +235,79 @@ var PostalCodeAutocompleteExtension = {
 
                                 // Get predictions.
                                 if (ExtendableObject.config.useAutocomplete && ExtendableObject.active) {
-                                    clearTimeout(ExtendableObject._postalCodeTimeout);
-                                    ExtendableObject._postalCodeTimeout = setTimeout(function() {
-                                        ExtendableObject._postalCodeAutocompleteRequestIndex++;
-                                        var autocompleteRequestIndex = ExtendableObject._postalCodeAutocompleteRequestIndex * 1; // Create a copy.
-                                        var message = {
-                                            'jsonrpc': '2.0',
-                                            'id': ExtendableObject._postalCodeAutocompleteRequestIndex,
-                                            'method': 'postCodeAutocomplete',
-                                            'params': {
-                                                'country': ExtendableObject.countryCode,
-                                                'language': ExtendableObject.config.lang,
-                                                'postCode': ExtendableObject.postalCodeChunk,
-                                                'cityName': ExtendableObject.locality,
-                                                'street': ExtendableObject.streetName,
-                                                'houseNumber': ExtendableObject.buildingNumber
-                                            }
-                                        };
+                                    ExtendableObject._postalCodeAutocompleteRequestIndex++;
+                                    var autocompleteRequestIndex = ExtendableObject._postalCodeAutocompleteRequestIndex * 1; // Create a copy.
+                                    var message = {
+                                        'jsonrpc': '2.0',
+                                        'id': ExtendableObject._postalCodeAutocompleteRequestIndex,
+                                        'method': 'postCodeAutocomplete',
+                                        'params': {
+                                            'country': ExtendableObject.countryCode,
+                                            'language': ExtendableObject.config.lang,
+                                            'postCode': ExtendableObject.postalCodeChunk,
+                                            'cityName': ExtendableObject.locality,
+                                            'street': ExtendableObject.streetName,
+                                            'houseNumber': ExtendableObject.buildingNumber
+                                        }
+                                    };
 
-                                        // Send user data to remote server for validation.
-                                        ExtendableObject._awaits++;
-                                        ExtendableObject.util.axios.post(ExtendableObject.config.apiUrl, message, {
-                                            timeout: ExtendableObject.config.ux.requestTimeout,
-                                            headers: {
-                                                'X-Auth-Key': ExtendableObject.config.apiKey,
-                                                'X-Agent': ExtendableObject.config.agentName,
-                                                'X-Remote-Api-Url': ExtendableObject.config.remoteApiUrl,
-                                                'X-Transaction-Referer': window.location.href,
-                                                'X-Transaction-Id': (ExtendableObject.hasLoadedExtension('SessionExtension'))?ExtendableObject.sessionId:'not_required'
+                                    // Send user data to remote server for validation.
+                                    ExtendableObject._awaits++;
+                                    ExtendableObject.util.axios.post(ExtendableObject.config.apiUrl, message, {
+                                        timeout: ExtendableObject.config.ux.requestTimeout,
+                                        headers: {
+                                            'X-Auth-Key': ExtendableObject.config.apiKey,
+                                            'X-Agent': ExtendableObject.config.agentName,
+                                            'X-Remote-Api-Url': ExtendableObject.config.remoteApiUrl,
+                                            'X-Transaction-Referer': window.location.href,
+                                            'X-Transaction-Id': (ExtendableObject.hasLoadedExtension('SessionExtension'))?ExtendableObject.sessionId:'not_required'
+                                        }
+                                    })
+                                        .then(function(response) {
+                                            if (undefined !== response.data.result && undefined !== response.data.result.predictions) {
+
+                                                // Is still actual?
+                                                if (autocompleteRequestIndex !== ExtendableObject._postalCodeAutocompleteRequestIndex) {
+                                                    return;
+                                                }
+
+                                                var counter = 0;
+                                                var tempPostalCodeContainer, diff, postalCodeHtml;
+                                                var postalCodePredictionsTemp = [];
+
+                                                // If session counter is set, increase it.
+                                                if (ExtendableObject.hasLoadedExtension('SessionExtension')) {
+                                                    ExtendableObject.sessionCounter++;
+                                                }
+
+                                                response.data.result.predictions.forEach( function(postalCodePrediction) {
+                                                    if (counter >= ExtendableObject.config.ux.maxAutocompletePredictionItems) {
+                                                        return false;
+                                                    }
+                                                    counter++;
+
+                                                    tempPostalCodeContainer = {
+                                                        countryCode: (postalCodePrediction.country)?postalCodePrediction.country: ExtendableObject._countryCode,
+                                                        postalCode: (postalCodePrediction.postCode)?postalCodePrediction.postCode:'',
+                                                        locality: (postalCodePrediction.cityName)?postalCodePrediction.cityName:''
+                                                    }
+
+                                                    if (!!postalCodePrediction.subdivisionCode) {
+                                                        tempPostalCodeContainer.subdivisionCode = postalCodePrediction.subdivisionCode;
+                                                    }
+
+                                                    postalCodePredictionsTemp.push(tempPostalCodeContainer);
+                                                })
+
+                                                ExtendableObject.postalCodePredictions = postalCodePredictionsTemp;
                                             }
                                         })
-                                            .then(function(response) {
-                                                if (undefined !== response.data.result && undefined !== response.data.result.predictions) {
-
-                                                    // Is still actual?
-                                                    if (autocompleteRequestIndex !== ExtendableObject._postalCodeAutocompleteRequestIndex) {
-                                                        return;
-                                                    }
-
-                                                    var counter = 0;
-                                                    var tempPostalCodeContainer, diff, postalCodeHtml;
-                                                    var postalCodePredictionsTemp = [];
-
-                                                    // If session counter is set, increase it.
-                                                    if (ExtendableObject.hasLoadedExtension('SessionExtension')) {
-                                                        ExtendableObject.sessionCounter++;
-                                                    }
-
-                                                    response.data.result.predictions.forEach( function(postalCodePrediction) {
-                                                        if (counter >= ExtendableObject.config.ux.maxAutocompletePredictionItems) {
-                                                            return false;
-                                                        }
-                                                        counter++;
-
-                                                        tempPostalCodeContainer = {
-                                                            countryCode: (postalCodePrediction.country)?postalCodePrediction.country: ExtendableObject._countryCode,
-                                                            postalCode: (postalCodePrediction.postCode)?postalCodePrediction.postCode:'',
-                                                            locality: (postalCodePrediction.cityName)?postalCodePrediction.cityName:''
-                                                        }
-
-                                                        if (!!postalCodePrediction.subdivisionCode) {
-                                                            tempPostalCodeContainer.subdivisionCode = postalCodePrediction.subdivisionCode;
-                                                        }
-
-                                                        postalCodePredictionsTemp.push(tempPostalCodeContainer);
-                                                    })
-
-                                                    ExtendableObject.postalCodePredictions = postalCodePredictionsTemp;
-                                                }
-                                            })
-                                            .catch(function(e) {
-                                                console.log(e);
-                                            })
-                                            .finally(function() {
-                                                ExtendableObject._awaits--;
-                                            });
-                                    }, ExtendableObject.config.ux.delay.inputAssistant);
+                                        .catch(function(e) {
+                                            console.log(e);
+                                        })
+                                        .finally(function() {
+                                            ExtendableObject._awaits--;
+                                        });
                                 }
                             }
                         }).catch().finally(function() {
