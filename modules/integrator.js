@@ -956,7 +956,10 @@ var EnderecoIntegrator = {
     },
     getSelector: function(possibleSelector) {
         var selector = '';
-        if (
+        if  (possibleSelector === '') {
+            console.log("test");
+            selector = null;
+        } else if (
             (possibleSelector.indexOf('#') === -1) &&
             (possibleSelector.indexOf('.') === -1) &&
             (possibleSelector.indexOf('=') === -1)
