@@ -288,8 +288,8 @@ var EnderecoIntegrator = {
                     EPHSO.syncValues().then(function() {
                         EPHSO.waitUntilReady().then(function() {
                             // Start setting default values.
-                            if (!!options.phoneType) {
-                                EPHSO.numberType = options.phoneType
+                            if (!!options.numberType) {
+                                EPHSO.numberType = options.numberType
                             } else if (!!window.EnderecoIntegrator.config.defaultPhoneType) {
                                 EPHSO.numberType = window.EnderecoIntegrator.config.defaultPhoneType;
                             }
@@ -394,10 +394,7 @@ var EnderecoIntegrator = {
                     $self.dispatchEvent('endereco.ams.after-adding-country-code-subscriber'); // Add after hook.
                 }
 
-                if (
-                  document.querySelector($self.getSelector(postfix.subdivisionCode)) &&
-                  $self.dispatchEvent('endereco.ams.before-adding-subdivision-code-subscriber')
-                ) {
+                document.querySelectorAll($self.getSelector(postfix.subdivisionCode)).forEach( function(DOMElement) {
                     var subdivisionCodeSubscriberOptions = {};
                     if (!!$self.resolvers.subdivisionCodeWrite) {
                         subdivisionCodeSubscriberOptions['writeFilterCb'] = function(value) {
@@ -415,14 +412,12 @@ var EnderecoIntegrator = {
                         }
                     }
                     var subdivisionCodeSubscriber = new EnderecoSubscriber(
-                      'subdivisionCode',
-                      document.querySelector($self.getSelector(postfix.subdivisionCode)),
-                      subdivisionCodeSubscriberOptions
+                        'subdivisionCode',
+                        DOMElement,
+                        subdivisionCodeSubscriberOptions
                     )
                     EAO.addSubscriber(subdivisionCodeSubscriber);
-
-                    $self.dispatchEvent('endereco.ams.after-adding-subdivision-code-subscriber'); // Add after hook.
-                }
+                });
 
                 if (
                     document.querySelector($self.getSelector(postfix.postalCode)) &&
@@ -636,13 +631,20 @@ var EnderecoIntegrator = {
 
         var $self = this;
         var config = JSON.parse(JSON.stringify(this.config));
+
+        var originalPostfix = merge({}, $self.postfix.emailServices);
         var postfix;
 
         if ('object' === typeof prefix) {
-            postfix = merge($self.postfix.emailServices, prefix);
+            postfix = merge(originalPostfix, prefix);
             prefix = '';
         } else {
-            postfix = merge($self.postfix.emailServices, options.postfixCollection);
+            var newObject = {};
+            Object.keys(originalPostfix).forEach(function(key) {
+                newObject[key] = prefix + originalPostfix[key];
+
+            });
+            postfix = merge(newObject, options.postfixCollection);
         }
 
         var EEO = new EnderecoEmailObject(config);
@@ -954,7 +956,9 @@ var EnderecoIntegrator = {
     },
     getSelector: function(possibleSelector) {
         var selector = '';
-        if (
+        if  (!possibleSelector) {
+            selector = null;
+        } else if (
             (possibleSelector.indexOf('#') === -1) &&
             (possibleSelector.indexOf('.') === -1) &&
             (possibleSelector.indexOf('=') === -1)
@@ -980,6 +984,8 @@ var EnderecoIntegrator = {
     addBodyClass: function() {
         if (!!this.themeName) {
             document.querySelector('body').classList.add('endereco-theme--'+this.themeName);
+        } else {
+            document.querySelector('body').classList.add('endereco-theme--current-theme');
         }
     },
     dispatchEvent: function(event) {
@@ -1051,7 +1057,7 @@ var EnderecoIntegrator = {
         }
     },
     _test: {},
-    changeFieldsOrder: function(collection, fieldNamesOrder = ['countryCode', 'postalCode', 'locality', 'streetFull', 'streetName','buildingNumber', 'additionalInfo', 'subdivisionCode']) {
+    changeFieldsOrder: function(collection, fieldNamesOrder = ['countryCode', 'subdivisionCode', 'postalCode', 'locality', 'streetFull', 'streetName','buildingNumber', 'additionalInfo']) {
         var myStructure = {};
 
         // Create parent line for additional info if it exists.

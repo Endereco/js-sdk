@@ -105,6 +105,7 @@ var AddressCheckExtension = {
                     var useTemplate = 'default';
                     var formattedAddress = '';
                     var textArea;
+                    var $subdivVisible = false;
 
                     if (!address) {
                         address = JSON.parse(JSON.stringify(ExtendableObject.address));
@@ -113,8 +114,8 @@ var AddressCheckExtension = {
                     }
 
                     // Format current address.
-                    if (undefined !== $self.config.templates.addressFull[$self.countryCode]) {
-                        useTemplate = $self.countryCode;
+                    if (undefined !== $self.config.templates.addressFull[$self.countryCode.toLowerCase()]) {
+                        useTemplate = $self.countryCode.toLowerCase();
                     }
 
                     if (address.hasOwnProperty('countryCode')) {
@@ -145,15 +146,21 @@ var AddressCheckExtension = {
                             }
                         }
 
+                        if ((0 < ExtendableObject._subscribers.subdivisionCode.length)) {
+                            ExtendableObject._subscribers.subdivisionCode.forEach( function(listener) {
+                                if (!listener.object.disabled
+                                    && listener.object.isConnected) {
+                                    $subdivVisible = true;
+                                }
+                            });
+                        }
+
                         address.showSubdisivion = ("&nbsp;" !== address.subdivisionName)
                           && (
                             ExtendableObject.addressStatus.includes('subdivision_code_needs_correction') ||
                             ExtendableObject.addressStatus.includes('address_multiple_variants')
                           )
-                          && ((0 < ExtendableObject._subscribers.subdivisionCode.length)
-                            && !ExtendableObject._subscribers.subdivisionCode[0].object.disabled
-                            && ExtendableObject._subscribers.subdivisionCode[0].object.isConnected
-                          );
+                          && $subdivVisible;
                     }
 
                     if (!address.buildingNumber || !(address.buildingNumber.trim())) {
@@ -1260,11 +1267,13 @@ var AddressCheckExtension = {
                                 message.params.houseNumber = address.buildingNumber;
                             }
 
-                            if ((0 < ExtendableObject._subscribers.subdivisionCode.length)
-                              && !ExtendableObject._subscribers.subdivisionCode[0].object.disabled
-                              && ExtendableObject._subscribers.subdivisionCode[0].object.isConnected
-                            ) {
-                                message.params.subdivisionCode = address.subdivisionCode;
+                            if ((0 < ExtendableObject._subscribers.subdivisionCode.length)) {
+                                ExtendableObject._subscribers.subdivisionCode.forEach( function(listener) {
+                                    if (!listener.object.disabled
+                                        && listener.object.isConnected) {
+                                        message.params.subdivisionCode = address.subdivisionCode;
+                                    }
+                                });
                             }
 
                             ExtendableObject._awaits++;

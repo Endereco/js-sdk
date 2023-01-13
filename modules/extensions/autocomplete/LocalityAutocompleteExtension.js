@@ -27,11 +27,13 @@ var LocalityAutocompleteExtension = {
 
                     // Is subdivision visible?
                     var $subdivVisible = false;
-                    if ((0 < ExtendableObject._subscribers.subdivisionCode.length)
-                        && !ExtendableObject._subscribers.subdivisionCode[0].object.disabled
-                        && ExtendableObject._subscribers.subdivisionCode[0].object.isConnected
-                    ) {
-                        $subdivVisible = true;
+                    if ((0 < ExtendableObject._subscribers.subdivisionCode.length)) {
+                        ExtendableObject._subscribers.subdivisionCode.forEach( function(listener) {
+                            if (!listener.object.disabled
+                                && listener.object.isConnected) {
+                                $subdivVisible = true;
+                            }
+                        });
                     }
 
                     // Render dropdown under the input element
@@ -152,10 +154,13 @@ var LocalityAutocompleteExtension = {
 
                 ExtendableObject.cb.localityChunkInput = function(subscriber) {
                     return function(e) {
-                        ExtendableObject._changed = true;
-                        ExtendableObject.localityPredictions = [];
-                        ExtendableObject._localityPredictionsIndex = 0;
-                        ExtendableObject.localityChunk = subscriber.value;
+                        clearTimeout(ExtendableObject._localityTimeout);
+                        ExtendableObject._localityTimeout = setTimeout(function() {
+                            ExtendableObject._changed = true;
+                            ExtendableObject.localityPredictions = [];
+                            ExtendableObject._localityPredictionsIndex = 0;
+                            ExtendableObject.localityChunk = subscriber.value;
+                        }, ExtendableObject.config.ux.delay.inputAssistant);
                     }
                 };
 
@@ -229,82 +234,79 @@ var LocalityAutocompleteExtension = {
 
                                 // Get predictions.
                                 if (ExtendableObject.config.useAutocomplete && ExtendableObject.active) {
-                                    clearTimeout(ExtendableObject._localityTimeout);
-                                    ExtendableObject._localityTimeout = setTimeout(function() {
-                                        ExtendableObject._localityAutocompleteRequestIndex++;
-                                        var autocompleteRequestIndex = ExtendableObject._localityAutocompleteRequestIndex * 1; // Create a copy.
-                                        var message = {
-                                            'jsonrpc': '2.0',
-                                            'id': ExtendableObject._localityAutocompleteRequestIndex,
-                                            'method': 'cityNameAutocomplete',
-                                            'params': {
-                                                'country': ExtendableObject.countryCode,
-                                                'language': ExtendableObject.config.lang,
-                                                'postCode': ExtendableObject.postalCode,
-                                                'cityName': ExtendableObject.localityChunk,
-                                                'street': ExtendableObject.streetName,
-                                                'houseNumber': ExtendableObject.buildingNumber
-                                            }
-                                        };
+                                    ExtendableObject._localityAutocompleteRequestIndex++;
+                                    var autocompleteRequestIndex = ExtendableObject._localityAutocompleteRequestIndex * 1; // Create a copy.
+                                    var message = {
+                                        'jsonrpc': '2.0',
+                                        'id': ExtendableObject._localityAutocompleteRequestIndex,
+                                        'method': 'cityNameAutocomplete',
+                                        'params': {
+                                            'country': ExtendableObject.countryCode,
+                                            'language': ExtendableObject.config.lang,
+                                            'postCode': ExtendableObject.postalCode,
+                                            'cityName': ExtendableObject.localityChunk,
+                                            'street': ExtendableObject.streetName,
+                                            'houseNumber': ExtendableObject.buildingNumber
+                                        }
+                                    };
 
-                                        // Send user data to remote server for validation.
-                                        ExtendableObject._awaits++;
-                                        ExtendableObject.util.axios.post(ExtendableObject.config.apiUrl, message, {
-                                            timeout: ExtendableObject.config.ux.requestTimeout,
-                                            headers: {
-                                                'X-Auth-Key': ExtendableObject.config.apiKey,
-                                                'X-Agent': ExtendableObject.config.agentName,
-                                                'X-Remote-Api-Url': ExtendableObject.config.remoteApiUrl,
-                                                'X-Transaction-Referer': window.location.href,
-                                                'X-Transaction-Id': (ExtendableObject.hasLoadedExtension('SessionExtension'))?ExtendableObject.sessionId:'not_required'
+                                    // Send user data to remote server for validation.
+                                    ExtendableObject._awaits++;
+                                    ExtendableObject.util.axios.post(ExtendableObject.config.apiUrl, message, {
+                                        timeout: ExtendableObject.config.ux.requestTimeout,
+                                        headers: {
+                                            'X-Auth-Key': ExtendableObject.config.apiKey,
+                                            'X-Agent': ExtendableObject.config.agentName,
+                                            'X-Remote-Api-Url': ExtendableObject.config.remoteApiUrl,
+                                            'X-Transaction-Referer': window.location.href,
+                                            'X-Transaction-Id': (ExtendableObject.hasLoadedExtension('SessionExtension'))?ExtendableObject.sessionId:'not_required'
+                                        }
+                                    })
+                                        .then(function(response) {
+                                            if (undefined !== response.data.result && undefined !== response.data.result.predictions) {
+
+                                                // Is still actual?
+                                                if (autocompleteRequestIndex !== ExtendableObject._localityAutocompleteRequestIndex) {
+                                                    return;
+                                                }
+
+                                                var counter = 0;
+                                                var tempLocalityContainer, diff, localityHtml;
+                                                var localityPredictionsTemp = [];
+
+                                                // If session counter is set, increase it.
+                                                if (ExtendableObject.hasLoadedExtension('SessionExtension')) {
+                                                    ExtendableObject.sessionCounter++;
+                                                }
+
+                                                response.data.result.predictions.forEach( function(localityPrediction) {
+                                                    if (counter >= ExtendableObject.config.ux.maxAutocompletePredictionItems) {
+                                                        return false;
+                                                    }
+                                                    counter++;
+
+                                                    tempLocalityContainer = {
+                                                        countryCode: (localityPrediction.country)?localityPrediction.country: ExtendableObject._countryCode,
+                                                        postalCode: (localityPrediction.postCode)?localityPrediction.postCode:'',
+                                                        locality: (localityPrediction.cityName)?localityPrediction.cityName:''
+                                                    }
+
+                                                    if (!!localityPrediction.subdivisionCode) {
+                                                        tempLocalityContainer.subdivisionCode = localityPrediction.subdivisionCode;
+                                                    }
+
+                                                    localityPredictionsTemp.push(tempLocalityContainer);
+                                                })
+
+                                                ExtendableObject.localityPredictions = localityPredictionsTemp;
                                             }
                                         })
-                                            .then(function(response) {
-                                                if (undefined !== response.data.result && undefined !== response.data.result.predictions) {
-
-                                                    // Is still actual?
-                                                    if (autocompleteRequestIndex !== ExtendableObject._localityAutocompleteRequestIndex) {
-                                                        return;
-                                                    }
-
-                                                    var counter = 0;
-                                                    var tempLocalityContainer, diff, localityHtml;
-                                                    var localityPredictionsTemp = [];
-
-                                                    // If session counter is set, increase it.
-                                                    if (ExtendableObject.hasLoadedExtension('SessionExtension')) {
-                                                        ExtendableObject.sessionCounter++;
-                                                    }
-
-                                                    response.data.result.predictions.forEach( function(localityPrediction) {
-                                                        if (counter >= ExtendableObject.config.ux.maxAutocompletePredictionItems) {
-                                                            return false;
-                                                        }
-                                                        counter++;
-
-                                                        tempLocalityContainer = {
-                                                            countryCode: (localityPrediction.country)?localityPrediction.country: ExtendableObject._countryCode,
-                                                            postalCode: (localityPrediction.postCode)?localityPrediction.postCode:'',
-                                                            locality: (localityPrediction.cityName)?localityPrediction.cityName:''
-                                                        }
-
-                                                        if (!!localityPrediction.subdivisionCode) {
-                                                            tempLocalityContainer.subdivisionCode = localityPrediction.subdivisionCode;
-                                                        }
-
-                                                        localityPredictionsTemp.push(tempLocalityContainer);
-                                                    })
-
-                                                    ExtendableObject.localityPredictions = localityPredictionsTemp;
-                                                }
-                                            })
-                                            .catch(function(e) {
-                                                console.log(e);
-                                            })
-                                            .finally(function() {
-                                                ExtendableObject._awaits--;
-                                            });
-                                    }, ExtendableObject.config.ux.delay.inputAssistant);
+                                        .catch(function(e) {
+                                            console.log(e);
+                                        })
+                                        .finally(function() {
+                                            ExtendableObject._awaits--;
+                                        });
                                 }
                             }
                         }).catch().finally(function() {

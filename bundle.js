@@ -72,6 +72,13 @@ window.EnderecoIntegrator.asyncCallbacks.forEach(function(cb) {
 window.EnderecoIntegrator.asyncCallbacks = [];
 
 window.EnderecoIntegrator.waitUntilReady().then( function() {
-    //
+
 });
+
+var $waitForConfig = setInterval( function() {
+    if(typeof enderecoLoadAMSConfig === 'function'){
+        enderecoLoadAMSConfig();
+        clearInterval($waitForConfig);
+    }
+}, 1);
 
