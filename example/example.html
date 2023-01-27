@@ -19,6 +19,10 @@
 			justify-content: space-between;
 		}
 
+		.is--insivisble {
+			display: none !important;
+		}
+
         .form-container .label {
 			display: inline-block;
 			font-size: 0.75em;
@@ -550,7 +554,7 @@
 				</label>
 			</div>
 		</div>
-		<div class="row">
+		<div class="row is--insivisble" id="hidden-phone">
 			<div>
 				<label class="label">
 					Festnetznummer
@@ -558,6 +562,17 @@
 				</label>
 			</div>
 		</div>
+		<div class="row" id="show-hidden-phone">
+			<div>
+				<button>Show/hide hidden phone</button>
+			</div>
+		</div>
+		<script>
+			document.querySelector('#show-hidden-phone').addEventListener('click', function(e) {
+				e.preventDefault();
+				document.querySelector('#hidden-phone').classList.toggle('is--insivisble');
+			});
+		</script>
 	</form>
 	<script>
 		enderecoInitPhoneServices({
