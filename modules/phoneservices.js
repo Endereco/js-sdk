@@ -1583,6 +1583,8 @@ function EnderecoPhone(customConfig={}) {
                 var dividerSize = 0;
                 var widthOfFlag = 0;
 
+                var lastHeight = 0;
+
                 if (!DOMElement.classList.contains('endereco-field-has-flags')) {
                     // Add flags class
                     DOMElement.classList.add('endereco-field-has-flags');
@@ -1593,10 +1595,13 @@ function EnderecoPhone(customConfig={}) {
                     // Add flags container.
                     DOMElement.insertAdjacentHTML('beforebegin',
                         flagsHTML);
+
                     flagElement = DOMElement.parentElement.querySelector('.endereco-big-flag');
                     base._flagContainerDom = flagElement;
                     offsetFromParent = DOMElement.offsetTop;
                     heightOfInput = DOMElement.offsetHeight;
+                    lastHeight = heightOfInput;
+
                     dividerSize = 0.80;
                     if (heightOfInput > 30) {
                         dividerSize = 0.5;
@@ -1662,6 +1667,35 @@ function EnderecoPhone(customConfig={}) {
                             dropdownElement.classList.add("endereco-hidden");
                         })
                     });
+
+                    // Add height listener.
+                    setInterval( function() {
+                        offsetFromParent = DOMElement.offsetTop;
+                        heightOfInput = DOMElement.offsetHeight;
+                        if (lastHeight !== heightOfInput) {
+                            lastHeight = heightOfInput;
+
+                            dividerSize = 0.80;
+                            if (heightOfInput > 30) {
+                                dividerSize = 0.5;
+                            }
+                            heightOfFlag = heightOfInput * dividerSize;
+                            topOffset = offsetFromParent + ((heightOfInput - heightOfFlag) / 2);
+                            leftOffset = ((heightOfInput - heightOfFlag) / 2);
+                            dropdownTopOffset = topOffset+heightOfInput;
+
+                            flagElement.style.top = `${topOffset}px`;
+                            flagElement.style.left = `${leftOffset}px`;
+
+                            flagElement.querySelector('.endereco-flag').style.height = `${heightOfFlag}px`;
+                            flagElement.querySelector('.endereco-flag').style.width = `${heightOfFlag}px`;
+
+                            widthOfFlag = flagElement.offsetWidth + ((heightOfInput - heightOfFlag) / 2);
+                            DOMElement.style.paddingLeft= `${widthOfFlag}px`;
+
+                            dropdownElement.style.top = `${dropdownTopOffset}px`;
+                        }
+                    }, 1);
                 }
 
             });
