@@ -1,7 +1,7 @@
 import Promise from 'promise-polyfill';
 import merge from 'lodash.merge';
 import EnderecoIntegrator from './modules/integrator';
-import './themes/default-theme.scss';
+import css from './themes/default-theme.scss';
 
 if ('NodeList' in window && !NodeList.prototype.forEach) {
     NodeList.prototype.forEach = function (callback, thisArg) {
@@ -38,8 +38,11 @@ EnderecoIntegrator.postfix = {
     }
 };
 
-EnderecoIntegrator.resolvers.countryCodeWrite = function(value) {
-    return new Promise(function(resolve, reject) {
+if (css) {
+    EnderecoIntegrator.css = css[0][1];
+}
+EnderecoIntegrator.resolvers.countryCodeWrite = function (value) {
+    return new Promise(function (resolve, reject) {
         resolve(value);
     });
 }

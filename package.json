@@ -4,7 +4,8 @@
   "description": "## Einleitung",
   "main": "index.js",
   "scripts": {
-    "build": "cross-env NODE_ENV=production webpack --progress --hide-modules",
+    "build": "cross-env NODE_ENV=production webpack --progress --hide-modules && npm run build-styles",
+    "build-styles": "cross-env NODE_ENV=production webpack --config webpack-styles.config.js && rm dist/style.js",
     "serve": "webpack serve"
   },
   "dependencies": {

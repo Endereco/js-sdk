@@ -54,7 +54,7 @@ var EnderecoIntegrator = {
             maxAutocompletePredictionItems: 100,
             maxAddressPredictionItems: 3,
             useStandardCss: true,
-            cssFilePath: '/endereco.css',
+            cssFilePath: '',
             confirmWithCheckbox: false,
             correctTranspositionedNames: false,
             delay: {
@@ -973,12 +973,17 @@ var EnderecoIntegrator = {
     integratedObjects: {},
     asyncCallbacks: [],
     addCss: function () {
-        if (this.config.ux.cssFilePath && this.config.ux.useStandardCss) {
+        if (this.config.ux.useStandardCss) {
+            if(!this.css && !this.config.ux.cssFilePath){
+                return;
+            }
+
+            const cssLink = this.config.ux.cssFilePath || 'data:text/css;charset=UTF-8,' + encodeURIComponent(this.css);
             var head = document.querySelector('head');
             var linkElement = document.createElement('link');
             linkElement.setAttribute('rel', 'stylesheet');
             linkElement.setAttribute('type', 'text/css');
-            linkElement.setAttribute('href', this.config.ux.cssFilePath);
+            linkElement.setAttribute('href', cssLink);
             head.appendChild(linkElement);
         }
     },
