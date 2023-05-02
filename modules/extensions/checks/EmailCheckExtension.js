@@ -24,6 +24,9 @@ var EmailCheckExtension = {
                     }
                 };
 
+                ExtendableObject.cb.onEmailChecked = [];
+                ExtendableObject.cb.onEmailCheckFailed = [];
+
                 // Add the "emaiL" property
                 Object.defineProperty(ExtendableObject, 'emailStatus', {
                     get: function() {
@@ -33,6 +36,13 @@ var EmailCheckExtension = {
                         var oldValue = ExtendableObject._emailStatus;
                         ExtendableObject._awaits++;
                         ExtendableObject.util.Promise.resolve(value).then(function(value) {
+                            if (typeof value === 'string') {
+                                if ('' === value) {
+                                    value = [];
+                                } else {
+                                    value = [value];
+                                }
+                            }
                             var newValue = value;
                             if (oldValue !== newValue) {
                                 ExtendableObject._emailStatus = newValue;
@@ -107,7 +117,6 @@ var EmailCheckExtension = {
                     if (!email) {
                         email = ExtendableObject.email;
                     }
-
                     return new ExtendableObject.util.Promise(function(resolve, reject) {
                         var message = {
                             'jsonrpc': '2.0',
@@ -124,7 +133,7 @@ var EmailCheckExtension = {
                             timeout: 6000,
                             headers: {
                                 'X-Auth-Key': ExtendableObject.config.apiKey,
-                                                'X-Agent': ExtendableObject.config.agentName,
+                                'X-Agent': ExtendableObject.config.agentName,
                                 'X-Remote-Api-Url': ExtendableObject.config.remoteApiUrl,
                                 'X-Transaction-Referer': window.location.href,
                                 'X-Transaction-Id': (ExtendableObject.hasLoadedExtension('SessionExtension'))?ExtendableObject.sessionId:'not_required'
@@ -137,13 +146,25 @@ var EmailCheckExtension = {
                                         ExtendableObject.sessionCounter++;
                                     }
 
+                                    ExtendableObject.cb.onEmailChecked.forEach( function(cb) {
+                                        cb(ExtendableObject, response.data);
+                                    });
+
                                     resolve(response.data.result);
                                 } else {
+                                    ExtendableObject.cb.onEmailCheckFailed.forEach( function(cb) {
+                                        cb(ExtendableObject, response.data);
+                                    });
+
                                     reject(response.data)
                                 }
                             })
                             .catch(function(e) {
-                                reject(e.response)
+                                ExtendableObject.cb.onEmailCheckFailed.forEach( function(cb) {
+                                    cb(ExtendableObject, e.response);
+                                });
+
+                                reject(e.response);
                             })
                             .finally( function() {
                                 ExtendableObject._awaits--;

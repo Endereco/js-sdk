@@ -130,6 +130,12 @@ Zum Beispiel:
 		 */
 		window.EnderecoIntegrator.config.ux.useStandardCss = true;
 
+        /**
+         * Hängt die CSS-Datei aus dem angegebenen Pfad an. Wenn Sie keinen bestimmten Wert definieren, wird die Datei vom Standardspeicherort heruntergeladen.
+         * @type {boolean}
+         */
+        window.EnderecoIntegrator.config.ux.cssFilePath = 'https://mydomain.com/endereco.css';
+
 		/**
          * Wenn aktiv, wird Email Prüfung Fehlertexte unter dem Email Eingabefeld rendern.
 		 * @type {boolean}

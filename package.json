@@ -1,10 +1,11 @@
 {
   "name": "@endereco/js-sdk",
-  "version": "1.4.7",
+  "version": "1.4.9",
   "description": "## Einleitung",
   "main": "index.js",
   "scripts": {
-    "build": "cross-env NODE_ENV=production NODE_OPTIONS=--openssl-legacy-provider webpack --progress --hide-modules",
+    "build": "cross-env NODE_ENV=production NODE_OPTIONS=--openssl-legacy-provider webpack --progress --hide-modules && npm run build-styles",
+    "build-styles": "cross-env NODE_ENV=production NODE_OPTIONS=--openssl-legacy-provider webpack --config webpack-styles.config.js && rm dist/style.js",
     "serve": "webpack serve"
   },
   "dependencies": {
@@ -26,6 +27,7 @@
     "html-loader": "^0.5.5",
     "lodash.isequal": "^4.5.0",
     "lodash.merge": "^4.6.2",
+    "mini-css-extract-plugin": "^1.6.2",
     "mustache": "^4.0.0",
     "node-sass": "^7.0.3",
     "promise-polyfill": "^8.1.3",

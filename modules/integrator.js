@@ -54,6 +54,7 @@ var EnderecoIntegrator = {
             maxAutocompletePredictionItems: 100,
             maxAddressPredictionItems: 3,
             useStandardCss: true,
+            cssFilePath: '',
             confirmWithCheckbox: false,
             correctTranspositionedNames: false,
             delay: {
@@ -971,13 +972,26 @@ var EnderecoIntegrator = {
     },
     integratedObjects: {},
     asyncCallbacks: [],
-    addCss: function() {
-        if (!!this.css && this.config.ux.useStandardCss) {
+    addCss: function () {
+
+        // Clean up beforehand (just in case)
+        var stylesDOM = document.getElementById('#endereco-styles-include');
+        if (stylesDOM) {
+            stylesDOM.remove();
+        }
+
+        if (this.config.ux.useStandardCss) {
+            if(!this.css && !this.config.ux.cssFilePath){
+                return;
+            }
+
+            const cssLink = this.config.ux.cssFilePath || 'data:text/css;charset=UTF-8,' + encodeURIComponent(this.css);
             var head = document.querySelector('head');
             var linkElement = document.createElement('link');
+            linkElement.setAttribute('id', 'endereco-styles-include');
             linkElement.setAttribute('rel', 'stylesheet');
             linkElement.setAttribute('type', 'text/css');
-            linkElement.setAttribute('href', 'data:text/css;charset=UTF-8,' + encodeURIComponent(this.css));
+            linkElement.setAttribute('href', cssLink);
             head.appendChild(linkElement);
         }
     },
@@ -1091,6 +1105,9 @@ var EnderecoIntegrator = {
 }
 
 EnderecoIntegrator.waitUntilReady().then( function() {
+    if (window.EnderecoIntegrator.config) {
+        EnderecoIntegrator.config = merge(EnderecoIntegrator.config, window.EnderecoIntegrator.config);
+    }
     EnderecoIntegrator.addCss();
     EnderecoIntegrator.addBodyClass();
 }).catch();

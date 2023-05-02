@@ -21,7 +21,16 @@ const requestListener = function (req, res) {
         if ('/dist/endereco.min.js' === req.url) {
             fs.readFile(__dirname + "/../dist/endereco.min.js")
                 .then(contents => {
-                    res.setHeader("Content-Type", "application/json");
+                    res.setHeader("Content-Type", "text/javascript");
+                    res.writeHead(200);
+                    res.end(contents);
+                });
+        }
+
+        if ('/dist/endereco.min.css' === req.url) {
+            fs.readFile(__dirname + "/../dist/endereco.min.css")
+                .then(contents => {
+                    res.setHeader("Content-Type", "text/css");
                     res.writeHead(200);
                     res.end(contents);
                 });

@@ -38,9 +38,11 @@ EnderecoIntegrator.postfix = {
     }
 };
 
-EnderecoIntegrator.css = css[0][1];
-EnderecoIntegrator.resolvers.countryCodeWrite = function(value) {
-    return new Promise(function(resolve, reject) {
+if (css) {
+    EnderecoIntegrator.css = css[0][1];
+}
+EnderecoIntegrator.resolvers.countryCodeWrite = function (value) {
+    return new Promise(function (resolve, reject) {
         resolve(value);
     });
 }
