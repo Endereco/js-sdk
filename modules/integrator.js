@@ -973,6 +973,13 @@ var EnderecoIntegrator = {
     integratedObjects: {},
     asyncCallbacks: [],
     addCss: function () {
+
+        // Clean up beforehand (just in case)
+        var stylesDOM = document.getElementById('#endereco-styles-include');
+        if (stylesDOM) {
+            stylesDOM.remove();
+        }
+
         if (this.config.ux.useStandardCss) {
             if(!this.css && !this.config.ux.cssFilePath){
                 return;
@@ -981,6 +988,7 @@ var EnderecoIntegrator = {
             const cssLink = this.config.ux.cssFilePath || 'data:text/css;charset=UTF-8,' + encodeURIComponent(this.css);
             var head = document.querySelector('head');
             var linkElement = document.createElement('link');
+            linkElement.setAttribute('id', 'endereco-styles-include');
             linkElement.setAttribute('rel', 'stylesheet');
             linkElement.setAttribute('type', 'text/css');
             linkElement.setAttribute('href', cssLink);
