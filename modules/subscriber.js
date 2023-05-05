@@ -162,9 +162,6 @@ function EnderecoSubscriber(propertyName, observableObject, options = {}) {
             }
             this.options.writeFilterCb(value)
                 .then(function(value) {
-                    if (!!$self._subject) {
-                        $self._subject._awaits--;
-                    }
                     if ('classList' === $self.options.valueContainer) {
                         return $self.setClassList(value);
                     } else if ('innerHTML' === $self.options.valueContainer) {
@@ -180,11 +177,12 @@ function EnderecoSubscriber(propertyName, observableObject, options = {}) {
                         return $self.set($self.options.valueContainer, value);
                     }
                 })
-                .catch( function(e) {
+                .catch( function(e) {})
+                .finally( function() {
                     if (!!$self._subject) {
                         $self._subject._awaits--;
                     }
-            });
+                });
         },
         set: function(valueType, value) {
             if (this.object instanceof HTMLElement) {
