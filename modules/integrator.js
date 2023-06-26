@@ -16,6 +16,8 @@ var EnderecoIntegrator = {
     defaultCountrySelect: false,
     billingAutocheck: false,
     shippingAutocheck: false,
+    editingIntent: false,
+    thirdPartyModals: 0,
     subdivisionMapping: {},
     subdivisionMappingReverse: {},
     countryMapping: {},
@@ -588,6 +590,7 @@ var EnderecoIntegrator = {
 
                             // If automated check is active, render the address selection field.
                             if (
+                                !$self.editingIntent &&
                                 EAO.active &&
                                 (
                                     EAO.addressStatus.includes('address_needs_correction') ||

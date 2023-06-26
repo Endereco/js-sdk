@@ -57,7 +57,15 @@ var AddressCheckExtension = {
                 ExtendableObject.waitForPopupAreaToBeFree = function() {
                     return new ExtendableObject.util.Promise(function(resolve, reject) {
                         var waitForFreePlace = setInterval(function() {
-                            if(!document.querySelector('[endereco-popup]')) {
+                            var isAreaFree = !document.querySelector('[endereco-popup]');
+
+                            if (!!window.EnderecoIntegrator.$globalFilters && !!window.EnderecoIntegrator.$globalFilters.isModalAreaFree) {
+                                window.EnderecoIntegrator.$globalFilters.isModalAreaFree.forEach( function(callback) {
+                                    isAreaFree = callback(isAreaFree, $self);
+                                });
+                            }
+                            
+                            if(isAreaFree) {
                                 clearInterval(waitForFreePlace);
                                 resolve();
                             }
@@ -300,9 +308,6 @@ var AddressCheckExtension = {
                                         $self.util.removePopup();
                                         window.EnderecoIntegrator.submitResume = undefined;
                                         window.EnderecoIntegrator.hasSubmit = false;
-                                        if (ExtendableObject.modalClosed) {
-                                            ExtendableObject.modalClosed();
-                                        }
                                     })
                                 });
 
@@ -310,14 +315,17 @@ var AddressCheckExtension = {
                                     DOMElement.addEventListener('click', function(e) {
                                         e.preventDefault();
                                         e.stopPropagation();
-                                        $self.util.removePopup();
-                                        window.EnderecoIntegrator.submitResume = undefined;
-                                        window.EnderecoIntegrator.hasSubmit = false;
                                         $self.waitUntilReady().then( function(){
                                             $self.onEditAddress.forEach(function(cb) {
                                                 cb($self);
                                             });
+                                            $self.waitUntilReady().then( function(){
+                                                $self.util.removePopup();
+                                            });
                                         }).catch();
+
+                                        window.EnderecoIntegrator.submitResume = undefined;
+                                        window.EnderecoIntegrator.hasSubmit = false;
                                     })
                                 });
 
@@ -329,6 +337,9 @@ var AddressCheckExtension = {
                                         $self.waitUntilReady().then( function(){
                                             $self.onAfterAddressCheckSelected.forEach(function(cb) {
                                                 cb($self);
+                                            });
+                                            $self.waitUntilReady().then( function(){
+                                                $self.util.removePopup();
                                             });
                                         }).catch();
                                         $self.waitForAllPopupsToClose().then(function() {
@@ -342,7 +353,6 @@ var AddressCheckExtension = {
                                                 }
                                             })
                                         }).catch()
-                                        $self.util.removePopup();
                                     })
                                 });
 
@@ -567,9 +577,6 @@ var AddressCheckExtension = {
                                         $self.util.removePopup();
                                         window.EnderecoIntegrator.submitResume = undefined;
                                         window.EnderecoIntegrator.hasSubmit = false;
-                                        if (ExtendableObject.modalClosed) {
-                                            ExtendableObject.modalClosed();
-                                        }
                                     })
                                 });
 
@@ -577,12 +584,14 @@ var AddressCheckExtension = {
                                     DOMElement.addEventListener('click', function(e) {
                                         e.preventDefault();
                                         e.stopPropagation();
-                                        $self.util.removePopup();
                                         window.EnderecoIntegrator.submitResume = undefined;
                                         window.EnderecoIntegrator.hasSubmit = false;
                                         $self.waitUntilReady().then( function(){
                                             $self.onEditAddress.forEach(function(cb) {
                                                 cb($self);
+                                            });
+                                            $self.waitUntilReady().then( function(){
+                                                $self.util.removePopup();
                                             });
                                         }).catch();
                                     })
@@ -599,6 +608,9 @@ var AddressCheckExtension = {
                                             $self.onConfirmAddress.forEach(function(cb) {
                                                 cb($self);
                                             });
+                                            $self.waitUntilReady().then( function(){
+                                                $self.util.removePopup();
+                                            });
                                         }).catch();
                                         $self.waitForAllPopupsToClose().then(function() {
                                             $self.waitUntilReady().then(function() {
@@ -611,7 +623,6 @@ var AddressCheckExtension = {
                                                 }
                                             })
                                         }).catch()
-                                        $self.util.removePopup();
                                     })
                                 });
 
@@ -684,9 +695,6 @@ var AddressCheckExtension = {
                                         $self.util.removePopup();
                                         window.EnderecoIntegrator.submitResume = undefined;
                                         window.EnderecoIntegrator.hasSubmit = false;
-                                        if (ExtendableObject.modalClosed) {
-                                            ExtendableObject.modalClosed();
-                                        }
                                     })
                                 });
 
@@ -694,12 +702,15 @@ var AddressCheckExtension = {
                                     DOMElement.addEventListener('click', function(e) {
                                         e.preventDefault();
                                         e.stopPropagation();
-                                        $self.util.removePopup();
+
                                         window.EnderecoIntegrator.submitResume = undefined;
                                         window.EnderecoIntegrator.hasSubmit = false;
                                         $self.waitUntilReady().then( function(){
                                             $self.onEditAddress.forEach(function(cb) {
                                                 cb($self);
+                                            });
+                                            $self.waitUntilReady().then( function(){
+                                                $self.util.removePopup();
                                             });
                                         }).catch();
                                     })
@@ -714,6 +725,9 @@ var AddressCheckExtension = {
                                             $self.onConfirmAddress.forEach(function(cb) {
                                                 cb($self);
                                             });
+                                            $self.waitUntilReady().then( function(){
+                                                $self.util.removePopup();
+                                            });
                                         }).catch();
                                         $self.waitForAllPopupsToClose().then(function() {
                                             $self.waitUntilReady().then(function() {
@@ -726,7 +740,6 @@ var AddressCheckExtension = {
                                                 }
                                             })
                                         }).catch()
-                                        $self.util.removePopup();
                                     })
                                 });
 
@@ -768,7 +781,9 @@ var AddressCheckExtension = {
                         ExtendableObject.addressPredictionsIndex = 0;
                         window.EnderecoIntegrator.popupQueue--;
 
-                        ExtendableObject.modalClosed();
+                        if (!!ExtendableObject.modalClosed) {
+                            ExtendableObject.modalClosed();
+                        }
                     }
                 };
 
