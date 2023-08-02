@@ -103,6 +103,16 @@
 			}
 		}
 
+		function enderecoInitPersonServices(prefix, config) {
+			if (undefined !== window.EnderecoIntegrator.initPersonServices) {
+				window.EnderecoIntegrator.initPersonServices(prefix, config);
+			} else {
+				window.EnderecoIntegrator.onLoad.push(function () {
+					window.EnderecoIntegrator.initPersonServices(prefix, config);
+				});
+			}
+		}
+
 		function enderecoInitEmailServices(prefix, config) {
 			if (undefined !== window.EnderecoIntegrator.initEmailServices) {
 				window.EnderecoIntegrator.initEmailServices(prefix, config);
@@ -118,7 +128,7 @@
             window.EnderecoIntegrator.themeName = 'my-theme';
             window.EnderecoIntegrator.defaultCountrySelect = true; // Feature "Preselect country"
             window.EnderecoIntegrator.config.apiUrl = 'http://localhost:8000/proxyfile';
-            window.EnderecoIntegrator.config.apiKey = ''; // Hier kommt Dein API Key.
+            window.EnderecoIntegrator.config.apiKey = '75c8dceb30b38c2988ac95d90eef9e973df2df5955c1a36051f80912d1fd9ae7'; // Hier kommt Dein API Key.
             window.EnderecoIntegrator.config.showDebugInfo = false;
             window.EnderecoIntegrator.config.remoteApiUrl = 'http://endereco-service.de/rpc/v1';
             window.EnderecoIntegrator.config.trigger.onblur = true;
@@ -217,9 +227,92 @@
 	</script>
 </head>
 <body>
+
 <div class="form-container">
 	<form>
+		<div class="row">
+			<div>
+				<label class="label">
+					Anrede
+					<select name="salutation1">
+						<option value="m">Herr</option>
+						<option value="f">Frau</option>
+					</select>
+				</label>
+			</div>
+			<div>
+				<label class="label">
+					Titel
+					<input type="text" name="academicTitle1">
+				</label>
+			</div>
+		</div>
+		<div class="row">
+			<div>
+				<label class="label">
+					Vorname
+					<input type="text" name="firstName1">
+				</label>
+			</div>
+			<div>
+				<label class="label">
+					Nachname
+					<input type="text" name="lastName1">
+				</label>
+			</div>
+		</div>
+	</form>
+	<script>
+		enderecoInitPersonServices({
+			salutation: '[name="salutation1"]',
+			title: '[name="academicTitle1"]',
+			firstName: '[name="firstName1"]',
+			lastName: '[name="lastName1"]',
+		}, {
+			name: 'first_person'
+		});
+	</script>
+	<hr>
+	<form>
+		<div class="row">
+			<div>
+				<label class="label">
+					Anrede
+					<select name="salutation2">
+						<option value="m">Herr</option>
+						<option value="f">Frau</option>
+					</select>
+				</label>
+			</div>
+		</div>
+		<div class="row">
+			<div>
+				<label class="label">
+					Vorname
+					<input type="text" name="firstName2">
+				</label>
+			</div>
+			<div>
+				<label class="label">
+					Nachname
+					<input type="text" name="lastName2">
+				</label>
+			</div>
+		</div>
+	</form>
+	<script>
+		enderecoInitPersonServices({
+			salutation: '[name="salutation2"]',
+			firstName: '[name="firstName2"]',
+			lastName: '[name="lastName2"]',
+		}, {
+			name: 'second_person'
+		});
+	</script>
+</div>
 
+<div class="form-container">
+	<form>
 		<div class="row">
 			<div>
 				<label class="label">

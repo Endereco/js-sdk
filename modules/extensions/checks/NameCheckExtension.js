@@ -45,6 +45,19 @@ var NameCheckExtension = {
                     }
                 };
 
+                ExtendableObject.isTitleRelevant = function() {
+                    var isTitleRelevant = false;
+                    if ((0 < ExtendableObject._subscribers.title.length)) {
+                        ExtendableObject._subscribers.title.forEach( function(listener) {
+                            if (!listener.object.disabled
+                                && listener.object.isConnected) {
+                                isTitleRelevant = true;
+                            }
+                        });
+                    }
+                    return isTitleRelevant;
+                }
+
                 // Add the "emaiL" property
                 Object.defineProperty(ExtendableObject, 'salutationStatus', {
                     get: function() {
@@ -260,12 +273,20 @@ var NameCheckExtension = {
                             'id': ExtendableObject._nameCheckRequestIndex,
                             'method': 'nameCheck',
                             'params': {
-                                'title': person.title,
                                 'firstName': person.firstName,
                                 'lastName': person.lastName,
-                                'salutation': person.salutation,
+                                'salutation': person.salutation
                             }
                         };
+
+                        if ((0 < ExtendableObject._subscribers.title.length)) {
+                            ExtendableObject._subscribers.title.forEach( function(listener) {
+                                if (!listener.object.disabled
+                                    && listener.object.isConnected) {
+                                    message.params.title = person.title;
+                                }
+                            });
+                        }
 
                         // Send user data to remote server for validation.
                         ExtendableObject._awaits++;
@@ -308,33 +329,48 @@ var NameCheckExtension = {
                                             if (!responseStatus.includes('name_transpositioned')) {
                                                 ExtendableObject.firstName = responsePredictions[0].firstName;
                                                 ExtendableObject.lastName = responsePredictions[0].lastName;
-                                                ExtendableObject.title = responsePredictions[0].title;
+
 
                                                 ExtendableObject.firstNameStatus = ['first_name_correct'];
                                                 ExtendableObject.lastNameStatus = ['last_name_correct'];
-                                                ExtendableObject.titleStatus = ['title_correct'];
+
+                                                if (ExtendableObject.isTitleRelevant()) {
+                                                    ExtendableObject.title = responsePredictions[0].title;
+
+                                                    if (responsePredictions[0].title !== '') {
+                                                        ExtendableObject.titleStatus = ['title_correct'];
+                                                    }
+                                                }
+
 
                                             } else if (responseStatus.includes('name_transpositioned')) {
                                                 if (ExtendableObject.config.ux.correctTranspositionedNames) {
                                                     ExtendableObject.lastName = responsePredictions[0].lastName;
                                                     ExtendableObject.firstName = responsePredictions[0].firstName;
-                                                    ExtendableObject.title = responsePredictions[0].title;
                                                 } else {
                                                     ExtendableObject.lastName = responsePredictions[0].firstName;
                                                     ExtendableObject.firstName = responsePredictions[0].lastName;
+                                                }
+
+                                                if (ExtendableObject.isTitleRelevant()) {
                                                     ExtendableObject.title = responsePredictions[0].title;
+
+                                                    if (responsePredictions[0].title !== '') {
+                                                        ExtendableObject.titleStatus = ['title_correct'];
+                                                    }
                                                 }
 
                                                 ExtendableObject.firstNameStatus = ['first_name_correct'];
                                                 ExtendableObject.lastNameStatus = ['last_name_correct'];
-                                                ExtendableObject.titleStatus = ['title_correct'];
                                             }
                                         }
 
                                         if (responseStatus.includes('name_correct')) {
                                             ExtendableObject.firstNameStatus = ['first_name_correct'];
                                             ExtendableObject.lastNameStatus = ['last_name_correct'];
-                                            ExtendableObject.titleStatus = ['title_correct'];
+                                            if (ExtendableObject.isTitleRelevant() && ExtendableObject.title !== '') {
+                                                ExtendableObject.titleStatus = ['title_correct'];
+                                            }
                                         }
 
                                         ExtendableObject._changed = false;
@@ -355,7 +391,10 @@ var NameCheckExtension = {
                                         ExtendableObject.salutationStatus = ['salutation_needs_correction'];
                                         ExtendableObject.firstNameStatus = ['first_name_needs_correction'];
                                         ExtendableObject.lastNameStatus = ['last_name_needs_correction'];
-                                        ExtendableObject.titleStatus = ['title_needs_correction'];
+
+                                        if (ExtendableObject.isTitleRelevant() && ExtendableObject.title !== '') {
+                                            ExtendableObject.titleStatus = ['title_needs_correction'];
+                                        }
                                     }
 
                                     if (undefined !== response.data.result.score) {
