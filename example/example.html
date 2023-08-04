@@ -128,7 +128,7 @@
             window.EnderecoIntegrator.themeName = 'my-theme';
             window.EnderecoIntegrator.defaultCountrySelect = true; // Feature "Preselect country"
             window.EnderecoIntegrator.config.apiUrl = 'http://localhost:8000/proxyfile';
-            window.EnderecoIntegrator.config.apiKey = '75c8dceb30b38c2988ac95d90eef9e973df2df5955c1a36051f80912d1fd9ae7'; // Hier kommt Dein API Key.
+            window.EnderecoIntegrator.config.apiKey = ''; // Hier kommt Dein API Key.
             window.EnderecoIntegrator.config.showDebugInfo = false;
             window.EnderecoIntegrator.config.remoteApiUrl = 'http://endereco-service.de/rpc/v1';
             window.EnderecoIntegrator.config.trigger.onblur = true;
@@ -324,6 +324,14 @@
 				<label class="label">
 					Hausnummer
 					<input type="text" id="street_n">
+				</label>
+			</div>
+		</div>
+		<div class="row">
+			<div>
+				<label class="label">
+					Straße (voll)
+					<input type="text" id="streetFull">
 				</label>
 			</div>
 		</div>
@@ -607,7 +615,7 @@
 				subdivisionCode: '.region',
                 postalCode: '#zip',
                 locality: '#loc',
-                streetFull: '',
+                streetFull: '#streetFull',
                 streetName: '#street',
                 buildingNumber: '#street_n',
                 additionalInfo: '#address_1',
