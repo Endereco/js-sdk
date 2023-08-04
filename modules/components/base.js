@@ -26,7 +26,9 @@ function EnderecoBase() {
                     inputAssistant: 100,
                     streetCopy: 600
                 },
-                requestTimeout: 8000
+                requestTimeout: 8000,
+                errorInsertMode: 'afterbegin',
+                errorContainer: undefined
             },
             trigger: {
                 onblur: true,

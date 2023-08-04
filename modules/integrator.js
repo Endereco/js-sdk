@@ -651,6 +651,14 @@ var EnderecoIntegrator = {
             postfix = merge(newObject, options.postfixCollection);
         }
 
+        if (!!options.errorContainer) {
+            config.ux.errorContainer = options.errorContainer
+        }
+
+        if (!!options.errorInsertMode) {
+            config.ux.errorInsertMode = options.errorInsertMode
+        }
+
         var EEO = new EnderecoEmailObject(config);
         EEO.fullName = options.name + '_' + EEO.name;
 

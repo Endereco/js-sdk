@@ -104,10 +104,18 @@ var EmailCheckExtension = {
                                 'statuses': statuses
                             }
                         )
+                        var messageContainer = document.querySelector(ExtendableObject.config.ux.errorContainer);
+                        var insertMode = ["beforebegin", "afterbegin","beforeend","afterend"].includes(
+                            ExtendableObject.config.ux.errorInsertMode
+                        ) ? ExtendableObject.config.ux.errorInsertMode : "afterbegin";
 
-                        ExtendableObject._subscribers.email.forEach( function(subscriber) {
-                            subscriber.object.insertAdjacentHTML('afterend', wrapperHtml);
-                        });
+                        if (!!messageContainer) {
+                            messageContainer.insertAdjacentHTML(insertMode, wrapperHtml);
+                        } else {
+                            ExtendableObject._subscribers.email.forEach( function(subscriber) {
+                                subscriber.object.insertAdjacentHTML('afterend', wrapperHtml);
+                            });
+                        }
                     }
 
                 }

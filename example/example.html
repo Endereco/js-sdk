@@ -744,6 +744,12 @@
 				</label>
 			</div>
 		</div>
+		<div class="row">
+			<lavel>Container für Email Fehlermeldungen</lavel>
+			<div id="container-error-messages-email">
+
+			</div>
+		</div>
 	</form>
 	<script>
 		enderecoInitEmailServices({
@@ -760,11 +766,16 @@
 		});
 	</script>
 	<script>
-		enderecoInitEmailServices({
-			email: '#email3',
-		}, {
-			name: 'third_email'
-		});
+		enderecoInitEmailServices(
+			{
+				email: '#email3',
+			},
+			{
+				name: 'third_email',
+				errorContainer: '#container-error-messages-email',
+				errorInsertMode: 'append'
+			}
+		);
 	</script>
 </div>
 
