@@ -7,6 +7,9 @@ var SubdivisionCodeExtension = {
             ExtendableObject._subdivisionCode = ''; // Germany is a preselected default.
             ExtendableObject._subscribers.subdivisionCode = [];
 
+            ExtendableObject._localSubdivisionCodeState = 1;
+            ExtendableObject._globalSubdivisionCodeState = 1;
+
             // Add a setter callback promise.
             ExtendableObject.cb.setSubdivisionCode = function(countryCode) {
                 return new ExtendableObject.util.Promise(function(resolve, reject) {
@@ -17,7 +20,19 @@ var SubdivisionCodeExtension = {
             ExtendableObject.cb.subdivisionCodeChange = function(subscriber) {
                 return function(e) {
                     ExtendableObject.subdivisionCode = subscriber.value;
-                    ExtendableObject._changed = true;
+                    if (ExtendableObject.active) {
+                        ExtendableObject._changed = true;
+                    }
+                }
+            };
+
+            ExtendableObject.cb.subdivisionCodeInput = function(subscriber) {
+                return function(e) {
+                    ExtendableObject.subdivisionCode = subscriber.value;
+                    if (ExtendableObject.active) {
+                        ExtendableObject._changed = true;
+                        ExtendableObject.addressStatus = [];
+                    }
                 }
             };
 
@@ -55,7 +70,6 @@ var SubdivisionCodeExtension = {
                             var newValue = value;
                             if (ExtendableObject._subdivisionCode !== value) {
                                 ExtendableObject._subdivisionCode = value;
-                                ExtendableObject._changed = true;
 
                                 // Inform all subscribers about the change.
                                 ExtendableObject._subscribers.subdivisionCode.forEach(function (subscriber) {
@@ -64,6 +78,7 @@ var SubdivisionCodeExtension = {
 
                                 // Fire change event for listeners.
                                 if (ExtendableObject.active) {
+                                    ExtendableObject._changed = true;
                                     ExtendableObject.fire(
                                         new ExtendableObject.util.CustomEvent(
                                             'change',

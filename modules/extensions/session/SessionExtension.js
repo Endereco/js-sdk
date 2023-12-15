@@ -1,163 +1,143 @@
 import EnderecoSubscriber from './../../subscriber';
+import { v4 as uuidv4 } from 'uuid';
 
 var SessionExtension = {
     name: 'SessionExtension',
     extend: function(ExtendableObject) {
-        var $self = this;
         return new ExtendableObject.util.Promise(function(resolve, reject) {
+            // Initialize properties and subscribers
+            initializeProperties(ExtendableObject);
 
-            // Add email field.
-            ExtendableObject._sessionId = '';
-            ExtendableObject._subscribers.sessionId = [];
-            ExtendableObject._sessionCounter = '';
-            ExtendableObject._subscribers.sessionCounter = [];
+            // Define property accessors
+            definePropertyAccessors(ExtendableObject);
 
-            ExtendableObject.forms = [];
-            ExtendableObject.formsWithSession = [];
+            // Set interval for form processing
+            processFormsInterval(ExtendableObject);
 
-            // Add change event hadler.
-            ExtendableObject.cb.sessionIdChange = function(subscriber) {
-                return function(e) {
-                    ExtendableObject.sessionId = subscriber.value;
-                }
-            };
+            // Handle onAfterCreate event
+            ExtendableObject.onAfterCreate.push(() => handleAfterCreate(ExtendableObject));
 
-            ExtendableObject.cb.sessionCounterChange = function(subscriber) {
-                return function(e) {
-                    ExtendableObject.sessionCounter = subscriber.value;
-                }
-            };
+            // Add a method to update session id.
+            ExtendableObject.util.updateSessionId = function() {
+                updateSessionId(ExtendableObject);
+            }
 
-            setInterval( function() {
-                if (ExtendableObject.forms.length !== ExtendableObject.formsWithSession.length) {
-                    ExtendableObject.forms.forEach( function(form) {
-                        if (!ExtendableObject.formsWithSession.includes(form)) {
-                            // Wait for the first form to appear and render the session in it.
-                            var sessionIdHtml = ExtendableObject.util.Mustache.render('<input type="hidden" name="{{name}}" value="">', {
-                                name: ExtendableObject.fullName + '_session_id'
-                            });
-                            var sessionCounterHtml = ExtendableObject.util.Mustache.render('<input type="hidden" name="{{name}}" value="">', {
-                                name: ExtendableObject.fullName + '_session_counter'
-                            });
-                            form.insertAdjacentHTML('afterbegin', sessionIdHtml);
-                            form.insertAdjacentHTML('afterbegin', sessionCounterHtml);
-                            ExtendableObject.formsWithSession.push(form)
-                        }
-                    })
-                }
-            }, 500);
-
-
-            // Add the "emaiL" property
-            Object.defineProperty(ExtendableObject, 'sessionId', {
-                get: function() {
-                    return this._sessionId;
-                },
-                set: function(value) {
-                    var oldValue = ExtendableObject._sessionId;
-                    ExtendableObject._awaits++;
-                    ExtendableObject.util.Promise.resolve(value).then(function(value) {
-                        var newValue = value;
-                        if (oldValue !== newValue) {
-                            ExtendableObject._sessionId = newValue;
-
-                            // Inform all subscribers about the change.
-                            ExtendableObject._subscribers.sessionId.forEach(function (subscriber) {
-                                subscriber.value = value;
-                            });
-
-                            // Fire change event for listeners.
-                            ExtendableObject.fire(
-                                new ExtendableObject.util.CustomEvent(
-                                    'change',
-                                    {
-                                        detail: {
-                                            fieldName: 'sessionId',
-                                            oldValue: oldValue,
-                                            newValue: newValue,
-                                            object: ExtendableObject
-                                        }
-                                    }
-                                )
-                            );
-                        }
-                    }).catch().finally(function() {
-                        ExtendableObject._awaits--;
-                    });
-
-                }
-            });
-
-            // Add the "emaiL" property
-            Object.defineProperty(ExtendableObject, 'sessionCounter', {
-                get: function() {
-                    return this._sessionCounter;
-                },
-                set: function(value) {
-                    var oldValue = ExtendableObject._sessionCounter;
-                    ExtendableObject._awaits++;
-                    ExtendableObject.util.Promise.resolve(value).then(function(value) {
-                        var newValue = value;
-                        if (oldValue !== newValue) {
-                            ExtendableObject._sessionCounter = newValue;
-
-                            // Inform all subscribers about the change.
-                            ExtendableObject._subscribers.sessionCounter.forEach(function (subscriber) {
-                                subscriber.value = value;
-                            });
-
-                            // Fire change event for listeners.
-                            ExtendableObject.fire(
-                                new ExtendableObject.util.CustomEvent(
-                                    'change',
-                                    {
-                                        detail: {
-                                            fieldName: 'sessionCounter',
-                                            oldValue: oldValue,
-                                            newValue: newValue,
-                                            object: ExtendableObject
-                                        }
-                                    }
-                                )
-                            );
-                        }
-                    }).catch().finally(function() {
-                        ExtendableObject._awaits--;
-                    });
-
-                }
-            });
-
-            ExtendableObject.onAfterCreate.push(function() {
-                ExtendableObject.waitForActive().then( function() {
-                   // Subscribe to own fields.
-                    ExtendableObject.addSubscriber(
-                      new EnderecoSubscriber(
-                          'sessionId',
-                          document.querySelector('[name="' + ExtendableObject.fullName + '_session_id' + '"]')
-                      )
-                    );
-                    ExtendableObject.addSubscriber(
-                        new EnderecoSubscriber(
-                            'sessionCounter',
-                            document.querySelector('[name="' + ExtendableObject.fullName + '_session_counter' + '"]')
-                        )
-                    );
-
-                    ExtendableObject.waitUntilReady().then(function() {
-                        ExtendableObject.sessionCounter = 0;
-                        ExtendableObject.sessionId = ExtendableObject.id;
-                    }).catch();
-                }).catch();
-            })
-
+            // Debug information
             if (ExtendableObject.config.showDebugInfo) {
                 console.log('SessionExtension applied');
             }
 
-            resolve($self);
+            resolve(SessionExtension);
         });
     }
 }
 
-export default SessionExtension
+function initializeProperties(ExtendableObject) {
+    ExtendableObject._sessionId = '';
+    ExtendableObject._subscribers.sessionId = [];
+    ExtendableObject._sessionCounter = '';
+    ExtendableObject._subscribers.sessionCounter = [];
+
+    ExtendableObject.forms = [];
+    ExtendableObject.formsWithSession = [];
+}
+
+function definePropertyAccessors(ExtendableObject) {
+    createAccessor(ExtendableObject, 'sessionId');
+    createAccessor(ExtendableObject, 'sessionCounter');
+}
+
+function createAccessor(ExtendableObject, propertyName) {
+    Object.defineProperty(ExtendableObject, propertyName, {
+        get: function() { return this['_' + propertyName]; },
+        set: function(value) {
+            var oldValue = this['_' + propertyName];
+            this._awaits++;
+            ExtendableObject.util.Promise.resolve(value)
+                .then(newValue => {
+                    if (oldValue !== newValue) {
+                        this['_' + propertyName] = newValue;
+                        notifySubscribers(ExtendableObject, propertyName, newValue);
+                        fireChangeEvent(ExtendableObject, propertyName, oldValue, newValue);
+                    }
+                })
+                .catch(console.error)
+                .finally(() => this._awaits--);
+        }
+    });
+}
+
+function notifySubscribers(ExtendableObject, propertyName, newValue) {
+    ExtendableObject._subscribers[propertyName].forEach(subscriber => {
+        subscriber.value = newValue;
+    });
+}
+
+function fireChangeEvent(ExtendableObject, propertyName, oldValue, newValue) {
+    ExtendableObject.fire(new ExtendableObject.util.CustomEvent('change', {
+        detail: {
+            fieldName: propertyName,
+            oldValue,
+            newValue,
+            object: ExtendableObject
+        }
+    }));
+}
+
+function updateSessionId(ExtendableObject) {
+    ExtendableObject.sessionId = uuidv4();
+}
+
+function processFormsInterval(ExtendableObject) {
+    setInterval(() => {
+        if (ExtendableObject.forms.length !== ExtendableObject.formsWithSession.length) {
+            ExtendableObject.forms.forEach(form => {
+                if (!ExtendableObject.formsWithSession.includes(form)) {
+                    addInputIfNotExists(form, ExtendableObject.fullName + '_session_id', ExtendableObject);
+                    addInputIfNotExists(form, ExtendableObject.fullName + '_session_counter', ExtendableObject);
+                    ExtendableObject.formsWithSession.push(form);
+                }
+            });
+        }
+    }, 500);
+}
+
+function addInputIfNotExists(form, name, ExtendableObject) {
+    if (!form.querySelector(`input[name="${name}"]`)) {
+        var inputHtml = ExtendableObject.util.Mustache.render('<input type="hidden" name="{{name}}" value="">', { name });
+        form.insertAdjacentHTML('afterbegin', inputHtml);
+    }
+}
+
+function handleAfterCreate(ExtendableObject) {
+    ExtendableObject.waitForActive().then(() => {
+        // Subscribe to own fields
+        subscribeToField(ExtendableObject, 'sessionId');
+        subscribeToField(ExtendableObject, 'sessionCounter');
+
+        ExtendableObject.waitUntilReady().then(() => {
+            ExtendableObject.syncValues(['sessionId', 'sessionCounter'])
+                .then(() => {
+                    if (!ExtendableObject.sessionId) {
+                        ExtendableObject.sessionCounter = 0;
+                        ExtendableObject.sessionId = ExtendableObject.id;
+                    }
+                })
+                .catch(console.error);
+        }).catch(console.error);
+    }).catch(console.error);
+}
+
+function subscribeToField(ExtendableObject, fieldName) {
+    const fieldNameMapping = {
+        'sessionId': 'session_id',
+        'sessionCounter': 'session_counter'
+    }
+    var subscriber = new EnderecoSubscriber(
+        fieldName,
+        document.querySelector(`[name="${ExtendableObject.fullName}_${fieldNameMapping[fieldName]}"]`)
+    );
+    ExtendableObject.addSubscriber(subscriber);
+}
+
+export default SessionExtension;

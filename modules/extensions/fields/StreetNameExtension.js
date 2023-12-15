@@ -6,6 +6,8 @@ var StreetNameExtension = {
             ExtendableObject._streetName = '';
             ExtendableObject._subscribers.streetName = [];
 
+            ExtendableObject._localStreetNameState = 1;
+
             ExtendableObject.cb.setStreetName = function(streetName) {
                 return new ExtendableObject.util.Promise(function(resolve, reject) {
                     resolve(streetName);
@@ -48,6 +50,28 @@ var StreetNameExtension = {
                     ExtendableObject.util.Promise.resolve(value).then(function(value) {
                         ExtendableObject._awaits++;
                         ExtendableObject.cb.setStreetName(value).then( function(value) {
+
+                            if (ExtendableObject.active) {
+                                ExtendableObject._localStreetNameState++;
+                            }
+
+                            if (
+                                ExtendableObject.active &&
+                                ExtendableObject.hasLoadedExtension('StreetFullExtension') &&
+                                ['general_address', 'shipping_address', 'billing_address'].includes(ExtendableObject.addressType) &&
+                                ExtendableObject._localStreetNameState > ExtendableObject._localStreetFullState
+                            ) {
+                                ExtendableObject._localBuildingNumberState++;
+                                ExtendableObject.streetFull = ExtendableObject.util.formatStreetFull(
+                                    {
+                                        countryCode: ExtendableObject.countryCode,
+                                        streetName: value,
+                                        buildingNumber: ExtendableObject.buildingNumber,
+                                        additionalInfo: ExtendableObject.additionalInfo
+                                    }
+                                );
+                            }
+
                             var oldValue = ExtendableObject._streetName;
                             var newValue = value;
 
@@ -63,11 +87,16 @@ var StreetNameExtension = {
 
                                 if (ExtendableObject.hasLoadedExtension('StreetNameAutocompleteExtension')) {
                                     ExtendableObject._streetNameChunk = value;
+
+                                    // Inform all subscribers about the change.
+                                    ExtendableObject._subscribers.streetNameChunk.forEach(function (subscriber) {
+                                        subscriber.updateValue(value, true);
+                                    });
                                 }
 
                                 // Inform all subscribers about the change.
                                 ExtendableObject._subscribers.streetName.forEach(function (subscriber) {
-                                    subscriber.value = value;
+                                    subscriber.updateValue(value, true);
                                 });
 
                                 if (ExtendableObject.active) {
@@ -84,14 +113,6 @@ var StreetNameExtension = {
                                             }
                                         )
                                     );
-                                }
-
-                                // If street full is set, generate full street and write it to it.
-                                if (
-                                    ExtendableObject.hasLoadedExtension('StreetFullExtension') &&
-                                    ['general_address', 'shipping_address', 'billing_address'].includes(ExtendableObject.addressType)
-                                ) {
-                                    ExtendableObject.setField('streetFull', ExtendableObject.util.formatStreetFull(), false);
                                 }
                             }
                         }).catch(function(e) {

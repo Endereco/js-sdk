@@ -72,10 +72,28 @@
 				min-width: 20px;
 				min-height: 1em;
 			}
+
+			.endereco-street-full {
+				display: inline-block;
+				background-color: rgba(255, 0, 0, 0.125);
+				border-bottom: 1px solid red;
+				padding: 0 3px;
+				min-width: 20px;
+				min-height: 1em;
+			}
 		}
 
 		&.street_name_needs_correction {
 			.endereco-street-name {
+				display: inline-block;
+				background-color: rgba(255, 0, 0, 0.125);
+				border-bottom: 1px solid red;
+				padding: 0 3px;
+				min-width: 20px;
+				min-height: 1em;
+			}
+
+			.endereco-street-full {
 				display: inline-block;
 				background-color: rgba(255, 0, 0, 0.125);
 				border-bottom: 1px solid red;

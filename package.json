@@ -1,6 +1,6 @@
 {
   "name": "@endereco/js-sdk",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "description": "## Einleitung",
   "main": "index.js",
   "scripts": {

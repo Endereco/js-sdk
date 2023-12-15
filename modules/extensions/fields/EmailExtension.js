@@ -129,6 +129,7 @@ var EmailExtension = {
                                         console.log('Failed checking email', e, ExtendableObject);
                                     }).finally(function() {
                                         ExtendableObject._awaits--;
+                                        ExtendableObject._changed = false;
                                     })
                                 }
                             }

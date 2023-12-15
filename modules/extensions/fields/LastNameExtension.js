@@ -22,7 +22,11 @@ var LastNameExtension = {
                             if (!ExtendableObject.anyActive() && ExtendableObject.util.shouldBeChecked() && !window.EnderecoIntegrator.hasSubmit) {
                                 // Second. Check Address.
                                 ExtendableObject.onBlurTimeout = null;
-                                ExtendableObject.util.checkPerson().catch();
+                                ExtendableObject.util.checkPerson()
+                                    .catch()
+                                    .finally(() => {
+                                        ExtendableObject._changed = false;
+                                    });
                             }
                         }, 300);
                     }).catch()

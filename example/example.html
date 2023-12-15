@@ -85,10 +85,12 @@
 		// Bessere Art und Weise wäre ein Proxy Objekt.
         function enderecoInitAMS(prefix, config) {
             if (undefined !== window.EnderecoIntegrator.initAMS) {
-                window.EnderecoIntegrator.initAMS(prefix, config);
+                let EAO = window.EnderecoIntegrator.initAMS(prefix, config);
+				setBlurListener(EAO, prefix);
             } else {
                 window.EnderecoIntegrator.onLoad.push(function () {
-                    window.EnderecoIntegrator.initAMS(prefix, config);
+					let EAO = window.EnderecoIntegrator.initAMS(prefix, config);
+					setBlurListener(EAO, prefix);
                 });
             }
         }
@@ -120,6 +122,37 @@
 				window.EnderecoIntegrator.onLoad.push(function () {
 					window.EnderecoIntegrator.initEmailServices(prefix, config);
 				});
+			}
+		}
+
+		/**
+		 * Sets up a custom blur event listener on specified elements.
+		 *
+		 * This function iterates over a collection of elements, identified by their selectors,
+		 * and attaches a custom event listener for the 'endereco-blur' event. When the 'endereco-blur'
+		 * event is triggered on any of these elements, two custom events ('focus' and 'blur') are dispatched
+		 * on the target element. This can be useful for triggering custom logic on focus and blur events.
+		 *
+		 * @param {Object} EAO - The object containing utility functions, including CustomEvent.
+		 * @param {Object} elements - An object containing key-value pairs where the key is a unique identifier
+		 *                            and the value is a CSS selector for the DOM element.
+		 */
+		function setBlurListener(EAO, elements) {
+			for (const key in elements) {
+				if (Object.prototype.hasOwnProperty.call(elements, key)) {
+					const selector = elements[key];
+					const element = document.querySelector(selector);
+
+					if (element) {
+						element.addEventListener('endereco-blur', function(e) {
+							// Dispatch 'focus' and 'blur' events on the target element
+							let prevActiveElement = document.activeElement;
+							e.target.dispatchEvent(new EAO.util.CustomEvent('focus', { bubbles: true, cancelable: true }));
+							e.target.dispatchEvent(new EAO.util.CustomEvent('blur', { bubbles: true, cancelable: true }));
+							prevActiveElement.dispatchEvent(new EAO.util.CustomEvent('focus', { bubbles: true, cancelable: true }));
+						});
+					}
+				}
 			}
 		}
 
@@ -231,6 +264,54 @@
 <div class="form-container">
 	<form>
 		<div class="row">
+			<div style="width: 100%">
+				<label class="label">
+					API-Key
+					<input type="text" style="width: 100%" name="apiKey" id="apiKey">
+				</label>
+			</div>
+		</div>
+	</form>
+</div>
+
+<script>
+	document.addEventListener('DOMContentLoaded', function() {
+		const apiKeyInput = document.querySelector('#apiKey');
+
+		if (apiKeyInput) {
+			apiKeyInput.addEventListener('change', updateApiKey);
+
+			function updateApiKey() {
+				const apiKey = apiKeyInput.value.trim();
+				if (window.EnderecoIntegrator) {
+					window.EnderecoIntegrator.config.apiKey = apiKey;
+					Object.values(window.EnderecoIntegrator.integratedObjects).forEach(obj => {
+						obj.config.apiKey = apiKey;
+					});
+				}
+			}
+
+			function setApiKey() {
+				if (window.EnderecoIntegrator && window.EnderecoIntegrator.onLoad && !window.EnderecoIntegrator.ready) {
+					window.EnderecoIntegrator.onLoad.push(updateApiKey);
+				} else {
+					updateApiKey();
+				}
+			}
+
+			// Ensure apiKey is set if already present when page loads
+			if (apiKeyInput.value.trim()) {
+				setApiKey();
+			}
+		}
+	});
+</script>
+
+
+
+<div class="form-container">
+	<form>
+		<div class="row">
 			<div>
 				<label class="label">
 					Anrede
@@ -313,6 +394,8 @@
 
 <div class="form-container">
 	<form>
+		<input type="hidden" name="irgendein_name_am_besten_mit_underscores_ams_session_id" value="328644cc-f006-4eec-bfcd-09f8a7009e1f">
+		<input type="hidden" name="irgendein_name_am_besten_mit_underscores_ams_session_counter" value="2">
 		<div class="row">
 			<div>
 				<label class="label">
@@ -331,7 +414,7 @@
 			<div>
 				<label class="label">
 					Straße (voll)
-					<input type="text" id="streetFull">
+					<input type="text" id="streetFull" value="Lindenstraße 2">
 				</label>
 			</div>
 		</div>
@@ -345,7 +428,7 @@
 			<div>
 				<label class="label">
 					Ort
-					<input type="text" id="loc">
+					<input type="text" id="loc" value="lasdkjflasjdf">
 				</label>
 			</div>
 		</div>
@@ -362,7 +445,7 @@
 				<label class="label">
 					Land
 					<select class="country" id="country">
-						<option value="" disabled selected>-- Bitte Region auswählen --</option>
+						<option value="" selected>-- Bitte Land auswählen --</option>
 						<option value="1">Deutschland</option>
 						<option value="2">Frankreich</option>
 						<option value="3">USA</option>
@@ -375,23 +458,22 @@
 				<label class="label">
 					Region DE
 					<select class="region" id="country_1" data-country-id="1">
-						<option value="" disabled selected>-- Bitte Region auswählen --</option>
-						<option value="" selected="selected">Bundesstaat</option>
-						<option value="DE-BB" >Brandenburg</option>
-						<option value="DE-BE" >Berlin</option>
+						<option value="" selected>-- Bitte Region auswählen --</option>
 						<option value="DE-BW" >Baden-Württemberg</option>
 						<option value="DE-BY" >Bayern</option>
+						<option value="DE-BE" >Berlin</option>
+						<option value="DE-BB" >Brandenburg</option>
 						<option value="DE-HB" >Bremen</option>
-						<option value="DE-HE" >Hessen</option>
 						<option value="DE-HH" >Hamburg</option>
+						<option value="DE-HE" >Hessen</option>
 						<option value="DE-MV" >Mecklenburg-Vorpommern</option>
 						<option value="DE-NI" >Niedersachsen</option>
 						<option value="DE-NW">Nordrhein-Westfalen</option>
 						<option value="DE-RP" >Rheinland-Pfalz</option>
-						<option value="DE-SH" >Schleswig-Holstein</option>
 						<option value="DE-SL" >Saarland</option>
 						<option value="DE-SN" >Sachsen</option>
 						<option value="DE-ST" >Sachsen-Anhalt</option>
+						<option value="DE-SH" >Schleswig-Holstein</option>
 						<option value="DE-TH" >Thüringen</option>
 					</select>
 				</label>
@@ -606,6 +688,7 @@
 		</div>
 		<div class="row">
 			<div style="margin-left: auto;">
+				<button class="btn btn-secondary" type="reset">Reset</button>
 				<button class="btn btn-primary">Weiter</button>
 			</div>
 		</div>

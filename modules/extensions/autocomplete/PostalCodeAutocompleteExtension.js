@@ -38,8 +38,9 @@ var PostalCodeAutocompleteExtension = {
 
                     // Render dropdown under the input element
                     ExtendableObject._subscribers.postalCodeChunk.forEach( function(subscriber) {
-                        if (document.querySelector('[endereco-predictions]')) {
-                            document.querySelector('[endereco-predictions]').parentNode.removeChild(document.querySelector('[endereco-predictions]'));
+                        if (document.querySelector('[endereco-postal-code-predictions]')) {
+                            ExtendableObject._openDropdowns--;
+                            document.querySelector('[endereco-postal-code-predictions]').parentNode.removeChild(document.querySelector('[endereco-postal-code-predictions]'));
                         }
 
                         // If only one prediction and no difference, then dont render, just copy to fields.
@@ -120,6 +121,7 @@ var PostalCodeAutocompleteExtension = {
 
                             // Attach it to HTML.
                             subscriber.object.insertAdjacentHTML('afterend', predictionsHtml);
+                            ExtendableObject._openDropdowns++;
                             document.querySelectorAll('[data-id="'+ExtendableObject.id+'"] [endereco-postal-code-prediction]').forEach(function(DOMElement) {
                                 DOMElement.addEventListener('mousedown', function(e) {
                                     var index = parseInt(this.getAttribute('data-prediction-index'))
@@ -156,26 +158,38 @@ var PostalCodeAutocompleteExtension = {
                     return function(e) {
                         clearTimeout(ExtendableObject._postalCodeTimeout);
                         ExtendableObject._postalCodeTimeout = setTimeout(function() {
-                            ExtendableObject._changed = true;
                             ExtendableObject.postalCodePredictions = [];
                             ExtendableObject._postalCodePredictionsIndex = 0;
                             ExtendableObject.postalCodeChunk = subscriber.value;
                         }, ExtendableObject.config.ux.delay.inputAssistant);
 
+                        if (ExtendableObject.active) {
+                            ExtendableObject._changed = true;
+                            ExtendableObject.addressStatus = [];
+                        }
                     }
                 };
 
                 ExtendableObject.cb.postalCodeChunkBlur = function(subscriber) {
                     return function(e) {
-                        ExtendableObject.postalCodePredictions = [];
-                        ExtendableObject._postalCodePredictionsIndex = 0;
-                        if (document.querySelector('[endereco-predictions]')) {
-                            document.querySelector('[endereco-predictions]').parentNode.removeChild(document.querySelector('[endereco-predictions]'));
+                        const isAnyActive = ExtendableObject._subscribers.postalCode.some(sub => document.activeElement === sub.object);
+
+                        if (!isAnyActive) {
+                            // Reset values and remove dropdown
+                            ExtendableObject.postalCodePredictions = [];
+                            ExtendableObject._postalCodePredictionsIndex = 0;
+
+                            const predictionsElement = document.querySelector('[endereco-postal-code-predictions]');
+                            if (predictionsElement) {
+                                ExtendableObject._openDropdowns--;
+                                predictionsElement.parentNode.removeChild(predictionsElement);
+                            }
                         }
+
                         if (!!$postalCodeChunkTimeout) {
                             clearTimeout($postalCodeChunkTimeout)
                         }
-                    }
+                    };
                 };
 
                 // Key events.
@@ -300,6 +314,11 @@ var PostalCodeAutocompleteExtension = {
                                                 })
 
                                                 ExtendableObject.postalCodePredictions = postalCodePredictionsTemp;
+                                            }
+
+                                            // Check for the old session id and regenerate if necessary.
+                                            if (response.data.error?.code === -32700 && ExtendableObject.util.updateSessionId) {
+                                                ExtendableObject.util.updateSessionId();
                                             }
                                         })
                                         .catch(function(e) {

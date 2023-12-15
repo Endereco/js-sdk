@@ -1,70 +1,107 @@
 const http = require('http');
 const fs = require('fs').promises;
+const url = require('url');
 const host = 'localhost';
 const port = 8000;
 
-const requestListener = function (req, res) {
-    var postData = '';
+const requestListener = async function (req, res) {
+    try {
+        // Serve files based on URL
+        const pathname = url.parse(req.url).pathname;
+
+        if (req.method === 'POST' && pathname !== '/proxyfile') {
+            // Handle POST request
+            await processPostRequest(req, res);
+            // Redirect to the same page after processing the POST request
+            res.writeHead(302, { 'Location': '/' });
+            res.end();
+            return;
+        }
+
+        switch (pathname) {
+            case '/':
+                await serveFile(res, "/example.html", "text/html");
+                break;
+            case '/dist/endereco.min.js':
+                await serveFile(res, "/../dist/endereco.min.js", "text/javascript");
+                break;
+            case '/dist/endereco.min.css':
+                await serveFile(res, "/../dist/endereco.min.css", "text/css");
+                break;
+            case '/proxyfile':
+                await handleProxyRequest(req, res);
+                break;
+            default:
+                // Handle 404 Not Found
+                res.writeHead(404);
+                res.end("404 Not Found");
+        }
+    } catch (error) {
+        res.writeHead(500);
+        res.end("Internal Server Error");
+        console.error(error);
+    }
+};
+
+async function serveFile(res, filePath, contentType) {
+    const contents = await fs.readFile(__dirname + filePath);
+    res.setHeader("Content-Type", contentType);
+    res.writeHead(200);
+    res.end(contents);
+}
+
+async function processPostRequest(req, res) {
+    let postData = '';
+    return new Promise((resolve, reject) => {
+        req.on('data', chunk => {
+            postData += chunk;
+        });
+        req.on('end', () => {
+            // Process postData here if needed
+            resolve();
+        });
+        req.on('error', (err) => {
+            reject(err);
+        });
+    });
+}
+
+async function handleProxyRequest(req, res) {
+    let postData = '';
     req.on('data', chunk => {
         postData += chunk;
-    })
+    });
     req.on('end', () => {
-        if ('/' === req.url) {
-            fs.readFile(__dirname + "/example.html")
-                .then(contents => {
-                    res.setHeader("Content-Type", "text/html");
-                    res.writeHead(200);
-                    res.end(contents);
-                });
-        }
+        const options = {
+            hostname: 'endereco-service.de',
+            port: 80,
+            path: '/rpc/v1',
+            method: 'POST',
+            headers: req.headers
+        };
 
-        if ('/dist/endereco.min.js' === req.url) {
-            fs.readFile(__dirname + "/../dist/endereco.min.js")
-                .then(contents => {
-                    res.setHeader("Content-Type", "text/javascript");
-                    res.writeHead(200);
-                    res.end(contents);
-                });
-        }
+        const proxyReq = http.request(options, proxyRes => {
+            let body = '';
+            proxyRes.on('data', d => {
+                body += d;
+            });
+            proxyRes.on('end', function () {
+                res.setHeader("Content-Type", "application/json");
+                res.writeHead(200);
+                res.end(body);
+            });
+        });
 
-        if ('/dist/endereco.min.css' === req.url) {
-            fs.readFile(__dirname + "/../dist/endereco.min.css")
-                .then(contents => {
-                    res.setHeader("Content-Type", "text/css");
-                    res.writeHead(200);
-                    res.end(contents);
-                });
-        }
+        proxyReq.on('error', error => {
+            console.error(error);
+            res.writeHead(500);
+            res.end("Internal Server Error");
+        });
 
-        if ('/proxyfile' === req.url) {
-            const options = {
-                hostname: 'staging.endereco-service.de',
-                port: 80,
-                path: '/rpc/v1',
-                method: 'POST',
-                headers: req.headers
-            }
-            const reqin = http.request(options, resin => {
-                var body = '';
-                resin.on('data', d => {
-                    body += d;
-                })
-                resin.on('end', function() {
-                    res.setHeader("Content-Type", "application/json");
-                    res.writeHead(200);
-                    res.end(body);
-                });
-            })
-
-            reqin.on('error', error => {
-                console.error(error)
-            })
-
-            reqin.write(postData)
-            reqin.end()
-        }
-    })
-};
+        proxyReq.write(postData);
+        proxyReq.end();
+    });
+}
 
 const server = http.createServer(requestListener);
 server.listen(port, host, () => {

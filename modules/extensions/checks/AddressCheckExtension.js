@@ -26,6 +26,9 @@ var AddressCheckExtension = {
                 ExtendableObject._addressType = 'general_address';
                 ExtendableObject._subscribers.addressType = [];
 
+                ExtendableObject._checkedAddress = {};
+                ExtendableObject._addressIsBeingChecked = false;
+
                 // Callback collectors.
                 ExtendableObject.onAfterAddressCheckNoAction = [];
                 ExtendableObject.onAfterAddressCheck = [];
@@ -39,6 +42,8 @@ var AddressCheckExtension = {
                 ExtendableObject.config.templates.addressPredictionsPopupWrapper = addressPredictionsPopupWrapper;
                 ExtendableObject.config.templates.addressNotFoundPopupWrapper = addressNotFoundPopupWrapper;
                 ExtendableObject.config.templates.addressNoPredictionWrapper = addressNoPredictionWrapper;
+
+                ExtendableObject._globalStreetState = 1;
 
                 if (!ExtendableObject.config.templates.button) {
                     ExtendableObject.config.templates.button = '<button class="{{{buttonClasses}}}" endereco-use-selection endereco-disabled-until-confirmed>{{{EnderecoAddressObject.config.texts.useSelected}}}</button>';
@@ -79,6 +84,20 @@ var AddressCheckExtension = {
                                 undefined !== window.EnderecoIntegrator &&
                                 undefined !== window.EnderecoIntegrator.popupQueue &&
                                 0 === window.EnderecoIntegrator.popupQueue
+                            ) {
+                                clearInterval(waitForFreePlace);
+                                resolve();
+                            }
+                        }, 100);
+                    })
+                };
+                ExtendableObject.waitForAllEnderecoPopupsToClose = function() {
+                    return new ExtendableObject.util.Promise(function(resolve, reject) {
+                        let waitForFreePlace = setInterval(function() {
+                            if(
+                                undefined !== window.EnderecoIntegrator &&
+                                undefined !== window.EnderecoIntegrator.enderecoPopupQueue &&
+                                0 === window.EnderecoIntegrator.enderecoPopupQueue
                             ) {
                                 clearInterval(waitForFreePlace);
                                 resolve();
@@ -194,8 +213,15 @@ var AddressCheckExtension = {
                     }
                     if (undefined === window.EnderecoIntegrator.popupQueue) {
                         window.EnderecoIntegrator.popupQueue = 0;
+                        window.EnderecoIntegrator.enderecoPopupQueue = 0;
                     }
                     window.EnderecoIntegrator.popupQueue++;
+                    window.EnderecoIntegrator.enderecoPopupQueue++;
+
+                    // Check if empty object.
+                    if (Object.keys(ExtendableObject._checkedAddress).length === 0 && ExtendableObject._checkedAddress.constructor === Object) {
+                        ExtendableObject._checkedAddress = JSON.parse(JSON.stringify(ExtendableObject.address));
+                    }
 
                     ExtendableObject.waitUntilReady().then( function() {
                         ExtendableObject.waitForPopupAreaToBeFree().then(function() {
@@ -206,6 +232,7 @@ var AddressCheckExtension = {
                             if (ExtendableObject.addressStatus.includes('address_correct')) {
                                 // No poup needed.
                                 window.EnderecoIntegrator.popupQueue--;
+                                window.EnderecoIntegrator.enderecoPopupQueue--;
 
                                 ExtendableObject.onAfterAddressCheckNoAction.forEach( function(cb) {
                                     cb(ExtendableObject);
@@ -216,8 +243,9 @@ var AddressCheckExtension = {
                                 });
 
                                 // Call global submit resume function.
-                                ExtendableObject.waitForAllPopupsToClose().then(function() {
+                                ExtendableObject.waitForAllEnderecoPopupsToClose().then(function() {
                                     if (window.EnderecoIntegrator && window.EnderecoIntegrator.submitResume) {
+                                        ExtendableObject.beforeSubmitResume();
                                         window.EnderecoIntegrator.submitResume();
                                     }
                                 }).catch()
@@ -242,7 +270,7 @@ var AddressCheckExtension = {
                                 // Popup needed.
                                 var startingIndex = -1;
                                 // Prepare main address.
-                                var mainAddressHtml = $self.util.formatAddress($self.address);
+                                var mainAddressHtml = $self.util.formatAddress(ExtendableObject._checkedAddress);
                                 var firstPrediction = $self.util.formatAddress($self.addressPredictions[0]);
                                 var mainAddressDiffHtml = '';
 
@@ -342,13 +370,15 @@ var AddressCheckExtension = {
                                                 $self.util.removePopup();
                                             });
                                         }).catch();
-                                        $self.waitForAllPopupsToClose().then(function() {
+                                        $self.waitForAllEnderecoPopupsToClose().then(function() {
                                             $self.waitUntilReady().then(function() {
                                                 if (window.EnderecoIntegrator && window.EnderecoIntegrator.submitResume) {
+                                                    ExtendableObject.beforeSubmitResume();
                                                     window.EnderecoIntegrator.submitResume();
                                                 }
                                             }).catch(function() {
                                                 if (window.EnderecoIntegrator && window.EnderecoIntegrator.submitResume) {
+                                                    ExtendableObject.beforeSubmitResume();
                                                     window.EnderecoIntegrator.submitResume();
                                                 }
                                             })
@@ -456,6 +486,10 @@ var AddressCheckExtension = {
                                 (2 === ExtendableObject._addressCheckRequestIndex) &&
                                 (0 < ExtendableObject.addressPredictions.length)
                             ) {
+                                // No poup needed.
+                                window.EnderecoIntegrator.popupQueue--;
+                                window.EnderecoIntegrator.enderecoPopupQueue--;
+
                                 ExtendableObject._awaits++;
                                 var addressData = $self.addressPredictions[0];
                                 addressData.countryCode = addressData.countryCode.toUpperCase();
@@ -490,7 +524,7 @@ var AddressCheckExtension = {
                             ) {
                                 // Prepare main address.
                                 // TODO: replace button then replace button classes.
-                                var mainAddressHtml = $self.util.formatAddress($self.address, true, true);
+                                var mainAddressHtml = $self.util.formatAddress(ExtendableObject._checkedAddress, true, true);
                                 var editButtonHTML = $self.config.templates.buttonEditAddress.replace('{{{buttonClasses}}}', $self.config.templates.primaryButtonClasses);
                                 var confirmButtonHTML = $self.config.templates.buttonConfirmAddress.replace('{{{buttonClasses}}}', $self.config.templates.secondaryButtonClasses);
                                 var errors = [];
@@ -612,13 +646,15 @@ var AddressCheckExtension = {
                                                 $self.util.removePopup();
                                             });
                                         }).catch();
-                                        $self.waitForAllPopupsToClose().then(function() {
+                                        $self.waitForAllEnderecoPopupsToClose().then(function() {
                                             $self.waitUntilReady().then(function() {
                                                 if (window.EnderecoIntegrator && window.EnderecoIntegrator.submitResume) {
+                                                    ExtendableObject.beforeSubmitResume();
                                                     window.EnderecoIntegrator.submitResume();
                                                 }
                                             }).catch(function() {
                                                 if (window.EnderecoIntegrator && window.EnderecoIntegrator.submitResume) {
+                                                    ExtendableObject.beforeSubmitResume();
                                                     window.EnderecoIntegrator.submitResume();
                                                 }
                                             })
@@ -662,7 +698,7 @@ var AddressCheckExtension = {
                             ) {
                                 // Prepare main address.
                                 // TODO: replace button then replace button classes.
-                                var mainAddressHtml = $self.util.formatAddress($self.address, true);
+                                var mainAddressHtml = $self.util.formatAddress(ExtendableObject._checkedAddress, true);
                                 var editButtonHTML = $self.config.templates.buttonEditAddress.replace('{{{buttonClasses}}}', $self.config.templates.primaryButtonClasses);
                                 var confirmButtonHTML = $self.config.templates.buttonConfirmAddress.replace('{{{buttonClasses}}}', $self.config.templates.secondaryButtonClasses);
                                 var modalHTML = ExtendableObject.util.Mustache.render(
@@ -729,13 +765,15 @@ var AddressCheckExtension = {
                                                 $self.util.removePopup();
                                             });
                                         }).catch();
-                                        $self.waitForAllPopupsToClose().then(function() {
+                                        $self.waitForAllEnderecoPopupsToClose().then(function() {
                                             $self.waitUntilReady().then(function() {
                                                 if (window.EnderecoIntegrator && window.EnderecoIntegrator.submitResume) {
+                                                    ExtendableObject.beforeSubmitResume();
                                                     window.EnderecoIntegrator.submitResume();
                                                 }
                                             }).catch(function() {
                                                 if (window.EnderecoIntegrator && window.EnderecoIntegrator.submitResume) {
+                                                    ExtendableObject.beforeSubmitResume();
                                                     window.EnderecoIntegrator.submitResume();
                                                 }
                                             })
@@ -780,6 +818,7 @@ var AddressCheckExtension = {
                         document.querySelector('body').classList.remove('endereco-no-scroll');
                         ExtendableObject.addressPredictionsIndex = 0;
                         window.EnderecoIntegrator.popupQueue--;
+                        window.EnderecoIntegrator.enderecoPopupQueue--;
 
                         if (!!ExtendableObject.modalClosed) {
                             ExtendableObject.modalClosed();
@@ -819,14 +858,27 @@ var AddressCheckExtension = {
                     }
                     if (ExtendableObject.hasLoadedExtension('SubdivisionCodeExtension')) {
                         var subdivisionCodes = [];
-                        if (ExtendableObject.subdivisionCode) {
+                        let subdivisionRelevant = false;
+                        if ((0 < ExtendableObject._subscribers.subdivisionCode.length)) {
+                            ExtendableObject._subscribers.subdivisionCode.forEach( function(listener) {
+                                if (!listener.object.disabled
+                                    && listener.object.isConnected) {
+                                    subdivisionRelevant = true;
+                                }
+                            });
+                        }
+
+                        if (subdivisionRelevant) {
                             if (value.includes('subdivision_code_correct') || value.includes('address_correct')) {
                                 subdivisionCodes.push('subdivision_code_correct');
-                            }
-                            if (value.includes('subdivision_code_needs_correction')) {
+                            } else if (value.includes('subdivision_code_needs_correction')) {
                                 subdivisionCodes.push('subdivision_code_needs_correction');
-                            } else if (value.includes('address_needs_correction') && !value.includes('subdivision_code_correct')) {
-                                subdivisionCodes.push('subdivision_code_needs_correction');
+                            } else if (value.includes('address_not_found')) {
+                                subdivisionCodes.push('address_not_found');
+                            } else if (value.includes('address_multiple_variants')) {
+                                subdivisionCodes.push('address_multiple_variants');
+                            } else {
+                                subdivisionCodes = [];
                             }
                             ExtendableObject.waitForActive().then(function() {
                                 ExtendableObject.subdivisionCodeStatus = subdivisionCodes;
@@ -835,15 +887,11 @@ var AddressCheckExtension = {
                     }
                     if (ExtendableObject.hasLoadedExtension('PostalCodeExtension')) {
                         var postalCodeStatus = [];
-                        if (value.includes('address_correct')) {
+                        if (value.includes('postal_code_correct') || value.includes('address_correct')) {
                             postalCodeStatus.push('postal_code_correct');
                         }
-                        if (value.includes('address_needs_correction')) {
-                            if (0 < ExtendableObject.addressPredictions.length && ExtendableObject.addressPredictions[0].postalCode !== ExtendableObject.postalCode) {
-                                postalCodeStatus.push('postal_code_needs_correction');
-                            } else {
-                                postalCodeStatus.push('postal_code_correct');
-                            }
+                        if (value.includes('postal_code_needs_correction')) {
+                            postalCodeStatus.push('postal_code_needs_correction');
                         }
                         if (value.includes('address_multiple_variants')) {
                             postalCodeStatus.push('address_multiple_variants');
@@ -858,15 +906,11 @@ var AddressCheckExtension = {
                     }
                     if (ExtendableObject.hasLoadedExtension('LocalityExtension')) {
                         var localityStatus = [];
-                        if (value.includes('address_correct')) {
+                        if (value.includes('locality_correct') || value.includes('address_correct')) {
                             localityStatus.push('locality_correct');
                         }
-                        if (value.includes('address_needs_correction')) {
-                            if (0 < ExtendableObject.addressPredictions.length && ExtendableObject.addressPredictions[0].locality !== ExtendableObject.locality) {
-                                localityStatus.push('locality_needs_correction');
-                            } else {
-                                localityStatus.push('locality_correct');
-                            }
+                        if (value.includes('locality_needs_correction')) {
+                            localityStatus.push('locality_needs_correction');
                         }
                         if (value.includes('address_multiple_variants')) {
                             localityStatus.push('address_multiple_variants');
@@ -881,15 +925,11 @@ var AddressCheckExtension = {
                     }
                     if (ExtendableObject.hasLoadedExtension('StreetNameExtension')) {
                         var streetNameStatus = [];
-                        if (value.includes('address_correct')) {
+                        if (value.includes('street_name_correct') || value.includes('address_correct')) {
                             streetNameStatus.push('street_name_correct');
                         }
-                        if (value.includes('address_needs_correction')) {
-                            if (0 < ExtendableObject.addressPredictions.length && ExtendableObject.addressPredictions[0].streetName !== ExtendableObject.streetName) {
-                                streetNameStatus.push('street_name_needs_correction');
-                            } else {
-                                streetNameStatus.push('street_name_correct');
-                            }
+                        if (value.includes('street_name_needs_correction')) {
+                            streetNameStatus.push('street_name_needs_correction');
                         }
                         if (value.includes('address_multiple_variants')) {
                             streetNameStatus.push('address_multiple_variants');
@@ -904,11 +944,11 @@ var AddressCheckExtension = {
                     }
                     if (ExtendableObject.hasLoadedExtension('StreetFullExtension')) {
                         var streetFullStatus = [];
-                        if (value.includes('address_correct')) {
+                        if (value.includes('street_full_correct') || value.includes('address_correct')) {
                             streetFullStatus.push('street_full_correct');
                         }
                         if (value.includes('address_needs_correction')) {
-                            if (0 < ExtendableObject.addressPredictions.length && ExtendableObject.addressPredictions[0].streetName !== ExtendableObject.streetName) {
+                            if (value.includes('street_name_needs_correction') || value.includes('building_number_needs_correction')) {
                                 streetFullStatus.push('street_full_needs_correction');
                             } else {
                                 streetFullStatus.push('street_full_correct');
@@ -927,20 +967,22 @@ var AddressCheckExtension = {
                     }
                     if (ExtendableObject.hasLoadedExtension('BuildingNumberExtension')) {
                         var buildingNumberStatus = [];
-                        if (value.includes('address_correct') && ExtendableObject.buildingNumber) {
+                        if (value.includes('building_number_correct') || value.includes('address_correct')) {
                             buildingNumberStatus.push('building_number_correct');
                         }
-                        if (value.includes('address_needs_correction') && ExtendableObject.buildingNumber) {
-                            if (0 < ExtendableObject.addressPredictions.length && ExtendableObject.addressPredictions[0].buildingNumber !== ExtendableObject.buildingNumber) {
-                                buildingNumberStatus.push('building_number_needs_correction');
-                            } else {
-                                buildingNumberStatus.push('building_number_correct');
-                            }
+                        if (value.includes('building_number_needs_correction')) {
+                            buildingNumberStatus.push('building_number_needs_correction');
                         }
-                        if (value.includes('address_multiple_variants') && ExtendableObject.buildingNumber) {
+                        if (value.includes('building_number_not_found')) {
+                            buildingNumberStatus.push('building_number_not_found');
+                        }
+                        if (value.includes('building_number_missing')) {
+                            buildingNumberStatus.push('building_number_missing');
+                        }
+                        if (value.includes('address_multiple_variants')) {
                             buildingNumberStatus.push('address_multiple_variants');
                         }
-                        if (value.includes('address_not_found') && ExtendableObject.buildingNumber) {
+                        if (value.includes('address_not_found')) {
                             buildingNumberStatus.push('address_not_found');
                         }
                         ExtendableObject.waitForActive().then(function() {
@@ -1061,7 +1103,6 @@ var AddressCheckExtension = {
 
                             if (!ExtendableObject.util.isEqual(oldValue, value)) {
                                 ExtendableObject._addressStatus = value;
-                                ExtendableObject._changed = false;
 
                                 // Inform all subscribers about the change.
                                 ExtendableObject._subscribers.addressStatus.forEach(function (subscriber) {
@@ -1257,11 +1298,18 @@ var AddressCheckExtension = {
                         address = ExtendableObject.address;
                     }
 
+                    ExtendableObject._addressIsBeingChecked = true;
+
                     return new ExtendableObject.util.Promise(function(resolve, reject) {
 
                         ExtendableObject.waitUntilReady().then(function() {
                             ExtendableObject._addressCheckRequestIndex++;
                             var addressCheckRequestIndex = ExtendableObject._addressCheckRequestIndex * 1;
+
+                            ExtendableObject._checkedAddress = JSON.parse(
+                                JSON.stringify(ExtendableObject.address)
+                            );
+
                             var message = {
                                 'jsonrpc': '2.0',
                                 'id': ExtendableObject._addressCheckRequestIndex,
@@ -1275,11 +1323,14 @@ var AddressCheckExtension = {
                                 }
                             };
 
-                            if (!ExtendableObject.config.splitStreet) {
-                                message.params.streetFull = address.streetFull;
-                            } else {
+                            // Check if streetName is set and has a value
+                            if (address.streetName && address.streetName.trim() !== '') {
+                                // Add streetName and buildingNumber to message.params
                                 message.params.street = address.streetName;
                                 message.params.houseNumber = address.buildingNumber;
+                            } else {
+                                // If streetName is not set or is empty, use streetFull instead
+                                message.params.streetFull = address.streetFull;
                             }
 
                             if ((0 < ExtendableObject._subscribers.subdivisionCode.length)) {
@@ -1358,8 +1409,13 @@ var AddressCheckExtension = {
                                     }
 
                                     resolve();
-
-                                } else {
+                                }
+                                // Check for the old session id and regenerate if necessary.
+                                else if (response.data.error?.code === -32700 && ExtendableObject.util.updateSessionId) {
+                                    ExtendableObject.util.updateSessionId();
+                                    reject(response);
+                                }
+                                else {
                                     reject(response);
                                 }
                             }).catch(function(e) {
@@ -1367,6 +1423,7 @@ var AddressCheckExtension = {
                             }).finally(function() {
                                 ExtendableObject._awaits--;
                                 ExtendableObject._changed = false;
+                                ExtendableObject._addressIsBeingChecked = false;
                                 ExtendableObject.submitUnblocked();
                             });
                         }).catch()

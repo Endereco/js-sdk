@@ -8,6 +8,7 @@ import 'core-js/fn/promise/finally';
 
 var EnderecoIntegrator = {
     popupQueue: 0,
+    enderecoPopupQueue: 0,
     ready: false,
     loaded: true,
     themeName: undefined,
@@ -321,7 +322,8 @@ var EnderecoIntegrator = {
         options= {
             postfixCollection: {},
             addressType: 'general_address',
-            name: 'default'
+            name: 'default',
+            beforeActivation: undefined
         }
     ) {
         $self = this;
@@ -576,6 +578,10 @@ var EnderecoIntegrator = {
                             // Start setting default values.
                             if (!!options.addressType) {
                                 EAO._addressType = options.addressType
+                            }
+
+                            if (!!options.beforeActivation) {
+                                options.beforeActivation(EAO);
                             }
 
                             EAO._changed = false;

@@ -78,7 +78,7 @@ function EnderecoAddress(customConfig={}) {
     };
 
     base.onAddressSelect.push( function(AddressObject) {
-        AddressObject.waitForAllPopupsToClose().then(function() {
+        AddressObject.waitForAllEnderecoPopupsToClose().then(function() {
             if (window.EnderecoIntegrator && window.EnderecoIntegrator.submitResume) {
                 base.beforeSubmitResume();
                 window.EnderecoIntegrator.submitResume();
@@ -119,8 +119,9 @@ function EnderecoAddress(customConfig={}) {
             setTimeout(function() {
                 base.util.checkAddress()
                     .catch(function() {
-                        base.waitForAllPopupsToClose().then(function() {
+                        base.waitForAllEnderecoPopupsToClose().then(function() {
                             if (window.EnderecoIntegrator && window.EnderecoIntegrator.submitResume) {
+                                base.beforeSubmitResume();
                                 window.EnderecoIntegrator.submitResume();
                             }
                         }).catch()

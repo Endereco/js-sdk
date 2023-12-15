@@ -1,4 +1,9 @@
+{{#streetFull}}
+{{#useHtml}}<span class="endereco-street-full">{{/useHtml}}{{{streetFull}}}{{#useHtml}}</span>{{/useHtml}} <br>
+{{/streetFull}}
+{{^streetFull}}
 {{#useHtml}}<span class="endereco-building-number">{{/useHtml}}{{{buildingNumber}}}{{#useHtml}}</span>{{/useHtml}} {{#useHtml}}<span class="endereco-street-name">{{/useHtml}}{{{streetName}}}{{#useHtml}}</span>{{/useHtml}} <br>
+{{/streetFull}}
 {{#useHtml}}<span class="endereco-postal-code">{{/useHtml}}{{{postalCode}}}{{#useHtml}}</span>{{/useHtml}} {{#useHtml}}<span class="endereco-locality">{{/useHtml}}{{{locality}}}{{#useHtml}}</span>{{/useHtml}} <br>
-{{#showSubdisivion}}{{#useHtml}}&nbsp;<span class="endereco-subdivision-code">{{/useHtml}}{{{subdivisionName}}}{{#useHtml}}</span>{{/useHtml}} <br>{{/showSubdisivion}}
+{{#showSubdisivion}}{{#useHtml}}<span class="endereco-subdivision-code">{{/useHtml}}{{{subdivisionName}}}{{#useHtml}}</span>{{/useHtml}} <br>{{/showSubdisivion}}
 {{#showCountry}}{{#useHtml}}<span class="endereco-country-code">{{/useHtml}}{{{countryName}}}{{#useHtml}}</span>{{/useHtml}}{{/showCountry}}

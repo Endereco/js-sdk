@@ -8,7 +8,7 @@ var PhoneCheckExtension = {
         return new ExtendableObject.util.Promise(function(resolve, reject) {
             ExtendableObject.waitForExtension('PhoneExtension').then(function() {
                 // Add email field.
-                ExtendableObject._phoneStatus = '';
+                ExtendableObject._phoneStatus = [];
                 ExtendableObject._subscribers.phoneStatus = [];
                 ExtendableObject.phoneCheckRequestCounter = 1;
 
@@ -73,7 +73,6 @@ var PhoneCheckExtension = {
                                 }
 
                                 ExtendableObject._phoneStatus = newValue;
-                                ExtendableObject._changed = false;
 
                                 // Inform all subscribers about the change.
                                 ExtendableObject._subscribers.phoneStatus.forEach(function (subscriber) {
@@ -109,6 +108,9 @@ var PhoneCheckExtension = {
                     var statuses = [];
                     var formatMessage = '';
                     var uniqueContainer = {};
+                    if (!Array.isArray(ExtendableObject.phoneStatus)) {
+                        return;
+                    }
                     ExtendableObject.phoneStatus.forEach( function(phoneStatus) {
                         if (!!ExtendableObject.config.texts.statuses[phoneStatus] &&
                             !uniqueContainer[phoneStatus]

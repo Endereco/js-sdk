@@ -26,25 +26,51 @@ var CountryCodeExtension = {
                             });
                         }
                     }
+
+                    if (ExtendableObject.active) {
+                        ExtendableObject._changed = true;
+                    }
+                }
+            };
+
+            ExtendableObject.cb.countryCodeInput = function(subscriber) {
+                return function(e) {
+                    ExtendableObject.countryCode = subscriber.value;
+
+                    if (ExtendableObject.hasLoadedExtension('SubdivisionCodeExtension')) {
+                        if ((0 < ExtendableObject._subscribers.subdivisionCode.length)) {
+                            ExtendableObject._subdivisionCode = '';
+                            ExtendableObject._subscribers.subdivisionCode.forEach( function(subscriber) {
+                                subscriber.value = '';
+                            });
+                        }
+                    }
+
+                    if (ExtendableObject.active) {
+                        ExtendableObject._changed = true;
+                        ExtendableObject.addressStatus = [];
+                    }
                 }
             };
 
             ExtendableObject.cb.countryCodeBlur = function(subscriber) {
                 return function(e) {
-                    ExtendableObject.waitUntilReady().then(function() {
+                    if (ExtendableObject.type === 'address') {
+                        ExtendableObject.waitUntilReady().then(function() {
 
-                        if (ExtendableObject.onBlurTimeout) {
-                            clearTimeout(ExtendableObject.onBlurTimeout);
-                            ExtendableObject.onBlurTimeout = null;
-                        }
-                        ExtendableObject.onBlurTimeout = setTimeout( function() {
-                            if (ExtendableObject.config.trigger.onblur && !ExtendableObject.anyActive() && ExtendableObject.util.shouldBeChecked() && !window.EnderecoIntegrator.hasSubmit) {
-                                // Second. Check Address.
+                            if (ExtendableObject.onBlurTimeout) {
+                                clearTimeout(ExtendableObject.onBlurTimeout);
                                 ExtendableObject.onBlurTimeout = null;
-                                ExtendableObject.util.checkAddress().catch();
                             }
-                        }, 300);
-                    }).catch()
+                            ExtendableObject.onBlurTimeout = setTimeout( function() {
+                                if (ExtendableObject.config.trigger.onblur && !ExtendableObject.anyActive() && ExtendableObject.util.shouldBeChecked() && !window.EnderecoIntegrator.hasSubmit) {
+                                    // Second. Check Address.
+                                    ExtendableObject.onBlurTimeout = null;
+                                    ExtendableObject.util.checkAddress().catch();
+                                }
+                            }, 300);
+                        }).catch()
+                    }
                 }
             };
 

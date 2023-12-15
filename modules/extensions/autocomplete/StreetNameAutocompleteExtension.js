@@ -26,8 +26,9 @@ var StreetNameAutocompleteExtension = {
                 ExtendableObject.util.renderStreetNamePredictionsDropdown = function() {
                     // Render dropdown under the input element
                     ExtendableObject._subscribers.streetNameChunk.forEach( function(subscriber) {
-                        if (document.querySelector('[endereco-predictions]')) {
-                            document.querySelector('[endereco-predictions]').parentNode.removeChild(document.querySelector('[endereco-predictions]'));
+                        if (document.querySelector('[endereco-street-name-predictions]')) {
+                            ExtendableObject._openDropdowns--;
+                            document.querySelector('[endereco-street-name-predictions]').parentNode.removeChild(document.querySelector('[endereco-street-name-predictions]'));
                         }
 
                         // If only one prediction and no difference, then dont render, just copy to fields.
@@ -90,6 +91,7 @@ var StreetNameAutocompleteExtension = {
 
                             // Attach it to HTML.
                             subscriber.object.insertAdjacentHTML('afterend', predictionsHtml);
+                            ExtendableObject._openDropdowns++;
                             document.querySelectorAll('[data-id="'+ExtendableObject.id+'"] [endereco-street-name-prediction]').forEach(function(DOMElement) {
                                 DOMElement.addEventListener('mousedown', function(e) {
                                     var index = parseInt(this.getAttribute('data-prediction-index'))
@@ -123,22 +125,34 @@ var StreetNameAutocompleteExtension = {
                     return function(e) {
                         clearTimeout(ExtendableObject._streetNameTimeout);
                         ExtendableObject._streetNameTimeout = setTimeout(function() {
-                            ExtendableObject._changed = true;
                             ExtendableObject.streetNamePredictions = [];
                             ExtendableObject._streetNamePredictionsIndex = 0;
                             ExtendableObject.streetNameChunk = subscriber.value;
                         }, ExtendableObject.config.ux.delay.inputAssistant);
+
+                        if (ExtendableObject.active) {
+                            ExtendableObject._changed = true;
+                            ExtendableObject.addressStatus = [];
+                        }
                     }
                 };
 
                 ExtendableObject.cb.streetNameChunkBlur = function(subscriber) {
                     return function(e) {
-                        ExtendableObject.streetNamePredictions = [];
-                        ExtendableObject._streetNamePredictionsIndex = 0;
-                        if (document.querySelector('[endereco-predictions]')) {
-                            document.querySelector('[endereco-predictions]').parentNode.removeChild(document.querySelector('[endereco-predictions]'));
+                        const isAnyActive = ExtendableObject._subscribers.streetName.some(sub => document.activeElement === sub.object);
+
+                        if (!isAnyActive) {
+                            // Reset values and remove dropdown
+                            ExtendableObject.streetNamePredictions = [];
+                            ExtendableObject._streetNamePredictionsIndex = 0;
+
+                            const predictionsElement = document.querySelector('[endereco-street-name-predictions]');
+                            if (predictionsElement) {
+                                ExtendableObject._openDropdowns--;
+                                predictionsElement.parentNode.removeChild(predictionsElement);
+                            }
                         }
-                    }
+                    };
                 };
 
                 // Key events.
@@ -186,7 +200,30 @@ var StreetNameAutocompleteExtension = {
                     set: function(value) {
                         ExtendableObject._awaits++;
                         ExtendableObject.util.Promise.resolve(value).then(function(value) {
+                            if (ExtendableObject.active) {
+                                ExtendableObject._localStreetNameState++;
+                            }
+
+                            // Check if sync needed
+                            if (
+                                ExtendableObject.active &&
+                                ExtendableObject.hasLoadedExtension('StreetFullExtension') &&
+                                ['general_address', 'shipping_address', 'billing_address'].includes(ExtendableObject.addressType) &&
+                                ExtendableObject._localStreetNameState > ExtendableObject._localStreetFullState
+                            ) {
+                                ExtendableObject._localBuildingNumberState++;
+                                ExtendableObject.streetFull = ExtendableObject.util.formatStreetFull(
+                                    {
+                                        countryCode: ExtendableObject.countryCode,
+                                        streetName: value,
+                                        buildingNumber: ExtendableObject.buildingNumber,
+                                        additionalInfo: ExtendableObject.additionalInfo
+                                    }
+                                );
+                            }
+
                             if (ExtendableObject._streetNameChunk !== value) {
+
                                 if (value.length < ExtendableObject._streetNameChunk.length) {
                                     ExtendableObject.config.ux.smartFill = false;
                                 }
@@ -258,6 +295,11 @@ var StreetNameAutocompleteExtension = {
                                                 })
 
                                                 ExtendableObject.streetNamePredictions = streetNamePredictionsTemp;
+                                            }
+
+                                            // Check for the old session id and regenerate if necessary.
+                                            if (response.data.error?.code === -32700 && ExtendableObject.util.updateSessionId) {
+                                                ExtendableObject.util.updateSessionId();
                                             }
                                         })
                                         .catch(function(e) {

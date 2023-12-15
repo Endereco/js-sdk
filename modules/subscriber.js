@@ -30,43 +30,186 @@ function EnderecoSubscriber(propertyName, observableObject, options = {}) {
 
     options = merge(defaultOptions, options);
 
+    function setupValueChangeDetection(subscriber, callback, interval = 300) {
+        let element = subscriber.object;
+
+        // Initially get the value, ensuring it's treated as a Promise
+        Promise.resolve(subscriber.value).then(value => subscriber.lastValue = value);
+
+        const checkValueChange = () => {
+            // Ensure the current value is treated as a Promise
+            Promise.resolve(subscriber.value).then(currentValue => {
+                if (subscriber.object.type === 'radio') {
+                    if (subscriber.object.checked) {
+                        subscriber.lastValue = currentValue;
+                        callback();
+                    }
+                } else if (subscriber.object.type === 'checkbox') {
+                    if (currentValue !== subscriber.lastValue && document.activeElement !== element) {
+                        subscriber.lastValue = currentValue;
+                        callback();
+                    }
+                } else {
+                    if (currentValue !== subscriber.lastValue && document.activeElement !== element) {
+                        subscriber.lastValue = currentValue;
+                        callback();
+                    }
+                }
+            });
+        };
+
+        const intervalId = setInterval(checkValueChange, interval);
+
+        // Optional: Mutation observer for element removal
+        const observer = setupMutationObserver(element, intervalId);
+
+        // Return cleanup function
+        return () => cleanup(observer, intervalId);
+    }
+
+    function setupValueInputDetection(subscriber, callback, interval = 10) {
+        let element = subscriber.object;
+
+        // Initially get the value, ensuring it's treated as a Promise
+        Promise.resolve(subscriber.value).then(value => subscriber.lastValue = value);
+
+        const checkValueInput = () => {
+            // Ensure the current value is treated as a Promise
+            Promise.resolve(subscriber.value).then(currentValue => {
+                if (currentValue !== subscriber.lastValue && document.activeElement === element) {
+                    subscriber.lastValue = currentValue;
+                    callback();
+                }
+            });
+        };
+
+        const intervalId = setInterval(checkValueInput, interval);
+
+        // Optional: Mutation observer for element removal
+        const observer = setupMutationObserver(element, intervalId);
+
+        // Return cleanup function
+        return () => cleanup(observer, intervalId);
+    }
+
+    function setupBlurDetection(subscriber, callback, interval = 10) {
+        let element = subscriber.object;
+        let isFocused = (document.activeElement === element);
+        const checkForBlur = () => {
+            const currentlyFocused = (document.activeElement === element);
+            if (isFocused && !currentlyFocused) {
+                callback(subscriber);  // Element has lost focus
+            }
+            isFocused = currentlyFocused;
+        };
+
+        const intervalId = setInterval(checkForBlur, interval);
+
+        // Optional: Mutation observer for element removal
+        const observer = setupMutationObserver(element, intervalId);
+
+        // Return cleanup function
+        return () => cleanup(observer, intervalId);
+    }
+
+    function setupMutationObserver(element, intervalId) {
+        const observer = new MutationObserver(mutations => {
+            for (const mutation of mutations) {
+                if (!document.contains(element)) {
+                    clearInterval(intervalId);
+                    observer.disconnect();
+                    break;
+                }
+            }
+        });
+
+        observer.observe(document.body, { childList: true, subtree: true });
+        return observer;
+    }
+
+    function cleanup(observer, intervalId) {
+        clearInterval(intervalId);
+        observer.disconnect();
+    }
+
     var subscriber = {
         propertyName: propertyName,
         _subject: null,
         object: observableObject,
         options: options,
+        cleanupFunctions: [],
+        lastValue: undefined,
+        getLastValue: function() {
+          return this.lastValue;
+        },
+        updateCheckedValue(newValue) {
+            if (this.dispatchEvent('endereco-change')) {
+                this.object.checked = newValue;
+                this.dispatchEvent('endereco-blur');
+            }
+        },
+        updateValue(newValues, updateInnerState = false) {
+            if (this.dispatchEvent('endereco-change')) {
+                this.object.value = newValues;
+
+                if (updateInnerState) {
+                    this.lastValue = newValues;
+                }
+
+                this.dispatchEvent('endereco-blur');
+            }
+        },
+        dispatchEvent(eventName) {
+            if (this._subject) {
+                const event = new this._subject.util.CustomEvent(eventName, {
+                    bubbles: true,
+                    cancelable: eventName === 'endereco-change'
+                });
+                return this.object.dispatchEvent(event);
+            }
+            return false;
+        },
+        cleanupResources() {
+            this.cleanupFunctions.forEach(cleanupFunc => cleanupFunc());
+            this.cleanupFunctions = []; // Clear the array after cleanup
+        },
         set subject(subject) {
+            let $self = this;
             if (!subject) {
                 return;
             }
             this._subject = subject;
-            var changeCallbackGenerator = this.propertyName+'Change';
-            if (undefined !== this._subject.cb[changeCallbackGenerator]) {
-                this.object.removeEventListener('change', this._subject.cb[changeCallbackGenerator](this));
 
-                if (!!window.jQuery && !!window.jQuery.on) {
-                    window.jQuery(this.object).on('change', this._subject.cb[changeCallbackGenerator](this));
-                } else {
-                    this.object.addEventListener('change', this._subject.cb[changeCallbackGenerator](this));
-                }
+            const changeCallbackGenerator = this.propertyName + 'Change';
+            if (this._subject.cb[changeCallbackGenerator]) {
+                const callbackForChange = this._subject.cb[changeCallbackGenerator](this);
+                const cleanupChangeListener = setupValueChangeDetection(this, callbackForChange);
+                this.cleanupFunctions.push(cleanupChangeListener);
             }
 
-            var blurCallbackGenerator = this.propertyName+'Blur';
+            const inputCallbackGenerator = this.propertyName + 'Input';
+            if (this._subject.cb[inputCallbackGenerator]) {
+                const callbackForInput = this._subject.cb[inputCallbackGenerator](this);
+                const cleanupInputListener = setupValueInputDetection(this, callbackForInput);
+                this.cleanupFunctions.push(cleanupInputListener);
+            }
+
+            const blurCallbackGenerator = this.propertyName+'Blur';
             if (undefined !== this._subject.cb[blurCallbackGenerator]) {
-                this.object.removeEventListener('blur', this._subject.cb[blurCallbackGenerator](this));
-                this.object.addEventListener('blur', this._subject.cb[blurCallbackGenerator](this));
+                const callbackForBlur = this._subject.cb[blurCallbackGenerator](this);
+                const cleanupBlurListener = setupBlurDetection(this, callbackForBlur);
+                this.cleanupFunctions.push(cleanupBlurListener);
             }
 
-            var inputCallbackGenerator = this.propertyName+'Input';
-            if (undefined !== this._subject.cb[inputCallbackGenerator]) {
-                this.object.removeEventListener('input', this._subject.cb[inputCallbackGenerator](this));
-                this.object.addEventListener('input', this._subject.cb[inputCallbackGenerator](this));
-            }
-
-            var keydownCallbackGenerator = this.propertyName+'Keydown';
+            const keydownCallbackGenerator = this.propertyName+'Keydown';
             if (undefined !== this._subject.cb[keydownCallbackGenerator]) {
+                const keydownCBFunc = this._subject.cb[keydownCallbackGenerator](this);
                 this.object.removeEventListener('keydown', this._subject.cb[keydownCallbackGenerator](this));
                 this.object.addEventListener('keydown', this._subject.cb[keydownCallbackGenerator](this));
+
+                this.cleanupFunctions.push(function() {
+                    $self.object.removeEventListener('keydown', keydownCBFunc);
+                });
             }
 
             // Add autocomplete disabler.
@@ -77,6 +220,13 @@ function EnderecoSubscriber(propertyName, observableObject, options = {}) {
                     this.object.setAttribute('autocomplete', 'off' );
                 }
             }
+            const selfRef = this;
+            const cleanupInterval = setInterval(function() {
+                if (!document.contains(selfRef.object)) {
+                    selfRef.cleanupResources();
+                    clearInterval(cleanupInterval);
+                }
+            }, 100);
 
             // Add autocomplete subsriber.
             // Skip for hidden type inputs.
@@ -193,76 +343,15 @@ function EnderecoSubscriber(propertyName, observableObject, options = {}) {
                 }
             }
         },
-        setValue: function(value) {
-            var $self = this;
-            if (['radio', 'checkbox'].includes(this.object.type) ) {
-                var preValue = this.object.checked;
-                var newValue = false;
-
-                if (this.object.value === ('' + value)) {
-                    newValue = true;
-                } else {
-                    newValue = false;
-                }
-
-                if (!!this._subject) {
-                    if (!!this.object.dispatchEvent(
-                        new this._subject.util.CustomEvent(
-                            'endereco-change',
-                            {
-                                'bubbles': true,
-                                'cancelable': true
-                            }
-                        )
-                    )) {
-                        this.object.checked = newValue;
-                        this.object.dispatchEvent(new this._subject.util.CustomEvent(
-                            'endereco-blur',
-                            {
-                                'bubbles': true
-                            }
-                        ));
-                    }
-                } else {
-                    this.object.checked = newValue;
-                }
+        setValue(value) {
+            // Simplify the setting of `newValue` for checkbox and radio inputs
+            if (['radio', 'checkbox'].includes(this.object.type)) {
+                const newValue = this.object.value === String(value);
+                this.updateCheckedValue(newValue);
             } else {
-                if (Array.isArray(value)) {
-                    this.object.value = value.join(',');
-                } else {
-                    if (!!this._subject) {
-                        if (!!this.object.dispatchEvent(
-                            new this._subject.util.CustomEvent(
-                                'endereco-change',
-                                {
-                                    'bubbles': true,
-                                    'cancelable': true
-                                }
-                            )
-                        )) {
-                            this.object.value = value;
-                            this.object.dispatchEvent(new this._subject.util.CustomEvent(
-                                'endereco-blur',
-                                {
-                                    'bubbles': true
-                                }
-                            ));
-                        }
-                    } else {
-                        this.object.value = value;
-                    }
-
-                    if (this.subject && this.subject.config.ux.smartFill) {
-                        var blockFunc = function(e) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                        }
-                        setTimeout(function() {
-                            $self.object.removeEventListener('keydown', blockFunc);
-                        }, this.subject.config.ux.smartFillBlockTime);
-                        $self.object.addEventListener('keydown', blockFunc);
-                    }
-                }
+                // Handle array values and standard values
+                const newValue = Array.isArray(value) ? value.join(',') : value;
+                this.updateValue(newValue);
             }
         },
         setClassList: function(value) {

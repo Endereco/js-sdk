@@ -5,7 +5,7 @@ var BuildingNumberExtension = {
         return new ExtendableObject.util.Promise(function(resolve, reject) {
             ExtendableObject._buildingNumber = '';
             ExtendableObject._subscribers.buildingNumber = [];
-
+            ExtendableObject._localBuildingNumberState = 1;
             var $buildingNumberTimeout;
 
             ExtendableObject.cb.setBuildingNumber = function(buildingNumber) {
@@ -16,6 +16,7 @@ var BuildingNumberExtension = {
 
             ExtendableObject.cb.buildingNumberChange = function(subscriber) {
                 return function(e) {
+                    ExtendableObject._changed = true;
                     ExtendableObject.buildingNumber = subscriber.value;
                 }
             };
@@ -23,14 +24,8 @@ var BuildingNumberExtension = {
             ExtendableObject.cb.buildingNumberInput = function(subscriber) {
                 return function(e) {
                     ExtendableObject._changed = true;
-
-                    if (!!$buildingNumberTimeout) {
-                        clearTimeout($buildingNumberTimeout)
-                    }
-
-                    $buildingNumberTimeout = setTimeout( function() {
-                        ExtendableObject.buildingNumber = subscriber.value;
-                    }, 1500);
+                    ExtendableObject.buildingNumber = subscriber.value;
+                    ExtendableObject.addressStatus = [];
                 }
             };
 
@@ -63,27 +58,41 @@ var BuildingNumberExtension = {
                     ExtendableObject.util.Promise.resolve(value).then(function(value) {
                         ExtendableObject._awaits++;
                         ExtendableObject.cb.setBuildingNumber(value).then( function(value) {
+                            if (ExtendableObject.active) {
+                                ExtendableObject._localBuildingNumberState++;
+                            }
+
+                            // Always update street full.
+                            if (
+                                ExtendableObject.active &&
+                                ExtendableObject.hasLoadedExtension('StreetFullExtension') &&
+                                ['general_address', 'shipping_address', 'billing_address'].includes(ExtendableObject.addressType) &&
+                                ExtendableObject._localBuildingNumberState > ExtendableObject._localStreetFullState
+                            ) {
+                                ExtendableObject._localStreetNameState++;
+                                ExtendableObject.streetFull = ExtendableObject.util.formatStreetFull(
+                                    {
+                                        countryCode: ExtendableObject.countryCode,
+                                        streetName: ExtendableObject.streetName,
+                                        buildingNumber: value,
+                                        additionalInfo: ExtendableObject.additionalInfo
+                                    }
+                                );
+                            }
+
                             var oldValue = ExtendableObject._buildingNumber;
                             var newValue = value;
 
                             var notSame = ExtendableObject._buildingNumber !== value;
 
-                            // Chunk set.
-                            if (ExtendableObject.hasLoadedExtension('BuildingNumberAutocompleteExtension')) {
-                                notSame = notSame || ( ExtendableObject._buildingNumberChunk !== value );
-                            }
-
                             if (notSame) {
-                                ExtendableObject._buildingNumber = value;
 
-                                if (ExtendableObject.hasLoadedExtension('BuildingNumberAutocompleteExtension')) {
-                                    ExtendableObject._buildingNumberChunk = value;
-                                }
 
+                                ExtendableObject._buildingNumber = newValue;
 
                                 // Inform all subscribers about the change.
                                 ExtendableObject._subscribers.buildingNumber.forEach(function (subscriber) {
-                                    subscriber.value = value;
+                                    subscriber.updateValue(value, true);
                                 });
 
                                 if (ExtendableObject.active) {
@@ -100,14 +109,6 @@ var BuildingNumberExtension = {
                                             }
                                         )
                                     );
-                                }
-
-                                // If street full is set, generate full street and write it to it.
-                                if (
-                                    ExtendableObject.hasLoadedExtension('StreetFullExtension') &&
-                                    ['general_address', 'shipping_address', 'billing_address'].includes(ExtendableObject.addressType)
-                                ) {
-                                    ExtendableObject.setField('streetFull', ExtendableObject.util.formatStreetFull(), false);
                                 }
                             }
                         }).catch(function(e) {

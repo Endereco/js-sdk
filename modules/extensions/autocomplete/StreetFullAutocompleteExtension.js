@@ -27,22 +27,9 @@ var StreetFullAutocompleteExtension = {
                 ExtendableObject.util.renderStreetFullPredictionsDropdown = function() {
                     // Render dropdown under the input element
                     ExtendableObject._subscribers.streetFullChunk.forEach( function(subscriber) {
-                        if (document.querySelector('[endereco-predictions]')) {
-                            document.querySelector('[endereco-predictions]').parentNode.removeChild(document.querySelector('[endereco-predictions]'));
-                        }
-
-                        // If only one prediction and no difference, then dont render, just copy to fields.
-                        if (
-                            1 === ExtendableObject._streetFullPredictions.length &&
-                            (document.activeElement === subscriber.object) &&
-                            ExtendableObject.config.ux.smartFill
-                        ) {
-                            var inputString = ExtendableObject.streetFullChunk.toLowerCase();
-                            var bestMatch = ExtendableObject._streetFullPredictions[0].streetFull.substring(0, inputString.length).toLowerCase();
-                            if (2 > ExtendableObject.util.levenstein.get(inputString, bestMatch) && 3 < inputString.length) {
-                                ExtendableObject.cb.copyStreetFullFromPrediction(0);
-                            }
-                            return false;
+                        if (document.querySelector('[endereco-street-full-predictions]')) {
+                            ExtendableObject._openDropdowns--;
+                            document.querySelector('[endereco-street-full-predictions]').parentNode.removeChild(document.querySelector('[endereco-street-full-predictions]'));
                         }
 
                         // Render predictions only if the field is active and there are predictions.
@@ -90,6 +77,7 @@ var StreetFullAutocompleteExtension = {
 
                             // Attach it to HTML.
                             subscriber.object.insertAdjacentHTML('afterend', predictionsHtml);
+                            ExtendableObject._openDropdowns++;
                             document.querySelectorAll('[data-id="'+ExtendableObject.id+'"] [endereco-street-full-prediction]').forEach(function(DOMElement) {
                                 DOMElement.addEventListener('mousedown', function(e) {
                                     var index = parseInt(this.getAttribute('data-prediction-index'))
@@ -122,23 +110,34 @@ var StreetFullAutocompleteExtension = {
                     return function(e) {
                         clearTimeout(ExtendableObject._streetFullTimeout);
                         ExtendableObject._streetFullTimeout = setTimeout(function() {
-                            ExtendableObject._changed = true;
                             ExtendableObject.streetFullPredictions = [];
                             ExtendableObject._streetFullPredictionsIndex = 0;
                             ExtendableObject.streetFullChunk = subscriber.value;
                         }, ExtendableObject.config.ux.delay.inputAssistant);
 
+                        if (ExtendableObject.active) {
+                            ExtendableObject._changed = true;
+                            ExtendableObject.addressStatus = [];
+                        }
                     }
                 };
 
                 ExtendableObject.cb.streetFullChunkBlur = function(subscriber) {
                     return function(e) {
-                        ExtendableObject.streetFullPredictions = [];
-                        ExtendableObject._streetFullPredictionsIndex = 0;
-                        if (document.querySelector('[endereco-predictions]')) {
-                            document.querySelector('[endereco-predictions]').parentNode.removeChild(document.querySelector('[endereco-predictions]'));
+                        const isAnyActive = ExtendableObject._subscribers.streetFull.some(sub => document.activeElement === sub.object);
+
+                        if (!isAnyActive) {
+                            // Reset values and remove dropdown
+                            ExtendableObject.streetFullPredictions = [];
+                            ExtendableObject._streetFullPredictionsIndex = 0;
+
+                            const predictionsElement = document.querySelector('[endereco-street-full-predictions]');
+                            if (predictionsElement) {
+                                ExtendableObject._openDropdowns--;
+                                predictionsElement.parentNode.removeChild(predictionsElement);
+                            }
                         }
-                    }
+                    };
                 };
 
                 // Key events.
@@ -185,6 +184,9 @@ var StreetFullAutocompleteExtension = {
                     },
                     set: function(value) {
                         ExtendableObject._awaits++;
+                        if (ExtendableObject.active) {
+                            ExtendableObject._globalStreetState++;
+                        }
                         ExtendableObject.util.Promise.resolve(value).then(function(value) {
                             if (ExtendableObject._streetFullChunk !== value) {
                                 if (value.length < ExtendableObject._streetFullChunk.length) {
@@ -196,19 +198,7 @@ var StreetFullAutocompleteExtension = {
                                     clearTimeout($streetFullChunkTimeout)
                                 }
 
-                                $streetFullChunkTimeout = setTimeout( function() {
-                                    ExtendableObject.streetFull = value;
-                                }, 1000);
-
-                                // TODO possible problem, revisit later.
-                                /**
-                                 * Wipe the inner data for streetname and building number, as those will be regenerated on
-                                 * change event.
-                                  * @type {string}
-                                 * @private
-                                 */
-                                ExtendableObject._streetName = '';
-                                ExtendableObject._buildingNumber = '';
+                                ExtendableObject.streetFull = value;
 
                                 // Get predictions.
                                 if (
@@ -284,6 +274,11 @@ var StreetFullAutocompleteExtension = {
                                                 })
 
                                                 ExtendableObject.streetFullPredictions = streetFullPredictionsTemp;
+                                            }
+
+                                            // Check for the old session id and regenerate if necessary.
+                                            if (response.data.error?.code === -32700 && ExtendableObject.util.updateSessionId) {
+                                                ExtendableObject.util.updateSessionId();
                                             }
                                         })
                                         .catch(function(e) {

@@ -16,13 +16,20 @@ var PhoneExtension = {
             ExtendableObject.cb.phoneChange = function(subscriber) {
                 return function(e) {
                     ExtendableObject.phone = subscriber.value;
+                    ExtendableObject._changed = true;
+                }
+            };
+
+            ExtendableObject.cb.phoneInput = function(subscriber) {
+                return function(e) {
+                    ExtendableObject.phone = subscriber.value;
+                    ExtendableObject._changed = true;
                 }
             };
 
             ExtendableObject.cb.phoneBlur = function(subscriber) {
-                return function(e) {
+                return function(subscriber) {
                     ExtendableObject.waitUntilReady().then(function() {
-
                         if (ExtendableObject.onBlurTimeout) {
                             clearTimeout(ExtendableObject.onBlurTimeout);
                             ExtendableObject.onBlurTimeout = null;
@@ -81,6 +88,7 @@ var PhoneExtension = {
                                         console.log('Failed checking phone', e, ExtendableObject);
                                     }).finally(function() {
                                         ExtendableObject._awaits--;
+                                        ExtendableObject._changed = false;
                                     })
                                 }
                             }

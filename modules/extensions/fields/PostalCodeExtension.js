@@ -62,12 +62,17 @@ var PostalCodeExtension = {
 
                                 if (ExtendableObject.hasLoadedExtension('PostalCodeAutocompleteExtension')) {
                                     ExtendableObject._postalCodeChunk = value;
+
+                                    // Inform all subscribers about the change.
+                                    ExtendableObject._subscribers.postalCodeChunk.forEach(function (subscriber) {
+                                        subscriber.updateValue(value, true);
+                                    });
                                 }
 
 
                                 // Inform all subscribers about the change.
                                 ExtendableObject._subscribers.postalCode.forEach(function (subscriber) {
-                                    subscriber.value = value;
+                                    subscriber.updateValue(value, true);
                                 });
 
                                 if (ExtendableObject.active) {

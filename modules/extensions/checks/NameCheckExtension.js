@@ -70,7 +70,6 @@ var NameCheckExtension = {
                             var newValue = value;
                             if (oldValue !== newValue) {
                                 ExtendableObject._salutationStatus = newValue;
-                                ExtendableObject._changed = false;
 
                                 // Inform all subscribers about the change.
                                 ExtendableObject._subscribers.salutationStatus.forEach(function (subscriber) {
@@ -108,7 +107,6 @@ var NameCheckExtension = {
                             var newValue = value;
                             if (oldValue !== newValue) {
                                 ExtendableObject._firstNameStatus = newValue;
-                                ExtendableObject._changed = false;
 
                                 // Inform all subscribers about the change.
                                 ExtendableObject._subscribers.firstNameStatus.forEach(function (subscriber) {
@@ -146,7 +144,6 @@ var NameCheckExtension = {
                             var newValue = value;
                             if (oldValue !== newValue) {
                                 ExtendableObject._lastNameStatus = newValue;
-                                ExtendableObject._changed = false;
 
                                 // Inform all subscribers about the change.
                                 ExtendableObject._subscribers.lastNameStatus.forEach(function (subscriber) {
@@ -184,7 +181,6 @@ var NameCheckExtension = {
                             var newValue = value;
                             if (oldValue !== newValue) {
                                 ExtendableObject._titleStatus = newValue;
-                                ExtendableObject._changed = false;
 
                                 // Inform all subscribers about the change.
                                 ExtendableObject._subscribers.titleStatus.forEach(function (subscriber) {

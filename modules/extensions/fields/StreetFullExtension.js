@@ -11,6 +11,8 @@ var StreetFullExtension = {
             ExtendableObject._streetFullSplitRequestIndex = 1;
             ExtendableObject.config.templates.streetFull = streetFullTemplateFactory;
 
+            ExtendableObject._localStreetFullState = 1;
+
             ExtendableObject.cb.setStreetFull = function(streetFull) {
                 return new ExtendableObject.util.Promise(function(resolve, reject) {
                     resolve(streetFull);
@@ -49,9 +51,6 @@ var StreetFullExtension = {
                 }
 
                 return new ExtendableObject.util.Promise(function(resolve, reject) {
-                    ExtendableObject._streetFullSplitRequestIndex++;
-                    var streetFullSplitRequestIndex = ExtendableObject._streetFullSplitRequestIndex * 1;
-
                     var message = {
                         'jsonrpc': '2.0',
                         'id': ExtendableObject._streetFullSplitRequestIndex,
@@ -76,8 +75,8 @@ var StreetFullExtension = {
                         }
                     })
                         .then(function(response) {
-                            if (undefined !== response.data.result && (streetFullSplitRequestIndex === ExtendableObject._streetFullSplitRequestIndex)) {
-                                resolve(response.data.result);
+                            if (undefined !== response.data.result && (ExtendableObject._streetFullSplitRequestIndex === response.data.id)) {
+                                resolve(response.data);
                             } else {
                                 reject(response.data)
                             }
@@ -119,6 +118,58 @@ var StreetFullExtension = {
                     ExtendableObject.util.Promise.resolve(value).then(function(value) {
                         ExtendableObject._awaits++;
                         ExtendableObject.cb.setStreetFull(value).then( function(value) {
+
+                            if (ExtendableObject.active) {
+                                ExtendableObject._localStreetFullState++;
+                            }
+
+                            if (
+                                ExtendableObject.hasLoadedExtension('StreetNameExtension') &&
+                                ExtendableObject.hasLoadedExtension('BuildingNumberExtension') &&
+                                ['general_address', 'shipping_address', 'billing_address'].includes(ExtendableObject.addressType) &&
+                                ExtendableObject._localStreetFullState > Math.max(ExtendableObject._localStreetNameState, ExtendableObject._localBuildingNumberState)
+                            ) {
+                                ExtendableObject.waitForActive().then(function() {
+                                    ExtendableObject._awaits++;
+                                    ExtendableObject.util.splitStreet(value).then(function(data) {
+                                        ExtendableObject._awaits++;
+                                        if (
+                                            ExtendableObject.hasLoadedExtension('AdditionalInfoExtension') &&
+                                            !!data.result.additionalInfo
+                                        ) {
+                                            ExtendableObject.additionalInfo = data.result.additionalInfo;
+                                        }
+
+                                        if (
+                                            ExtendableObject.hasLoadedExtension('BuildingNumberExtension')
+                                        ) {
+                                            ExtendableObject.buildingNumber = data.result.houseNumber;
+                                        }
+
+                                        if (
+                                            ExtendableObject.hasLoadedExtension('StreetNameExtension')
+                                        ) {
+                                            ExtendableObject.streetName = data.result.streetName;
+                                        }
+
+                                        ExtendableObject._awaits--;
+                                    }).catch(function(e) {
+                                        if (
+                                            ExtendableObject.hasLoadedExtension('StreetNameExtension')
+                                        ) {
+                                            ExtendableObject.streetName = ExtendableObject.streetFull;
+                                        }
+                                        if (
+                                            ExtendableObject.hasLoadedExtension('BuildingNumberExtension')
+                                        ) {
+                                            ExtendableObject.buildingNumber = '';
+                                        }
+                                    }).finally(function() {
+                                        ExtendableObject._awaits--;
+                                    })
+                                }).catch();
+                            }
+
                             var oldValue = ExtendableObject._streetFull;
                             var newValue = value;
 
@@ -134,11 +185,16 @@ var StreetFullExtension = {
 
                                 if (ExtendableObject.hasLoadedExtension('StreetFullAutocompleteExtension')) {
                                     ExtendableObject._streetFullChunk = newValue;
+
+                                    // Inform all subscribers about the change.
+                                    ExtendableObject._subscribers.streetFullChunk.forEach(function (subscriber) {
+                                        subscriber.updateValue(value, true);
+                                    });
                                 }
 
                                 // Inform all subscribers about the change.
                                 ExtendableObject._subscribers.streetFull.forEach(function (subscriber) {
-                                    subscriber.value = newValue;
+                                    subscriber.updateValue(newValue, true);
                                 });
 
                                 if (ExtendableObject.active) {
@@ -157,58 +213,7 @@ var StreetFullExtension = {
                                     );
                                 }
 
-                                // Split and write sub parts.
-                                if (
-                                    ExtendableObject.hasLoadedExtension('StreetNameExtension') &&
-                                    ExtendableObject.hasLoadedExtension('BuildingNumberExtension') &&
-                                    ['general_address', 'shipping_address', 'billing_address'].includes(ExtendableObject.addressType)
-                                ) {
-                                    ExtendableObject.waitForActive().then(function() {
-                                        ExtendableObject._awaits++;
-                                        ExtendableObject.util.splitStreet().then(function(data) {
-                                            ExtendableObject._awaits++;
-                                            if (
-                                                ExtendableObject.hasLoadedExtension('AdditionalInfoExtension') &&
-                                                !!data.additionalInfo
-                                            ) {
-                                                ExtendableObject.setField('additionalInfo', data.additionalInfo, false);
-                                            }
-                                            if (
-                                                ExtendableObject.hasLoadedExtension('BuildingNumberExtension')
-                                            ) {
-                                                if (!!data.houseNumber) {
-                                                    ExtendableObject.setField('buildingNumber', data.houseNumber, false);
-                                                } else {
-                                                    ExtendableObject.setField('buildingNumber', '', false);
-                                                }
-                                            }
-                                            if (
-                                                ExtendableObject.hasLoadedExtension('StreetNameExtension')
-                                            ) {
-                                                if (!!data.streetName && !!data.houseNumber) {
-                                                    ExtendableObject.setField('streetName', data.streetName, false);
-                                                } else {
-                                                    ExtendableObject.setField('streetName', data.street, false);
-                                                }
 
-                                            }
-                                            ExtendableObject._awaits--;
-                                        }).catch(function(e) {
-                                            if (
-                                                ExtendableObject.hasLoadedExtension('StreetNameExtension')
-                                            ) {
-                                                ExtendableObject.setField('streetName', ExtendableObject.streetFull, false);
-                                            }
-                                            if (
-                                                ExtendableObject.hasLoadedExtension('BuildingNumberExtension')
-                                            ) {
-                                                ExtendableObject.setField('buildingNumber', '', false);
-                                            }
-                                        }).finally(function() {
-                                            ExtendableObject._awaits--;
-                                        })
-                                    }).catch();
-                                }
                             }
 
                         }).catch(function(e) {

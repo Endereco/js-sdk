@@ -13,6 +13,12 @@ var AddressExtension = {
             ]).then(function() {
                 ExtendableObject._subscribers.address = [];
 
+                ExtendableObject._openDropdowns = 0;
+
+                ExtendableObject.hasOpenDropdowns = function() {
+                    return ExtendableObject._openDropdowns > 0;
+                };
+
                 ExtendableObject.cb.setAddress = function(address) {
                     return new ExtendableObject.util.Promise(function(resolve, reject) {
                         resolve(address);

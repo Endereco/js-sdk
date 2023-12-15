@@ -62,12 +62,16 @@ var LocalityExtension = {
 
                                 if (ExtendableObject.hasLoadedExtension('LocalityAutocompleteExtension')) {
                                     ExtendableObject._localityChunk = value;
-                                }
 
+                                    // Inform all subscribers about the change.
+                                    ExtendableObject._subscribers.localityChunk.forEach(function (subscriber) {
+                                        subscriber.updateValue(value, true);
+                                    });
+                                }
 
                                 // Inform all subscribers about the change.
                                 ExtendableObject._subscribers.locality.forEach(function (subscriber) {
-                                    subscriber.value = value;
+                                    subscriber.updateValue(value, true);
                                 });
 
                                 if (ExtendableObject.active) {

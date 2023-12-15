@@ -16,7 +16,7 @@ function EnderecoBase() {
             splitStreet: true,
             useAutocomplete: true,
             ux: {
-                smartFill: true,
+                smartFill: false,
                 smartFillBlockTime: 600,
                 resumeSubmit: true,
                 disableBrowserAutocomplete: true,
@@ -280,45 +280,47 @@ function EnderecoBase() {
         removeSubscriber: function(EnderecoSubscriber) {
             // TODO: remove subscriber from subscribers list.
         },
-        syncValues: function() {
+        syncValues: function(specificKeys) {
             var $self = this;
             return new Promise(function(resolve, reject) {
-                var keys = Object.keys($self._subscribers);
-                keys.forEach( function(key) {
-                    $self._subscribers[key].forEach(function(subscriber) {
-                        if(!!subscriber._subject) {
-                            subscriber._subject._awaits++;
-                        }
-                        // Sync values.
-                        $self.util.Promise.resolve(subscriber.value).then(function(subscriberValue) {
-                            var innerValue = $self[key];
+                var keys = specificKeys || Object.keys($self._subscribers);
+                keys.forEach(function(key) {
+                    if ($self._subscribers[key]) {
+                        $self._subscribers[key].forEach(function(subscriber) {
+                            if (subscriber._subject) {
+                                subscriber._subject._awaits++;
+                            }
+                            // Sync values.
+                            $self.util.Promise.resolve(subscriber.value).then(function(subscriberValue) {
+                                var innerValue = $self[key];
 
-                            if(Array.isArray(innerValue)) {
-                                innerValue = innerValue.join();
-                            }
+                                if (Array.isArray(innerValue)) {
+                                    innerValue = innerValue.join();
+                                }
 
-                            var innerValueEmpty = !innerValue && 0 !== innerValue;
-                            var subscriberValueEmpty = !subscriberValue && 0 !== subscriberValue;
+                                var innerValueEmpty = !innerValue && innerValue !== 0;
+                                var subscriberValueEmpty = !subscriberValue && subscriberValue !== 0;
 
-                            if (!subscriberValueEmpty && innerValueEmpty) {
-                                $self[key] = subscriberValue;
-                            }
-                            if (subscriberValueEmpty && !innerValueEmpty) {
-                                subscriber.value = $self[key];
-                            }
-                            if(!!subscriber._subject) {
-                                subscriber._subject._awaits--;
-                            }
-                            resolve();
-                        }).catch(function(e) {
-                            if ($self.config.showDebugInfo) {
-                                console.log('Error syncing values ', e);
-                            }
-                            reject(e);
-                        })
-                    })
+                                if (!subscriberValueEmpty && innerValueEmpty) {
+                                    $self[key] = subscriberValue;
+                                }
+                                if (subscriberValueEmpty && !innerValueEmpty) {
+                                    subscriber.value = $self[key];
+                                }
+                                if (subscriber._subject) {
+                                    subscriber._subject._awaits--;
+                                }
+                                resolve();
+                            }).catch(function(e) {
+                                if ($self.config.showDebugInfo) {
+                                    console.log('Error syncing values', e);
+                                }
+                                reject(e);
+                            });
+                        });
+                    }
                 });
-            })
+            });
         },
         setField: function(fieldName, fieldValue, markAsChanged=true) {
             var $self = this;
