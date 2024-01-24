@@ -95,8 +95,12 @@ function processFormsInterval(ExtendableObject) {
                 if (!ExtendableObject.formsWithSession.includes(form)) {
                     addInputIfNotExists(form, ExtendableObject.fullName + '_session_id', ExtendableObject);
                     addInputIfNotExists(form, ExtendableObject.fullName + '_session_counter', ExtendableObject);
+                    // Subscribe to own fields
+                    subscribeToField(ExtendableObject, 'sessionId');
+                    subscribeToField(ExtendableObject, 'sessionCounter');
                     ExtendableObject.formsWithSession.push(form);
                 }
+                // TODO: we need a handling logic, for when the session fields already exist in a form (from server side template)
             });
         }
     }, 500);
@@ -111,10 +115,6 @@ function addInputIfNotExists(form, name, ExtendableObject) {
 
 function handleAfterCreate(ExtendableObject) {
     ExtendableObject.waitForActive().then(() => {
-        // Subscribe to own fields
-        subscribeToField(ExtendableObject, 'sessionId');
-        subscribeToField(ExtendableObject, 'sessionCounter');
-
         ExtendableObject.waitUntilReady().then(() => {
             ExtendableObject.syncValues(['sessionId', 'sessionCounter'])
                 .then(() => {
