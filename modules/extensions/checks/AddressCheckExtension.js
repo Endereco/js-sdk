@@ -1318,8 +1318,7 @@ var AddressCheckExtension = {
                                     'country': address.countryCode,
                                     'language': ExtendableObject.config.lang,
                                     'postCode': address.postalCode,
-                                    'cityName': address.locality,
-                                    'additionalInfos': address.additionalInfos
+                                    'cityName': address.locality
                                 }
                             };
 
@@ -1338,6 +1337,15 @@ var AddressCheckExtension = {
                                     if (!listener.object.disabled
                                         && listener.object.isConnected) {
                                         message.params.subdivisionCode = address.subdivisionCode;
+                                    }
+                                });
+                            }
+
+                            if ((0 < ExtendableObject._subscribers.additionalInfo.length)) {
+                                ExtendableObject._subscribers.additionalInfo.forEach( function(listener) {
+                                    if (!listener.object.disabled
+                                        && listener.object.isConnected) {
+                                        message.params.additionalInfo = address.additionalInfo;
                                     }
                                 });
                             }

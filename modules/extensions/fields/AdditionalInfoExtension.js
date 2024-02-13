@@ -15,6 +15,11 @@ var AdditionalInfoExtension = {
             ExtendableObject.cb.additionalInfoChange = function(subscriber) {
                 return function(e) {
                     ExtendableObject.additionalInfo = subscriber.value;
+
+                    if (ExtendableObject.active) {
+                        ExtendableObject._changed = true;
+                        ExtendableObject.addressStatus = [];
+                    }
                 }
             };
 
