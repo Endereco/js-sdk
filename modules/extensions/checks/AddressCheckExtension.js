@@ -1400,6 +1400,10 @@ var AddressCheckExtension = {
                                             tempAddressContainer.subdivisionCode = address.subdivisionCode;
                                         }
 
+                                        if (address.hasOwnProperty('additionalInfo')) {
+                                            tempAddressContainer.additionalInfo = address.additionalInfo;
+                                        }
+
                                         // Filter out identical copy.
                                         if (copyOfPredictions.includes(tempAddressContainer)) {
                                             return false;
