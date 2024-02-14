@@ -134,13 +134,6 @@ var StreetFullExtension = {
                                     ExtendableObject.util.splitStreet(value).then(function(data) {
                                         ExtendableObject._awaits++;
                                         if (
-                                            ExtendableObject.hasLoadedExtension('AdditionalInfoExtension') &&
-                                            !!data.result.additionalInfo
-                                        ) {
-                                            ExtendableObject.additionalInfo = data.result.additionalInfo;
-                                        }
-
-                                        if (
                                             ExtendableObject.hasLoadedExtension('BuildingNumberExtension')
                                         ) {
                                             ExtendableObject.buildingNumber = data.result.houseNumber;
