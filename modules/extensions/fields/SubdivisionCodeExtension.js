@@ -67,18 +67,17 @@ var SubdivisionCodeExtension = {
                         ExtendableObject._awaits++;
                         ExtendableObject.cb.setSubdivisionCode(value).then( function(value) {
                             var oldValue = ExtendableObject._subdivisionCode;
-                            var newValue = value;
+                            var newValue = value.toUpperCase(); // Force normalize.
                             if (ExtendableObject._subdivisionCode !== value) {
                                 ExtendableObject._subdivisionCode = value;
 
-                                // Inform all subscribers about the change.
+                                // Inform all subscribers about the change while updating their inner state.
                                 ExtendableObject._subscribers.subdivisionCode.forEach(function (subscriber) {
-                                    subscriber.value = value;
+                                    subscriber.updateValue(value, true);
                                 });
 
                                 // Fire change event for listeners.
                                 if (ExtendableObject.active) {
-                                    ExtendableObject._changed = true;
                                     ExtendableObject.fire(
                                         new ExtendableObject.util.CustomEvent(
                                             'change',

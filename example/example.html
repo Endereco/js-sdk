@@ -239,16 +239,16 @@
             };
 
             // Country matching functions.
-            EnderecoIntegrator.resolvers.countryCodeWrite = function (value) {
-                return new Promise(function (resolve, reject) {
-                    resolve(window.EnderecoIntegrator.countryReverseMapping[value]);
-                });
-            }
-            EnderecoIntegrator.resolvers.countryCodeRead = function (value) {
-                return new Promise(function (resolve, reject) {
-                    resolve(window.EnderecoIntegrator.countryMapping[value]);
-                });
-            }
+			EnderecoIntegrator.resolvers.countryCodeWrite = function(value) {
+				return new Promise(function(resolve, reject) {
+					resolve(value.toUpperCase());
+				});
+			}
+			EnderecoIntegrator.resolvers.countryCodeRead = function(value) {
+				return new Promise(function(resolve, reject) {
+					resolve(value.toUpperCase());
+				});
+			}
 
             // Execute all function that have been called throughout the page.
             window.EnderecoIntegrator.onLoad.forEach(function (callback) {
@@ -446,9 +446,9 @@
 					Land
 					<select class="country" id="country">
 						<option value="" selected>-- Bitte Land auswählen --</option>
-						<option value="1">Deutschland</option>
-						<option value="2">Frankreich</option>
-						<option value="3">USA</option>
+						<option value="DE">Deutschland</option>
+						<option value="FR">Frankreich</option>
+						<option value="US">USA</option>
 					</select>
 				</label>
 			</div>

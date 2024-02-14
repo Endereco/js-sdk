@@ -86,14 +86,13 @@ var CountryCodeExtension = {
                         ExtendableObject._awaits++;
                         ExtendableObject.cb.setCountryCode(value).then( function(value) {
                             var oldValue = ExtendableObject._countryCode;
-                            var newValue = value;
+                            var newValue = value.toUpperCase(); // Force normalize.
                             if (ExtendableObject._countryCode !== value) {
                                 ExtendableObject._countryCode = value;
-                                ExtendableObject._changed = true;
 
-                                // Inform all subscribers about the change.
+                                // Inform all subscribers about the change while updating their inner state.
                                 ExtendableObject._subscribers.countryCode.forEach(function (subscriber) {
-                                    subscriber.value = value;
+                                    subscriber.updateValue(value, true);
                                 });
 
                                 // Fire change event for listeners.
