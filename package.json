@@ -4,9 +4,12 @@
   "description": "## Einleitung",
   "main": "index.js",
   "scripts": {
-    "build": "cross-env NODE_ENV=production NODE_OPTIONS=--openssl-legacy-provider webpack --progress --hide-modules && npm run build-styles",
-    "build-styles": "cross-env NODE_ENV=production NODE_OPTIONS=--openssl-legacy-provider webpack --config webpack-styles.config.js && rm dist/style.js",
-    "serve": "webpack serve"
+    "build": "npm run build-styles && cross-env NODE_ENV=production NODE_OPTIONS=--openssl-legacy-provider webpack --progress && npm run copy",
+    "build-styles": "cross-env NODE_ENV=production NODE_OPTIONS=--openssl-legacy-provider webpack --config webpack-styles.config.js && rimraf dist/style.js && npm run copy-styles",
+    "copy": "copyfiles -u 1 ./dist/endereco.min.js ./demo/assets",
+    "copy-styles": "copyfiles -u 1 ./dist/endereco.min.css ./demo/assets",
+    "serve": "webpack serve",
+    "demo": "nodemon -e js,mjs,cjs,json,html demo/app.js & browser-sync start --proxy 'localhost:8888' --files 'demo/**/*.js, demo/**/*.css, demo/**/*.html' --open"
   },
   "dependencies": {
     "@babel/cli": "^7.8.4",
@@ -14,28 +17,29 @@
     "@babel/polyfill": "^7.8.7",
     "@babel/preset-env": "^7.9.5",
     "@babel/register": "^7.9.0",
-    "axios": "^0.21.1",
+    "axios": "^1.6.7",
     "babel-loader": "^8.1.0",
     "babel-preset-env": "^1.7.0",
     "babel-preset-stage-3": "^7.0.0-beta.3",
     "classlist-polyfill": "^1.2.0",
+    "cors": "^2.8.5",
     "cross-env": "^7.0.2",
-    "css-loader": "^3.5.2",
+    "css-loader": "^6.10.0",
     "custom-event-polyfill": "^1.0.7",
     "diff": "^4.0.2",
+    "express": "^4.18.2",
     "fast-levenshtein": "^2.0.6",
     "html-loader": "^0.5.5",
     "lodash.isequal": "^4.5.0",
     "lodash.merge": "^4.6.2",
     "mini-css-extract-plugin": "^1.6.2",
     "mustache": "^4.0.0",
+    "nodemon": "^3.0.3",
     "promise-polyfill": "^8.1.3",
     "sass": "^1.70.0",
     "sass-loader": "^10.3.1",
     "terser-webpack-plugin": "^4.1.0",
-    "uuid": "^8.0.0",
-    "webpack": "^4.42.1",
-    "webpack-cli": "^3.3.11"
+    "uuid": "^8.0.0"
   },
   "browserslist": [
     "> 1%",
@@ -54,5 +58,12 @@
   "bugs": {
     "url": "https://github.com/Endereco/js-sdk/issues"
   },
-  "homepage": "https://github.com/Endereco/js-sdk#readme"
+  "homepage": "https://github.com/Endereco/js-sdk#readme",
+  "devDependencies": {
+    "browser-sync": "^3.0.2",
+    "copyfiles": "^2.4.1",
+    "rimraf": "^5.0.5",
+    "webpack": "^5.90.3",
+    "webpack-cli": "^5.1.4"
+  }
 }

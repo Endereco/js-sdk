@@ -4,8 +4,7 @@ module.exports = {
   mode: 'production',
   entry: './themes/default-theme.scss',
   output: {
-    path: __dirname + '/dist',
-    filename: 'style.js'
+    path: __dirname + '/dist'
   },
   module: {
     rules: [
@@ -22,6 +21,6 @@ module.exports = {
   plugins: [
     new MiniCssExtractPlugin({
       filename: 'endereco.min.css'
-    })
+    }),
   ]
 };
