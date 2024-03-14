@@ -62,6 +62,14 @@ EnderecoIntegrator.resolvers.salutationRead = function(value) {
     });
 }
 
+EnderecoIntegrator.amsFilters.isAddressMetaStillRelevant.push((isStillRelevant, EAO) => {
+    const invalidateAddressForm = document.querySelector('#invalidate-address-form');
+    if (invalidateAddressForm && invalidateAddressForm.checked) {
+        isStillRelevant = false;
+    }
+    return isStillRelevant;
+});
+
 if (window.EnderecoIntegrator) {
     window.EnderecoIntegrator = merge(window.EnderecoIntegrator, EnderecoIntegrator);
 } else {

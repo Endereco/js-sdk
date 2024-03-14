@@ -7,6 +7,9 @@ import EnderecoPhoneObject from "./phoneservices";
 import 'core-js/fn/promise/finally';
 
 var EnderecoIntegrator = {
+    amsFilters: {
+        isAddressMetaStillRelevant: []
+    },
     popupQueue: 0,
     enderecoPopupQueue: 0,
     ready: false,

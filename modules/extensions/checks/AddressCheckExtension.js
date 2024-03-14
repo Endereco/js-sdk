@@ -63,8 +63,8 @@ var AddressCheckExtension = {
                     let allPostalCodesDisabled = ExtendableObject._subscribers.postalCode.length > 0 && 
                         !ExtendableObject._subscribers.postalCode.some(subscriber => !subscriber.object.disabled);
     
-                    if (!allPostalCodesDisabled) {
-                        return false; // If any postal code subscriber is not disabled, return false early
+                    if (allPostalCodesDisabled) {
+                        return true; // If all postal code subscriber is not disabled, return false early
                     }
 
                     let allLocalitiesDisabled = ExtendableObject._subscribers.locality.length > 0 && 
@@ -1389,6 +1389,16 @@ var AddressCheckExtension = {
                                     }
 
                                     if (ExtendableObject.areEssentialsDisabled()) {
+                                        return;
+                                    }
+
+                                    let isStillRelevant = true;
+                                    window.EnderecoIntegrator.amsFilters.isAddressMetaStillRelevant.some(function(callback) {
+                                        isStillRelevant = callback(isStillRelevant, ExtendableObject);
+                                        return !isStillRelevant; // If isStillRelevant is false, some() will stop iterating.
+                                    });
+
+                                    if (!isStillRelevant) {
                                         return;
                                     }
 
