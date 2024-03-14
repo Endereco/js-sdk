@@ -59,6 +59,20 @@ var AddressCheckExtension = {
 
                 ExtendableObject.onBlurTimeout = null;
 
+                ExtendableObject.areEssentialsDisabled = function() {
+                    let allPostalCodesDisabled = ExtendableObject._subscribers.postalCode.length > 0 && 
+                        !ExtendableObject._subscribers.postalCode.some(subscriber => !subscriber.object.disabled);
+    
+                    if (!allPostalCodesDisabled) {
+                        return false; // If any postal code subscriber is not disabled, return false early
+                    }
+
+                    let allLocalitiesDisabled = ExtendableObject._subscribers.locality.length > 0 && 
+                        !ExtendableObject._subscribers.locality.some(subscriber => !subscriber.object.disabled);
+                    
+                    return allLocalitiesDisabled; // Return true if all localities are disabled, false otherwise
+                }
+
                 ExtendableObject.waitForPopupAreaToBeFree = function() {
                     return new ExtendableObject.util.Promise(function(resolve, reject) {
                         var waitForFreePlace = setInterval(function() {
@@ -1374,6 +1388,10 @@ var AddressCheckExtension = {
                                         return;
                                     }
 
+                                    if (ExtendableObject.areEssentialsDisabled()) {
+                                        return;
+                                    }
+
                                     // If session counter is set, increase it.
                                     if (ExtendableObject.hasLoadedExtension('SessionExtension')) {
                                         ExtendableObject.sessionCounter++;
@@ -1438,7 +1456,9 @@ var AddressCheckExtension = {
                                 ExtendableObject._addressIsBeingChecked = false;
                                 ExtendableObject.submitUnblocked();
                             });
-                        }).catch()
+                        }).catch( function(e) {
+                            console.log(e);
+                        });
                     })
                 }
 
