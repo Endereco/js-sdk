@@ -148,12 +148,12 @@ function EnderecoSubscriber(propertyName, observableObject, options = {}) {
                 this.dispatchEvent('endereco-blur');
             }
         },
-        updateValue(newValues, updateInnerState = false) {
+        updateValue(newValue, updateInnerState = true) {
             if (this.dispatchEvent('endereco-change')) {
-                this.object.value = newValues;
+                this.object.value = newValue;
 
                 if (updateInnerState) {
-                    this.lastValue = newValues;
+                    this.lastValue = newValue;
                 }
 
                 this.dispatchEvent('endereco-blur');

@@ -181,13 +181,13 @@ var StreetFullExtension = {
 
                                     // Inform all subscribers about the change.
                                     ExtendableObject._subscribers.streetFullChunk.forEach(function (subscriber) {
-                                        subscriber.updateValue(value, true);
+                                        subscriber.value = value;
                                     });
                                 }
 
                                 // Inform all subscribers about the change.
                                 ExtendableObject._subscribers.streetFull.forEach(function (subscriber) {
-                                    subscriber.updateValue(newValue, true);
+                                    subscriber.value = value;
                                 });
 
                                 if (ExtendableObject.active) {

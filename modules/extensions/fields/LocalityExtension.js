@@ -65,13 +65,13 @@ var LocalityExtension = {
 
                                     // Inform all subscribers about the change.
                                     ExtendableObject._subscribers.localityChunk.forEach(function (subscriber) {
-                                        subscriber.updateValue(value, true);
+                                        subscriber.value = value;
                                     });
                                 }
 
                                 // Inform all subscribers about the change.
                                 ExtendableObject._subscribers.locality.forEach(function (subscriber) {
-                                    subscriber.updateValue(value, true);
+                                    subscriber.value = value;
                                 });
 
                                 if (ExtendableObject.active) {

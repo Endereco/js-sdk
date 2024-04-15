@@ -92,7 +92,7 @@ var BuildingNumberExtension = {
 
                                 // Inform all subscribers about the change.
                                 ExtendableObject._subscribers.buildingNumber.forEach(function (subscriber) {
-                                    subscriber.updateValue(value, true);
+                                    subscriber.value = value;
                                 });
 
                                 if (ExtendableObject.active) {

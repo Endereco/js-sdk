@@ -65,14 +65,14 @@ var PostalCodeExtension = {
 
                                     // Inform all subscribers about the change.
                                     ExtendableObject._subscribers.postalCodeChunk.forEach(function (subscriber) {
-                                        subscriber.updateValue(value, true);
+                                        subscriber.value = value;
                                     });
                                 }
 
 
                                 // Inform all subscribers about the change.
                                 ExtendableObject._subscribers.postalCode.forEach(function (subscriber) {
-                                    subscriber.updateValue(value, true);
+                                    subscriber.value = value;
                                 });
 
                                 if (ExtendableObject.active) {

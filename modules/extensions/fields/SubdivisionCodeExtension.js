@@ -73,7 +73,7 @@ var SubdivisionCodeExtension = {
 
                                 // Inform all subscribers about the change while updating their inner state.
                                 ExtendableObject._subscribers.subdivisionCode.forEach(function (subscriber) {
-                                    subscriber.updateValue(value, true);
+                                    subscriber.value = value;
                                 });
 
                                 // Fire change event for listeners.

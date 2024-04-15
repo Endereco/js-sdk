@@ -90,13 +90,13 @@ var StreetNameExtension = {
 
                                     // Inform all subscribers about the change.
                                     ExtendableObject._subscribers.streetNameChunk.forEach(function (subscriber) {
-                                        subscriber.updateValue(value, true);
+                                        subscriber.value = value;
                                     });
                                 }
 
                                 // Inform all subscribers about the change.
                                 ExtendableObject._subscribers.streetName.forEach(function (subscriber) {
-                                    subscriber.updateValue(value, true);
+                                    subscriber.value = value;
                                 });
 
                                 if (ExtendableObject.active) {
