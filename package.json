@@ -1,14 +1,12 @@
 {
   "name": "@endereco/js-sdk",
   "version": "1.10.1",
-  "description": "## Einleitung",
   "main": "index.js",
   "scripts": {
     "build": "npm run build-styles && cross-env NODE_ENV=production NODE_OPTIONS=--openssl-legacy-provider webpack --progress && npm run copy",
     "build-styles": "cross-env NODE_ENV=production NODE_OPTIONS=--openssl-legacy-provider webpack --config webpack-styles.config.js && rimraf dist/style.js && npm run copy-styles",
     "copy": "copyfiles -u 1 ./dist/endereco.min.js ./demo/assets",
     "copy-styles": "copyfiles -u 1 ./dist/endereco.min.css ./demo/assets",
-    "serve": "webpack serve",
     "demo": "nodemon -e js,mjs,cjs,json,html demo/app.js & browser-sync start --proxy 'localhost:8888' --files 'demo/**/*.js, demo/**/*.css, demo/**/*.html' --open"
   },
   "dependencies": {
@@ -19,7 +17,6 @@
     "@babel/register": "^7.9.0",
     "axios": "^1.6.7",
     "babel-loader": "^8.1.0",
-    "babel-preset-env": "^1.7.0",
     "babel-preset-stage-3": "^7.0.0-beta.3",
     "classlist-polyfill": "^1.2.0",
     "cors": "^2.8.5",
@@ -39,14 +36,25 @@
     "sass": "^1.70.0",
     "sass-loader": "^10.3.1",
     "terser-webpack-plugin": "^4.1.0",
-    "uuid": "^8.0.0"
+    "uuid": "^8.0.0",
+    "copyfiles": "^2.4.1",
+    "rimraf": "^5.0.5",
+    "webpack": "^5.90.3",
+    "webpack-cli": "^5.1.4"
   },
   "browserslist": [
     "> 1%",
     "last 2 versions",
     "not ie <= 9"
   ],
-  "author": "ilja_weber <info@ilja-weber.de>",
+  "author": "Ilja Weber <info@ilja-weber.de>",
+  "contributors": [
+    {
+      "name": "Anett Waßmann",
+      "email": "anett@endereco.de",
+      "url": "https://www.ndereco.de"
+    }
+  ],
   "license": "ISC",
   "directories": {
     "example": "example"
@@ -60,10 +68,6 @@
   },
   "homepage": "https://github.com/Endereco/js-sdk#readme",
   "devDependencies": {
-    "browser-sync": "^3.0.2",
-    "copyfiles": "^2.4.1",
-    "rimraf": "^5.0.5",
-    "webpack": "^5.90.3",
-    "webpack-cli": "^5.1.4"
+    "browser-sync": "^3.0.2"
   }
 }

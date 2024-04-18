@@ -8,25 +8,6 @@ const host = 'localhost';
 const port = 8888;
 const sync_port = 3000;
 
-// sometimes there is a network error: NS_BINDING_ABORTED
-// seems like x-transaction-id is not set to uuid
-// this workarround works not for all cases
-// set x-transaction-id header if not present
-let uuidv4;
-try {
-    uuidv4 = require('uuid').v4;
-} catch (e) {
-    uuidv4 = () => 'not_required';
-}
-
-app.post('/proxyfile', (req, res, next) => {
-    if (!req.headers['x-transaction-id']) {
-        req.headers['x-transaction-id'] = uuidv4();
-        console.log('x-transaction-id not set, set to uuid or not_required if uuid is not available');
-    }
-    next();
-});
-
 // Helper function to read a file
 async function readFile(filePath, res, contentType) {
     try {
@@ -62,13 +43,13 @@ app.use('/assets', express.static(path.join(__dirname, 'assets')));
 const router = express.Router();
 
 // Handle POST requests to /use-cases
-router.post('/use-cases/:usecase/:file', async (req, res) => {
+router.post('/use-cases/:usecase', async (req, res) => {
     // Handle your POST request here
     // You can access the posted data with req.body
 });
 
 // Handle GET requests to /use-cases
-router.get('/use-cases/:usecase/:file', async (req, res) => {
+router.get('/use-cases/:usecase', async (req, res) => {
     const filePath = path.join(__dirname, `/use-cases/${req.params.usecase}/index.html`);
     readFile(filePath, res, "text/html");
 });
@@ -84,9 +65,6 @@ router.get('/', async (req, res) => {
     const links = directories.filter(Boolean).map(dir => `<a href="/use-cases/${dir}/index.html">${dir}</a>`);
     res.send(`Verfügbare Testfälle: ${links.join(', ')}`);
 });
-
-// Serve assets
-app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
 // Proxy file upload
 router.post('/proxyfile', async (req, res) => {
