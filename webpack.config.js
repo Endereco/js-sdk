@@ -7,9 +7,9 @@ module.exports = {
     'endereco': './bundle.js',
   },
   output: {
+    filename: 'endereco.min.js',
     path: path.resolve(__dirname, './dist/'),
     publicPath: '/',
-    filename: 'endereco.min.js'
   },
   optimization: {
     minimize: true,
@@ -81,7 +81,7 @@ module.exports = {
   performance: {
     hints: false
   },
-  devtool: '(none)',
+  devtool: 'source-map',
   plugins: [
-  ]
+  ],
 };

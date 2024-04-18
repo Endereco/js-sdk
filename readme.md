@@ -277,3 +277,46 @@ Zum Beispiel:
     });
 </script>
 ```
+## Testumgebung für Endereco JavaScript-SDK & Endereco Webservices
+
+Diese Anwendung dient als Testumgebung für die Entwicklung und das Testen des Endereco JavaScript-SDK und der Endereco Webservices. Sie ermöglicht es Entwicklern und Testern, verschiedene Anwendungsfälle zu simulieren und zu überprüfen, wie die Software bzw. die Serveranfragen unter verschiedenen Bedingungen reagieren.
+
+### Nutzung der Testumgebung
+
+Führen sie den folgenden Befehl im Hauptverzeichnis des js-sdk aus:
+
+```bash
+npm run demo
+```
+
+Dies startet den Server und öffnet automatisch Ihren Standardbrowser. Sie können dann auf `localhost:8888` navigieren, um eine Liste aller verfügbaren Testfälle zu sehen. Klicken Sie auf den Link zu einem Testfall, um ihn anzuzeigen.
+
+Alternativ können Sie die Browsersync Implementierung nutzen.
+
+### Browsersync Integration
+
+Browsersync wurde in das Demo-Skript integriert, um eine schnellere und effizientere Entwicklung zu ermöglichen. Wenn Sie `npm run demo` ausführen, startet Browsersync automatisch und öffnet Ihren Standardbrowser. Es wird ein lokaler Server auf `localhost:3000` erstellt, auf dem die Demo läuft.
+
+Browsersync verfolgt alle Änderungen in Ihren Dateien. Wenn Sie eine Datei speichern, wird die Webseite automatisch neu geladen, so dass Sie Ihre Änderungen sofort sehen können. Dies gilt für alle `.js`, `.css` und `.html` Dateien im `demo` Verzeichnis.
+
+Um die Browsersync-Sitzung zu beenden, drücken Sie einfach `Ctrl+C` in Ihrem Terminal.
+
+Die Anwendung kann aber weiterhin auf `localhost:8888` ohne Browsersync genutzt werden.
+
+### Demonstration am Beispiel "Example"
+
+Zum Beispiel wird der Link zu "example" Sie zu localhost:8888/use-cases/example/example.html führen und die Datei example.html aus dem Verzeichnis demo/use-cases/example/ anzeigen.
+
+Hier haben wir bereits eine Übersicht aller Funktionen der Endereco Webservices in einem überschtlichen Formular für Sie zusammengefasst. Nach der Eingabe eines gültigen API-Sclüssels können sie die Endereco Webservices nach Belieben testen. Wenn Sie noch keinen API-Schlüssel besitzen, finden Sie alle weiterführenden Informationen und Kontaktdaten auf https://www.endereco.de/. 
+
+### Erstellen weiterer Testfälle
+
+Um weitere Testfälle zu erstellen, erstellen Sie einen neuen Ordner unter `use-cases`. Der Name des Ordners sollte den Testfall beschreiben. Innerhalb dieses Ordners erstellen Sie die benötigten Dateien (z.B. HTML, JS, CSS).
+
+Der Startpunkt des Testfalls sollte in einer HTML-Datei mit dem gleichen Namen wie der Ordner sein. Zum Beispiel, wenn Ihr Testfall "new-test-case" heißt, sollten Sie eine Datei namens `new-test-case.html` erstellen, denn dort beginnt die Anwendung.
+
+Nachdem Sie den neuen Testfall erstellt haben, aktualisiert sich der Server selbständig, sie müssen nur den Browser aktualisieren. starten Sie den Server wie oben beschrieben. Ihr neuer Testfall sollte nun in der Liste der verfügbaren Testfälle auf `localhost:8888` erscheinen. Klicken Sie auf den Link zu Ihrem Testfall, um ihn anzuzeigen.
+
+### Serveranfragen / Proxy
+
+Die Anbindung an den Endereco API Server ist bereits in der App eingerichtet, so das hier keine weiteren Modifikationen notwendig sein sollten. Antworten werden automatisch an den Startpunkt Ihres spezifischen Testfalls weitergeleitet. Wenn Ihr Testfall wie im Beispiel "new-test-case" heißt, werden Antworten automatisch an `new-test-case.html` übermittelt.
