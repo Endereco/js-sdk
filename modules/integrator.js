@@ -146,7 +146,7 @@ var EnderecoIntegrator = {
         }
     },
     resolvers: {
-        addressPredictionsWrite: function(value) {
+        addressPredictionsWrite: function(value, subscriber) {
             return new Promise(function(resolve, reject) {
                 if (!value) {
                     resolve(value);
@@ -160,7 +160,7 @@ var EnderecoIntegrator = {
                 }
             });
         },
-        addressPredictionsRead: function(value) {
+        addressPredictionsRead: function(value, subscriber) {
             return new Promise(function(resolve, reject) {
                 if (!value) {
                     resolve(value);
@@ -231,13 +231,13 @@ var EnderecoIntegrator = {
                 ) {
                     var phoneSubscriberOptions = {};
                     if (!!$self.resolvers.phoneWrite) {
-                        phoneSubscriberOptions['writeFilterCb'] = function(value) {
-                            return $self.resolvers.phoneWrite(value);
+                        phoneSubscriberOptions['writeFilterCb'] = function(value, subscriber) {
+                            return $self.resolvers.phoneWrite(value, subscriber);
                         }
                     }
                     if (!!$self.resolvers.phoneRead) {
                         phoneSubscriberOptions['readFilterCb'] = function(value) {
-                            return $self.resolvers.phoneRead(value);
+                            return $self.resolvers.phoneRead(value, subscriber);
                         }
                     }
                     if (!!$self.resolvers.phoneSetValue) {
@@ -265,13 +265,13 @@ var EnderecoIntegrator = {
                 ) {
                     var countryCodeSubscriberOptions = {};
                     if (!!$self.resolvers.countryCodeWrite) {
-                        countryCodeSubscriberOptions['writeFilterCb'] = function(value) {
-                            return $self.resolvers.countryCodeWrite(value);
+                        countryCodeSubscriberOptions['writeFilterCb'] = function(value, subscriber) {
+                            return $self.resolvers.countryCodeWrite(value, subscriber);
                         }
                     }
                     if (!!$self.resolvers.countryCodeRead) {
-                        countryCodeSubscriberOptions['readFilterCb'] = function(value) {
-                            return $self.resolvers.countryCodeRead(value);
+                        countryCodeSubscriberOptions['readFilterCb'] = function(value, subscriber) {
+                            return $self.resolvers.countryCodeRead(value, subscriber);
                         }
                     }
                     if (!!$self.resolvers.countryCodeSetValue) {
@@ -378,13 +378,13 @@ var EnderecoIntegrator = {
                 ) {
                     var countryCodeSubscriberOptions = {};
                     if (!!$self.resolvers.countryCodeWrite) {
-                        countryCodeSubscriberOptions['writeFilterCb'] = function(value) {
-                            return $self.resolvers.countryCodeWrite(value);
+                        countryCodeSubscriberOptions['writeFilterCb'] = function(value, subscriber) {
+                            return $self.resolvers.countryCodeWrite(value, subscriber);
                         }
                     }
                     if (!!$self.resolvers.countryCodeRead) {
-                        countryCodeSubscriberOptions['readFilterCb'] = function(value) {
-                            return $self.resolvers.countryCodeRead(value);
+                        countryCodeSubscriberOptions['readFilterCb'] = function(value, subscriber) {
+                            return $self.resolvers.countryCodeRead(value, subscriber);
                         }
                     }
                     if (!!$self.resolvers.countryCodeSetValue) {
@@ -405,13 +405,13 @@ var EnderecoIntegrator = {
                 document.querySelectorAll($self.getSelector(postfix.subdivisionCode)).forEach( function(DOMElement) {
                     var subdivisionCodeSubscriberOptions = {};
                     if (!!$self.resolvers.subdivisionCodeWrite) {
-                        subdivisionCodeSubscriberOptions['writeFilterCb'] = function(value) {
-                            return $self.resolvers.subdivisionCodeWrite(value, EAO);
+                        subdivisionCodeSubscriberOptions['writeFilterCb'] = function(value, subscriber) {
+                            return $self.resolvers.subdivisionCodeWrite(value, subscriber);
                         }
                     }
                     if (!!$self.resolvers.subdivisionCodeRead) {
-                        subdivisionCodeSubscriberOptions['readFilterCb'] = function(value) {
-                            return $self.resolvers.subdivisionCodeRead(value, EAO);
+                        subdivisionCodeSubscriberOptions['readFilterCb'] = function(value, subscriber) {
+                            return $self.resolvers.subdivisionCodeRead(value, subscriber);
                         }
                     }
                     if (!!$self.resolvers.subdivisionCodeSetValue) {
@@ -532,18 +532,18 @@ var EnderecoIntegrator = {
                         'addressPredictions',
                         document.querySelector($self.getSelector(postfix.addressPredictions)),
                         {
-                            writeFilterCb: function(value) {
+                            writeFilterCb: function(value, subscriber) {
                                 if (!!$self.resolvers.addressPredictionsWrite) {
-                                    return $self.resolvers.addressPredictionsWrite(value);
+                                    return $self.resolvers.addressPredictionsWrite(value, subscriber);
                                 } else {
                                     return new EAO.util.Promise(function(resolve, reject) {
                                         resolve(value);
                                     });
                                 }
                             },
-                            readFilterCb: function(value) {
+                            readFilterCb: function(value, subscriber) {
                                 if (!!$self.resolvers.addressPredictionsRead) {
-                                    return $self.resolvers.addressPredictionsRead(value);
+                                    return $self.resolvers.addressPredictionsRead(value, subscriber);
                                 } else {
                                     return new EAO.util.Promise(function(resolve, reject) {
                                         resolve(value);
@@ -684,18 +684,18 @@ var EnderecoIntegrator = {
                         'email',
                         document.querySelector($self.getSelector(prefix + postfix.email)),
                         {
-                            writeFilterCb: function(value) {
+                            writeFilterCb: function(value, subscriber) {
                                 if (!!$self.resolvers.emailWrite) {
-                                    return $self.resolvers.emailWrite(value);
+                                    return $self.resolvers.emailWrite(value, subscriber);
                                 } else {
                                     return new EEO.util.Promise(function(resolve, reject) {
                                         resolve(value);
                                     });
                                 }
                             },
-                            readFilterCb: function(value) {
+                            readFilterCb: function(value, subscriber) {
                                 if (!!$self.resolvers.emailRead) {
-                                    return $self.resolvers.emailRead(value);
+                                    return $self.resolvers.emailRead(value, subscriber);
                                 } else {
                                     return new EEO.util.Promise(function(resolve, reject) {
                                         resolve(value);
@@ -716,18 +716,18 @@ var EnderecoIntegrator = {
                         'emailStatus',
                         document.querySelector($self.getSelector(prefix + postfix.email)),
                         {
-                            writeFilterCb: function(value) {
+                            writeFilterCb: function(value, subscriber) {
                                 if (!!$self.resolvers.emailStatusWrite) {
-                                    return $self.resolvers.emailStatusWrite(value);
+                                    return $self.resolvers.emailStatusWrite(value, subscriber);
                                 } else {
                                     return new EEO.util.Promise(function(resolve, reject) {
                                         resolve(value);
                                     });
                                 }
                             },
-                            readFilterCb: function(value) {
+                            readFilterCb: function(value, subscriber) {
                                 if (!!$self.resolvers.emailStatusRead) {
-                                    return $self.resolvers.emailStatusRead(value);
+                                    return $self.resolvers.emailStatusRead(value, subscriber);
                                 } else {
                                     return new EEO.util.Promise(function(resolve, reject) {
                                         resolve(value);
@@ -803,13 +803,13 @@ var EnderecoIntegrator = {
                 ) {
                     var salutationSubscriberOptions = {};
                     if (!!$self.resolvers.salutationWrite) {
-                        salutationSubscriberOptions['writeFilterCb'] = function(value) {
-                            return $self.resolvers.salutationWrite(value);
+                        salutationSubscriberOptions['writeFilterCb'] = function(value, subscriber) {
+                            return $self.resolvers.salutationWrite(value, subscriber);
                         }
                     }
                     if (!!$self.resolvers.salutationRead) {
-                        salutationSubscriberOptions['readFilterCb'] = function(value) {
-                            return $self.resolvers.salutationRead(value);
+                        salutationSubscriberOptions['readFilterCb'] = function(value, subscriber) {
+                            return $self.resolvers.salutationRead(value, subscriber);
                         }
                     }
                     if (!!$self.resolvers.salutationSetValue) {
@@ -835,18 +835,18 @@ var EnderecoIntegrator = {
                         'firstName',
                         document.querySelector($self.getSelector(prefix + postfix.firstName)),
                         {
-                            writeFilterCb: function(value) {
+                            writeFilterCb: function(value, subscriber) {
                                 if (!!$self.resolvers.firstNameWrite) {
-                                    return $self.resolvers.firstNameWrite(value);
+                                    return $self.resolvers.firstNameWrite(value, subscriber);
                                 } else {
                                     return new EPO.util.Promise(function(resolve, reject) {
                                         resolve(value);
                                     });
                                 }
                             },
-                            readFilterCb: function(value) {
+                            readFilterCb: function(value, subscriber) {
                                 if (!!$self.resolvers.firstNameRead) {
-                                    return $self.resolvers.firstNameRead(value);
+                                    return $self.resolvers.firstNameRead(value, subscriber);
                                 } else {
                                     return new EPO.util.Promise(function(resolve, reject) {
                                         resolve(value);
@@ -865,13 +865,13 @@ var EnderecoIntegrator = {
                 ) {
                     var lastNameSubscriberOptions = {};
                     if (!!$self.resolvers.lastNameWrite) {
-                        lastNameSubscriberOptions['writeFilterCb'] = function(value) {
-                            return $self.resolvers.lastNameWrite(value);
+                        lastNameSubscriberOptions['writeFilterCb'] = function(value, subscriber) {
+                            return $self.resolvers.lastNameWrite(value, subscriber);
                         }
                     }
                     if (!!$self.resolvers.lastNameRead) {
-                        lastNameSubscriberOptions['readFilterCb'] = function(value) {
-                            return $self.resolvers.lastNameRead(value);
+                        lastNameSubscriberOptions['readFilterCb'] = function(value, subscriber) {
+                            return $self.resolvers.lastNameRead(value, subscriber);
                         }
                     }
                     if (!!$self.resolvers.lastNameSetValue) {
@@ -894,13 +894,13 @@ var EnderecoIntegrator = {
                 ) {
                     var titleSubscriberOptions = {};
                     if (!!$self.resolvers.titleWrite) {
-                        titleSubscriberOptions['writeFilterCb'] = function(value) {
-                            return $self.resolvers.titleWrite(value);
+                        titleSubscriberOptions['writeFilterCb'] = function(value, subscriber) {
+                            return $self.resolvers.titleWrite(value, subscriber);
                         }
                     }
                     if (!!$self.resolvers.titleRead) {
-                        titleSubscriberOptions['readFilterCb'] = function(value) {
-                            return $self.resolvers.titleRead(value);
+                        titleSubscriberOptions['readFilterCb'] = function(value, subscriber) {
+                            return $self.resolvers.titleRead(value, subscriber);
                         }
                     }
                     if (!!$self.resolvers.titleSetValue) {
@@ -923,13 +923,13 @@ var EnderecoIntegrator = {
                 ) {
                     var nameScoreSubscriberOptions = {};
                     if (!!$self.resolvers.nameScoreWrite) {
-                        nameScoreSubscriberOptions['writeFilterCb'] = function(value) {
-                            return $self.resolvers.nameScoreWrite(value);
+                        nameScoreSubscriberOptions['writeFilterCb'] = function(value, subscriber) {
+                            return $self.resolvers.nameScoreWrite(value, subscriber);
                         }
                     }
                     if (!!$self.resolvers.nameScoreRead) {
-                        nameScoreSubscriberOptions['readFilterCb'] = function(value) {
-                            return $self.resolvers.nameScoreRead(value);
+                        nameScoreSubscriberOptions['readFilterCb'] = function(value, subscriber) {
+                            return $self.resolvers.nameScoreRead(value, subscriber);
                         }
                     }
                     if (!!$self.resolvers.nameScoreSetValue) {

@@ -41,22 +41,22 @@ EnderecoIntegrator.postfix = {
 if (css) {
     EnderecoIntegrator.css = css[0][1];
 }
-EnderecoIntegrator.resolvers.countryCodeWrite = function (value) {
+EnderecoIntegrator.resolvers.countryCodeWrite = function (value, subscriber) {
     return new Promise(function (resolve, reject) {
         resolve(value);
     });
 }
-EnderecoIntegrator.resolvers.countryCodeRead = function(value) {
+EnderecoIntegrator.resolvers.countryCodeRead = function(value, subscriber) {
     return new Promise(function(resolve, reject) {
         resolve(value);
     });
 }
-EnderecoIntegrator.resolvers.salutationWrite = function(value) {
+EnderecoIntegrator.resolvers.salutationWrite = function(value, subscriber) {
     return new Promise(function(resolve, reject) {
         resolve(value);
     });
 }
-EnderecoIntegrator.resolvers.salutationRead = function(value) {
+EnderecoIntegrator.resolvers.salutationRead = function(value, subscriber) {
     return new Promise(function(resolve, reject) {
         resolve(value);
     });

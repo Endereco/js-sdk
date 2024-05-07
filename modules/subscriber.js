@@ -10,12 +10,12 @@ function EnderecoSubscriber(propertyName, observableObject, options = {}) {
         useWatcher: false,
         syncValue: false,
         autosubscribeToStatus: true,
-        writeFilterCb: function(value) {
+        writeFilterCb: function(value, selfReference) {
             return new Promise(function(resolve, reject) {
                 return resolve(value);
             })
         },
-        readFilterCb: function(value) {
+        readFilterCb: function(value, selfReference) {
             return new Promise(function(resolve, reject) {
                 return resolve(value);
             })
@@ -298,7 +298,7 @@ function EnderecoSubscriber(propertyName, observableObject, options = {}) {
             } else {
                 value = this.get(this.options.valueContainer);
             }
-            return this.options.readFilterCb(value);
+            return this.options.readFilterCb(value, $self);
         },
         set value(value) {
             var $self = this;
@@ -310,7 +310,7 @@ function EnderecoSubscriber(propertyName, observableObject, options = {}) {
             if (!!$self._subject) {
                 $self._subject._awaits++;
             }
-            this.options.writeFilterCb(value)
+            this.options.writeFilterCb(value, $self)
                 .then(function(value) {
                     if ('classList' === $self.options.valueContainer) {
                         return $self.setClassList(value);
