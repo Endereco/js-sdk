@@ -7,7 +7,7 @@
     "build-styles": "cross-env NODE_ENV=production NODE_OPTIONS=--openssl-legacy-provider webpack --config webpack-styles.config.js && rimraf dist/style.js && npm run copy-styles",
     "copy": "copyfiles -u 1 ./dist/endereco.min.js ./demo/assets",
     "copy-styles": "copyfiles -u 1 ./dist/endereco.min.css ./demo/assets",
-    "demo": "nodemon -e js,mjs,cjs,json,html demo/app.js & browser-sync start --proxy 'localhost:8888' --files 'demo/**/*.js, demo/**/*.css, demo/**/*.html' --open"
+    "demo": "nodemon -e js,mjs,cjs,json,html,njk demo/app.js"
   },
   "dependencies": {
     "@babel/cli": "^7.8.4",
@@ -26,15 +26,15 @@
     "custom-event-polyfill": "^1.0.7",
     "diff": "^4.0.2",
     "express": "^4.18.2",
+    "express-nunjucks": "^3.1.2",
     "fast-levenshtein": "^2.0.6",
-    "html-loader": "^0.5.5",
+    "html-loader": "^5.0.0",
     "lodash.isequal": "^4.5.0",
     "lodash.merge": "^4.6.2",
     "mini-css-extract-plugin": "^1.6.2",
     "mustache": "^4.0.0",
-    "nodemon": "^3.0.3",
+    "nunjucks": "^3.2.4",
     "promise-polyfill": "^8.1.3",
-    "rimraf": "^5.0.5",
     "sass": "^1.70.0",
     "sass-loader": "^10.3.1",
     "terser-webpack-plugin": "^4.1.0",
@@ -70,13 +70,14 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.0.2",
     "@eslint/js": "^9.1.1",
-    "browser-sync": "^3.0.2",
     "eslint": "^8.57.0",
     "eslint-config-standard": "^17.1.0",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-n": "^16.6.2",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^6.1.1",
-    "globals": "^15.0.0"
+    "globals": "^15.0.0",
+    "nodemon": "^3.1.4",
+    "rimraf": "^5.0.8"
   }
 }

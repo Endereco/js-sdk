@@ -1,0 +1,117 @@
+{% import 'components/formfields.njk' as formfields %}
+
+{% macro formular(
+  name, 
+  suffix, 
+  submittedData=null,
+  streetModus='streetFull',
+  showSubdivision=true,
+  showAdditionalInfo=true  
+  ) 
+%}
+
+<h2 class="text-xl font-semibold text-gray-900 mb-3">{{ name }}</h2>
+<div class="bg-gray-200 rounded-lg p-6 my-4">
+    {% if streetModus == 'streetFull' %}
+    <div class="flex flex-wrap -mx-3 mb-6 hidden">
+        <div class="w-full md:w-1/2 px-3 mb-6 md:mb-0 hidden">
+            {{ formfields.inputField('street'+suffix, 'Street Name', submittedData['street' + suffix] ) }}
+        </div>
+        <div class="w-full md:w-1/2 px-3 hidden">
+            {{ formfields.inputField('buildingNumber'+suffix, 'Building Number', submittedData['buildingNumber'+suffix]) }}
+        </div>
+    </div>
+    <div class="flex flex-wrap -mx-3 mb-6">
+        <div class="w-full px-3">
+            {{ formfields.inputField('streetFull'+suffix, 'Street (full)', submittedData['streetFull'+suffix]) }}
+        </div>
+    </div>
+    {% elif streetModus == 'streetName' %}
+    <div class="flex flex-wrap -mx-3 mb-6">
+        <div class="w-full md:w-1/2 px-3 mb-6 md:mb-0">
+            {{ formfields.inputField('street'+suffix, 'Street Name', submittedData['street' + suffix] ) }}
+        </div>
+        <div class="w-full md:w-1/2 px-3">
+            {{ formfields.inputField('buildingNumber'+suffix, 'Building Number', submittedData['buildingNumber'+suffix]) }}
+        </div>
+    </div>
+    <div class="flex flex-wrap -mx-3 mb-6 hidden">
+        <div class="w-full px-3">
+            {{ formfields.inputField('streetFull'+suffix, 'Street (full)', submittedData['streetFull'+suffix]) }}
+        </div>
+    </div>
+    {% elif streetModus == 'onlyStreetFull' %}
+    <div class="flex flex-wrap -mx-3 mb-6">
+        <div class="w-full px-3">
+            {{ formfields.inputField('streetFull'+suffix, 'Street (full)', submittedData['streetFull'+suffix]) }}
+        </div>
+    </div>
+    {% elif streetModus == 'onlyStreetName' %}
+    <div class="flex flex-wrap -mx-3 mb-6">
+        <div class="w-full md:w-1/2 px-3 mb-6 md:mb-0">
+            {{ formfields.inputField('street'+suffix, 'Street Name', submittedData['street' + suffix] ) }}
+        </div>
+        <div class="w-full md:w-1/2 px-3">
+            {{ formfields.inputField('buildingNumber'+suffix, 'Building Number', submittedData['buildingNumber'+suffix]) }}
+        </div>
+    </div>
+    {% endif %}
+    <div class="flex flex-wrap -mx-3 mb-6">
+        <div class="w-full md:w-1/2 px-3 mb-6 md:mb-0">
+            {{ formfields.inputField('postalCode'+suffix, 'PostalCode', submittedData['postalCode'+suffix]) }}
+        </div>
+        <div class="w-full md:w-1/2 px-3">
+            {{ formfields.inputField('locality'+suffix, 'Locality', submittedData['locality'+suffix]) }}
+        </div>
+    </div>
+    <div class="flex flex-wrap -mx-3 mb-6">
+        <div class="w-full px-3">
+            {% if showAdditionalInfo %}
+                {{ formfields.inputField('additionalInfo'+suffix, 'Additional Info (Apartment, Door)', submittedData['additionalInfo'+suffix]) }}
+            {% endif %}
+        </div>
+    </div>
+    <div class="flex flex-wrap -mx-3 mb-6">
+        <div class="w-full px-3">
+            {{ formfields.selectField('countryCode'+suffix, 'Land', [
+                { value: '', text: '-- Please select a country --' },
+                { value: '1', text: 'German' },
+                { value: '2', text: 'France' },
+                { value: '3', text: 'USA' }
+            ], submittedData['countryCode'+suffix]) }}
+        </div>
+    </div>
+    <div class="flex flex-wrap -mx-3 mb-6">
+        <div class="w-full px-3">
+            {% if showSubdivision %}
+                {{ formfields.selectField('subdivisionCode'+suffix, 'Region', [
+                    { value: '', text: '-- Please select a region --' },
+                    { value: 'DE-BW', text: 'Baden-Württemberg (Baden-Wuerttemberg)' },
+                    { value: 'DE-BY', text: 'Bayern (Bavaria)' },
+                    { value: 'DE-BE', text: 'Berlin' },
+                    { value: 'DE-BB', text: 'Brandenburg' },
+                    { value: 'DE-HB', text: 'Bremen' },
+                    { value: 'DE-HH', text: 'Hamburg' },
+                    { value: 'DE-HE', text: 'Hessen (Hesse)' },
+                    { value: 'DE-MV', text: 'Mecklenburg-Vorpommern (Mecklenburg-Western Pomerania)' },
+                    { value: 'DE-NI', text: 'Niedersachsen (Lower Saxony)' },
+                    { value: 'DE-NW', text: 'Nordrhein-Westfalen (North Rhine-Westphalia)' },
+                    { value: 'DE-RP', text: 'Rheinland-Pfalz (Rhineland-Palatinate)' },
+                    { value: 'DE-SL', text: 'Saarland' },
+                    { value: 'DE-SN', text: 'Sachsen (Saxony)' },
+                    { value: 'DE-ST', text: 'Sachsen-Anhalt (Saxony-Anhalt)' },
+                    { value: 'DE-SH', text: 'Schleswig-Holstein' },
+                    { value: 'DE-TH', text: 'Thüringen (Thuringia)' }
+                ], submittedData['subdivisionCode'+suffix]) }}
+            {% endif %}
+        </div>
+    </div>
+    <div class="hidden">
+        <!-- unsichtbare Felder, die ein Modul hinzufügen soll -->
+        <input type="hidden" name="{{ 'status'+suffix }}" value="{{ submittedData['status'+suffix] }}">
+        <input type="hidden" name="{{ 'timestamp'+suffix }}" value="{{ submittedData['timestamp'+suffix] }}">
+        <input type="hidden" name="{{ 'predictions'+suffix }}" value="{{ submittedData['predictions'+suffix] }}">
+    </div>                
+</div>
+
+{% endmacro %}

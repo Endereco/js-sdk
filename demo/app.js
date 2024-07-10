@@ -1,23 +1,19 @@
 const express = require('express');
 const path = require('path');
-const fs = require('fs').promises;
 const http = require('http');
 const cors = require('cors');
+const nunjucks = require('nunjucks');
+
 const app = express();
 const host = 'localhost';
 const port = 8888;
-const sync_port = 3000;
 
-// Helper function to read a file
-async function readFile(filePath, res, contentType) {
-    try {
-        const contents = await fs.readFile(filePath);
-        res.setHeader("Content-Type", contentType);
-        res.status(200).send(contents);
-    } catch (error) {
-        res.status(404).send('Datei nicht gefunden');
-    }
-}
+nunjucks.configure(path.join(__dirname, 'views'), {
+    autoescape: true,
+    express: app
+});
+
+app.set('view engine', 'njk');
 
 // Parse URL-encoded bodies (as sent by HTML forms)
 app.use(express.json());
@@ -39,35 +35,20 @@ app.options('/proxyfile', (req, res) => {
 // Serve static files from the "assets" directory
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
-// Define routes
-const router = express.Router();
-
-// Handle POST requests to /use-cases
-router.post('/use-cases/:usecase', async (req, res) => {
-    // Handle your POST request here
-    // You can access the posted data with req.body
+app.get('/', (req, res) => {
+    res.render('index', { currentPage: '/' });
 });
 
-// Handle GET requests to /use-cases
-router.get('/use-cases/:usecase', async (req, res) => {
-    const filePath = path.join(__dirname, `/use-cases/${req.params.usecase}/index.html`);
-    readFile(filePath, res, "text/html");
+app.all('/use-cases/:usecase/', (req, res) => {
+    let submittedData = null;
+    if (req.method === 'POST') {
+        submittedData = req.body;
+    }
+    const usecase = req.params.usecase;
+    res.render(`use-cases/${usecase}`, { submittedData, currentPage: `/use-cases/${usecase}` });
 });
 
-// Serve index page
-router.get('/', async (req, res) => {
-    const usecases = await fs.readdir(path.join(__dirname, 'use-cases'));
-    const directories = await Promise.all(usecases.map(async (file) => {
-        const stat = await fs.stat(path.join(__dirname, 'use-cases', file));
-        return stat.isDirectory() ? file : null;
-    }));
-
-    const links = directories.filter(Boolean).map(dir => `<a href="/use-cases/${dir}/index.html">${dir}</a>`);
-    res.send(`Verfügbare Testfälle: ${links.join(', ')}`);
-});
-
-// Proxy file upload
-router.post('/proxyfile', async (req, res) => {
+app.post('/proxyfile', async (req, res) => {
     let postData = req.body;
 
     const options = {
@@ -98,21 +79,7 @@ router.post('/proxyfile', async (req, res) => {
     proxyReq.end();
 });
 
-// Catch all other routes
-router.post('*', async (req, res) => {
-    res.redirect('/');
-});
-
-// Use the router
-app.use('/', router);
-
-// Handle errors
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(err.status || 500).send(err.message || 'Internal Server Error');
-});
-
 // Start server
 app.listen(port, host, () => {
-  console.log(`Server is running on http://${host}:${port} and starts with browsersync from http://${host}:${sync_port}`);
+  console.log(`Demonstration is running on http://${host}:${port}. Press CTRL+C to quit.`);
 });

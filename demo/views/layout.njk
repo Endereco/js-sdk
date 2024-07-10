@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+	  <meta charset="UTF-8">
+    {% block customcss %}{% endblock %}
+    {% block header_configuration %}
+    <script>
+        // Konfiguration und spezifische Anpassungen.
+        if (undefined === window.EnderecoIntegrator) {
+            window.EnderecoIntegrator = {};
+        }
+        if (!window.EnderecoIntegrator.onLoad) {
+            window.EnderecoIntegrator.onLoad = [];
+        }
+
+        // Hilfsfunktion. Damit lässt sich initAMS aufrufen, auch wenn die funktion noch nicht initiert ist.
+        // Bessere Art und Weise wäre ein Proxy Objekt.
+        function enderecoInitAMS(prefix, config) {
+            if (undefined !== window.EnderecoIntegrator.initAMS) {
+                let EAO = window.EnderecoIntegrator.initAMS(prefix, config);
+                setBlurListener(EAO, prefix);
+            } else {
+                window.EnderecoIntegrator.onLoad.push(function () {
+                    let EAO = window.EnderecoIntegrator.initAMS(prefix, config);
+                    setBlurListener(EAO, prefix);
+                });
+            }
+        }
+
+        function enderecoInitPhoneServices(prefix, config) {
+            if (undefined !== window.EnderecoIntegrator.initPhoneServices) {
+                window.EnderecoIntegrator.initPhoneServices(prefix, config);
+            } else {
+                window.EnderecoIntegrator.onLoad.push(function () {
+                    window.EnderecoIntegrator.initPhoneServices(prefix, config);
+                });
+            }
+        }
+
+        function enderecoInitPersonServices(prefix, config) {
+            if (undefined !== window.EnderecoIntegrator.initPersonServices) {
+                window.EnderecoIntegrator.initPersonServices(prefix, config);
+            } else {
+                window.EnderecoIntegrator.onLoad.push(function () {
+                    window.EnderecoIntegrator.initPersonServices(prefix, config);
+                });
+            }
+        }
+
+        function enderecoInitEmailServices(prefix, config) {
+            if (undefined !== window.EnderecoIntegrator.initEmailServices) {
+                window.EnderecoIntegrator.initEmailServices(prefix, config);
+            } else {
+                window.EnderecoIntegrator.onLoad.push(function () {
+                    window.EnderecoIntegrator.initEmailServices(prefix, config);
+                });
+            }
+        }
+
+        /**
+        * Sets up a custom blur event listener on specified elements.
+        *
+        * This function iterates over a collection of elements, identified by their selectors,
+        * and attaches a custom event listener for the 'endereco-blur' event. When the 'endereco-blur'
+        * event is triggered on any of these elements, two custom events ('focus' and 'blur') are dispatched
+        * on the target element. This can be useful for triggering custom logic on focus and blur events.
+        *
+        * @param {Object} EAO - The object containing utility functions, including CustomEvent.
+        * @param {Object} elements - An object containing key-value pairs where the key is a unique identifier
+        *                            and the value is a CSS selector for the DOM element.
+        */
+        function setBlurListener(EAO, elements) {
+            for (const key in elements) {
+                if (Object.prototype.hasOwnProperty.call(elements, key)) {
+                    const selector = elements[key];
+                    const element = document.querySelector(selector);
+
+                    if (element) {
+                        element.addEventListener('endereco-blur', function(e) {
+                            // Dispatch 'focus' and 'blur' events on the target element
+                            let prevActiveElement = document.activeElement;
+                            e.target.dispatchEvent(new EAO.util.CustomEvent('focus', { bubbles: true, cancelable: true }));
+                            e.target.dispatchEvent(new EAO.util.CustomEvent('blur', { bubbles: true, cancelable: true }));
+                            prevActiveElement.dispatchEvent(new EAO.util.CustomEvent('focus', { bubbles: true, cancelable: true }));
+                        });
+                    }
+                }
+            }
+        }
+
+        function enderecoLoadAMSConfig() {
+            window.EnderecoIntegrator.defaultCountry = 'DE';
+            window.EnderecoIntegrator.themeName = 'my-theme';
+            window.EnderecoIntegrator.defaultCountrySelect = true; // Feature "Preselect country"
+            window.EnderecoIntegrator.config.apiUrl = 'http://localhost:8888/proxyfile';
+            window.EnderecoIntegrator.config.apiKey = ''; // Hier kommt Dein API Key.
+            window.EnderecoIntegrator.config.showDebugInfo = false;
+            window.EnderecoIntegrator.config.remoteApiUrl = 'http://endereco-service.de/rpc/v1';
+            window.EnderecoIntegrator.config.trigger.onblur = true;
+            window.EnderecoIntegrator.config.trigger.onsubmit = true;
+            window.EnderecoIntegrator.config.ux.smartFill = true;
+            window.EnderecoIntegrator.config.ux.checkExisting = true;
+            window.EnderecoIntegrator.config.ux.resumeSubmit = true;
+            window.EnderecoIntegrator.config.ux.useStandardCss = true;
+            window.EnderecoIntegrator.config.ux.cssFilePath = '/assets/endereco.min.css';
+            window.EnderecoIntegrator.config.ux.showEmailStatus = true;
+            window.EnderecoIntegrator.config.ux.allowCloseModal = false;
+            window.EnderecoIntegrator.config.ux.confirmWithCheckbox = true;
+            window.EnderecoIntegrator.config.ux.changeFieldsOrder = true;
+            window.EnderecoIntegrator.config.ux.showPhoneErrors = true;
+            window.EnderecoIntegrator.config.phoneFormat = "E164";
+            window.EnderecoIntegrator.config.ux.showPhoneFlag = true;
+            window.EnderecoIntegrator.countryMappingUrl = '';
+            window.EnderecoIntegrator.config.templates.primaryButtonClasses = 'btn btn-primary btn-lg';
+            window.EnderecoIntegrator.config.templates.secondaryButtonClasses = 'btn btn-secondary btn-lg';
+            window.EnderecoIntegrator.config.texts = {
+                popUpHeadline: 'Adresse prüfen',
+                popUpSubline: 'Die von Ihnen eingegebene Adresse scheint nicht korrekt oder unvollständig zu sein. Bitte wählen Sie die korrekte Adresse aus.',
+                mistakeNoPredictionSubline: 'Ihre Adresse konnte nicht verifiziert werden. Bitte prüfen Sie Ihre Eingabe und ändern oder bestätigen sie.',
+                notFoundSubline: 'Ihre Adresse konnte nicht verifiziert werden. Bitte prüfen Sie Ihre Eingabe und ändern oder bestätigen sie.',
+                confirmMyAddressCheckbox: 'Ich bestätige, dass meine Adresse korrekt und zustellbar ist.',
+                yourInput: 'Ihre Eingabe:',
+                editYourInput: '(bearbeiten)',
+                ourSuggestions: 'Unsere Vorschläge:',
+                useSelected: 'Auswahl übernehmen',
+                confirmAddress: 'Adresse bestätigen',
+                editAddress: 'Adresse bearbeiten',
+                warningText: 'Falsche Adressen können zu Problemen in der Zustellung führen und weitere Kosten verursachen.',
+                popupHeadlines: {
+                    general_address: 'Adresse prüfen',
+                    billing_address: 'Rechnungsadresse prüfen',
+                    shipping_address: 'Lieferadresse prüfen',
+                },
+                statuses: {
+                    email_not_correct: 'Die E-Mail Adresse scheint nicht korrekt zu sein.',
+                    email_cant_receive: 'Das E-Mail Postfach ist nicht erreichbar.',
+                    email_syntax_error: 'Prüfen Sie die Schreibweise.',
+                    email_no_mx: 'Die E-Mail Adresse existiert nicht. Prüfen Sie die Schreibweise.',
+                    building_number_is_missing: 'Keine Hausnummer enthalten.',
+                    building_number_not_found: 'Diese Hausnummer wurde nicht gefunden.',
+                    street_name_needs_correction: 'Die Schreibweise der Straße ist fehlerhaft.',
+                    locality_needs_correction: 'Die Schreibweise des Ortes ist fehlerhaft.',
+                    postal_code_needs_correction: 'Die PLZ ist ungültig.',
+                    country_code_needs_correction: 'Die eingegebene Adresse wurde in einem anderen Land gefunden.',
+                    phone_invalid: "Die Rufnummer existiert nicht oder ist nicht erreichbar.",
+                    phone_format_needs_correction: "Die Rufnummer ist falsch geschrieben.",
+                    phone_should_be_fixed: "Es wird eine Festnetznummer erwartet",
+                    phone_should_be_mobile: "Es wird eine Mobilfunknummer erwartet"
+                },
+                requiredFormat: {
+                    E164: "Format E.164 wird erwartet",
+                    INTERNATIONAL: "Internationaler format wird erwartet",
+                    NATIONAL: "Nationaler Format wird erwartet",
+                }
+            };
+            window.EnderecoIntegrator.activeServices = {
+                ams: true,
+                emailService: true,
+                personService: true,
+                phs: true
+            };
+            window.EnderecoIntegrator.countryMapping = {
+                '1': 'DE',
+                '2': 'FR',
+                '3': 'US'
+            };
+            window.EnderecoIntegrator.countryReverseMapping = {
+                'DE': 1,
+                'FR': 2,
+                'US': 3
+            };
+
+            // Country matching functions.
+            EnderecoIntegrator.resolvers.countryCodeWrite = function(value) {
+                return new Promise(function(resolve, reject) {
+                    resolve(window.EnderecoIntegrator.countryReverseMapping[value]);
+                });
+            }
+            EnderecoIntegrator.resolvers.countryCodeRead = function(value) {
+                return new Promise(function(resolve, reject) {
+                    resolve(window.EnderecoIntegrator.countryMapping[value]);
+                });
+            }
+
+            // Execute all functions that have been called throughout the page.
+            window.EnderecoIntegrator.onLoad.forEach(function (callback) {
+                callback();
+            });
+
+            window.EnderecoIntegrator.ready = true;
+        }
+    </script>
+    {% endblock %}
+</head>
+<body class="text-base font-sans">
+    <header id="siteHeader">
+     <nav class="bg-gray-800 text-white p-4 flex items-center justify-between">
+        <div class="flex-grow text-center md:text-left">
+          Endereco Test Lab
+        </div>
+        <input 
+          class="appearance-none bg-white text-gray-800 border border-gray-400 rounded shadow-inner py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-600 w-full md:w-1/2 lg:w-1/3 mt-4 md:mt-0 md:ml-4" 
+          id="apiKey" 
+          type="text" name="apiKey"
+          placeholder="API Key"
+        >
+      </nav>
+      <script>
+          document.addEventListener('DOMContentLoaded', function() {
+              const apiKeyInput = document.querySelector('#apiKey');
+
+              if (apiKeyInput) {
+                  // Load API key from local storage if it exists
+                  const storedApiKey = localStorage.getItem('apiKey');
+                  if (storedApiKey) {
+                      apiKeyInput.value = storedApiKey;
+                      setApiKey();
+                  }
+
+                  apiKeyInput.addEventListener('change', updateApiKey);
+
+                  function updateApiKey() {
+                      const apiKey = apiKeyInput.value.trim();
+                      if (window.EnderecoIntegrator) {
+                          window.EnderecoIntegrator.config.apiKey = apiKey;
+                          Object.values(window.EnderecoIntegrator.integratedObjects).forEach(obj => {
+                              obj.config.apiKey = apiKey;
+                          });
+                      }
+                      // Save the API key to local storage
+                      localStorage.setItem('apiKey', apiKey);
+                  }
+
+                  function setApiKey() {
+                      const apiKey = apiKeyInput.value.trim();
+                      if (window.EnderecoIntegrator && window.EnderecoIntegrator.onLoad && !window.EnderecoIntegrator.ready) {
+                          window.EnderecoIntegrator.onLoad.push(updateApiKey);
+                      } else {
+                          updateApiKey();
+                      }
+                  }
+
+                  // Ensure apiKey is set if already present when page loads
+                  if (apiKeyInput.value.trim()) {
+                      setApiKey();
+                  }
+              }
+          });
+      </script>
+
+    </header>
+    <div class="flex">
+        <aside id="menuContainer" class="w-1/4">
+          {% include "navigation.njk" %}
+        </aside>
+        <main id="contentContainer" class="max-w-4xl mx-auto p-6 bg-white">
+            {% block content %}{% endblock %}
+		    </main>
+        {% block jsbundle %}
+          <script defer async src="/assets/endereco.min.js"></script>
+        {% endblock %}
+    </div>
+</body>
+</html>

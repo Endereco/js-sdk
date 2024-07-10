@@ -1,0 +1,17 @@
+{% extends "layout.njk" %}
+
+{% block content %}
+  <h1 class="text-2xl font-bold text-gray-900 mb-4">Welcome to the Endereco Test Lab</h1>
+  <p class="text-gray-700 mb-6">This platform is designed to facilitate the testing of various use cases of the JS-SDK. Here, you can explore and validate the functionality of our SDK in a controlled environment.</p>
+  <h2 class="text-xl font-semibold text-gray-900 mb-3">How to Run a Test Case</h2>
+  <p class="text-gray-700 mb-6">You can easily invoke a specific test case using the menu on the left side. Simply click on the test case you wish to run, and you can start testing immediately.</p>
+  <h2 class="text-xl font-semibold text-gray-900 mb-3">How to Create a New Test Case</h2>
+  <p class="text-gray-700 mb-4">To create a new test case, please follow these steps:</p>
+  <ol class="list-decimal list-inside mb-6 p-6 bg-gray-200 rounded-lg shadow-md mx-8">
+    <li class="mb-2">Access the source code of the Endereco JS-SDK.</li>
+    <li class="mb-2">Navigate to the <code class="bg-gray-100 text-gray-800 font-mono py-1 px-2 rounded">demo</code> folder, and then proceed to the <code class="bg-gray-100 text-gray-800 font-mono py-1 px-2 rounded">use-cases</code> subfolder.</li>
+    <li class="mb-2">Copy the <code class="bg-gray-100 text-gray-800 font-mono py-1 px-2 rounded">default</code> folder and rename it to your specific test case name.</li>
+    <li>Replace the content of the <code class="bg-gray-100 text-gray-800 font-mono py-1 px-2 rounded">contentContainer</code> with your test case.</li>
+  </ol>
+  <p class="text-gray-700">This approach allows you to quickly set up and test new scenarios, ensuring that the JS-SDK meets all your requirements.</p>
+{% endblock %}

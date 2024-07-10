@@ -1,0 +1,21 @@
+
+
+{% macro formular(name, fieldLabel, suffix, phone='') %}
+<h2 class="text-xl font-semibold text-gray-900 mb-3">{{ name }}</h2>
+<div class="bg-gray-200 rounded-lg p-6 my-4">
+	<div>
+		<div class="mb-4">
+			<label class="block uppercase tracking-wide text-gray-800 text-xs font-bold mb-2">
+				{{ fieldLabel }}
+				<input 
+					class="appearance-none block w-full bg-white text-gray-800 border border-gray-400 rounded shadow-inner py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-600" 
+					type="text" 
+					name="phone{{ suffix }}"
+					id="phone{{ suffix }}"
+					value="{{ phone | escape }}"
+				>
+			</label>
+		</div>
+	</div>				
+</div>
+{% endmacro %}

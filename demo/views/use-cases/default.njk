@@ -1,0 +1,81 @@
+{% extends "layout.njk" %}
+{% import "components/address.njk" as address %}
+{% import "components/phoneNumber.njk" as phoneNumber %}
+
+
+{% block content %}
+	<h1 class="text-2xl font-bold text-gray-900 mb-4">Default</h1>
+	<p class="text-gray-700 mb-6">
+		This is a basic demonstration of the available features of the JS-SDK. 
+		Various forms and corresponding input fields showcase the available services and their functionality.
+	</p>
+	<form method="POST" action="">
+		<pre>{{ submittedData | dump }}</pre>
+
+		{{ 
+			address.formular(
+				'Address with street full', 
+				'_address1', 
+				submittedData
+			) 
+		}}
+
+		<script>
+			enderecoInitAMS({
+				countryCode: '#countryCode_address1',
+				subdivisionCode: '#subdivisionCode_address1',
+				postalCode: '#postalCode_address1',
+				locality: '#locality_address1',
+				streetFull: '#streetFull_address1',
+				streetName: '#street_address1',
+				buildingNumber: '#buildingNumber_address1',
+				additionalInfo: '#additionalInfo_address1',
+				addressStatus: '[name="status_address1"]',
+				addressTimestamp: '[name="timestamp_address1"]',
+				addressPredictions: '[name="predictions_address1"]',
+			}, {
+				name: 'address_with_streetfull',
+				addressType: 'general_address'
+			});
+		</script>
+
+		{{ 
+			address.formular(
+				'Address with street name', 
+				'_address2', 
+				submittedData,
+				'streetName'
+			) 
+		}}
+
+		<script>
+			enderecoInitAMS({
+				countryCode: '#countryCode_address2',
+				subdivisionCode: '#subdivisionCode_address2',
+				postalCode: '#postalCode_address2',
+				locality: '#locality_address2',
+				streetFull: '#streetFull_address2',
+				streetName: '#street_address2',
+				buildingNumber: '#buildingNumber_address2',
+				additionalInfo: '#additionalInfo_address2',
+				addressStatus: '[name="status_address2"]',
+				addressTimestamp: '[name="timestamp_address2"]',
+				addressPredictions: '[name="predictions_address2"]',
+			}, {
+				name: 'address_with_name',
+				addressType: 'general_address'
+			});
+		</script>
+		
+		{{ 
+			phoneNumber.formular(
+				'Default phone number', 
+				'Mobile phone', 
+				'1', 
+				submittedData.phone1
+			) 
+		}}
+
+		{% include "components/simpleSubmitButton.njk" %}
+	</form>
+{% endblock %}

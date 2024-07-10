@@ -1,0 +1,22 @@
+{% macro selectField(id, label, options, selectedValue) %}
+<label class="block uppercase tracking-wide text-gray-800 text-xs font-bold mb-2">
+    {{ label }}
+    <div class="relative">
+        <select class="appearance-none block w-full bg-white text-gray-800 border border-gray-400 rounded shadow-inner py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-600" id="{{ id }}" name="{{ id }}">
+            {% for option in options %}
+                <option value="{{ option.value }}" {% if option.value == selectedValue %}selected{% endif %}>{{ option.text }}</option>
+            {% endfor %}
+        </select>
+        <svg class="absolute top-1/2 right-4 transform -translate-y-1/2 pointer-events-none w-4 h-4 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+        </svg>
+    </div>
+</label>
+{% endmacro %}
+
+{% macro inputField(id, label, value) %}
+<label class="block uppercase tracking-wide text-gray-800 text-xs font-bold mb-2">
+    {{ label }}
+    <input class="appearance-none block w-full bg-white text-gray-800 border border-gray-400 rounded shadow-inner py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-600" type="text" id="{{ id }}" name="{{ id }}" value="{{ value | escape }}">
+</label>
+{% endmacro %}
