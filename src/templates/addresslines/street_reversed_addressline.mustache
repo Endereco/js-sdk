@@ -1,0 +1,15 @@
+<div class="endereco-addressline"> 
+  {{#streetFull}}
+    <span class="endereco-modal-field endereco-modal-field--missing-building-number-placeholder">&nbsp;</span>
+    <span class="endereco-modal-field endereco-modal-field--streetFull">{{{ streetFullDiff }}}</span>
+  {{/streetFull}}
+  {{^streetFull}}
+    <span class="endereco-modal-field endereco-modal-field--missing-building-number-placeholder">&nbsp;</span>
+    <span class="endereco-modal-field endereco-modal-field--buildingNumber">
+      {{{ buildingNumberDiff }}}
+    </span>
+    <span class="endereco-modal-field endereco-modal-field--streetName">
+      {{{ streetNameDiff }}}
+    </span>
+  {{/streetFull}}
+</div>

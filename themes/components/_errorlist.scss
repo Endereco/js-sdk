@@ -1,0 +1,11 @@
+.endereco-errorlist-wrapper-list {
+	list-style: none;
+  padding: 0;
+  font-size: 0.75em;
+  margin: 0.5rem 0 1rem 0;
+
+	&__item {
+		color: red;
+	}
+}
+

@@ -1,0 +1,42 @@
+<div endereco-popup class="endereco-popup-container endereco-popup-container--direction-{{direction}}" id={{uniqueID}}>
+	<div class="endereco-modal">
+		<div class="endereco-modal__header">
+			<p class="endereco-modal__header-main">{{ addressSelectionModalTitle }}</p>
+			{{#rootErrors}}
+				<p class="endereco-modal__header-sub">{{ . }}</p>
+			{{/rootErrors}}			
+			{{#showClose}}<span class="endereco-modal__close" endereco-modal-close></span>{{/showClose}}
+		</div>
+		<div class="endereco-modal__body">
+			<div class="endereco-modal__divider">
+				<span class="endereco-modal__divider-innertext">{{ originalInputSection }} <small><a href="javascript:void(0)" endereco-edit-address>({{ editInputLink }})</a></small></span>
+			</div>
+      {{#hasLeafErrors}}
+      <div class="endereco-modal__errors">
+				<ul>
+					{{#leafErrors}}
+					<li>{{{.}}}</li>
+					{{/leafErrors}}
+				</ul>
+			</div>
+      {{/hasLeafErrors}}
+			<div class="endereco-modal__address-container">
+				{{{ originalInput }}}
+			</div>
+			<div class="endereco-modal__warning">
+				{{ warningText }}
+			</div>
+			{{#showConfirCheckbox}}
+			<div class="endereco-modal__address-confirmation">
+				<label>
+					<input type="checkbox" value="1" endereco-confirm-address-checkbox> {{ confirmCheckboxText }}
+				</label>
+			</div>
+			{{/showConfirCheckbox}}
+		</div>
+		<div class="endereco-modal__footer">
+			<button endereco-edit-address class="{{{ buttonClass }}}">{{ editButton }}</button>
+		  <button endereco-confirm-address class="{{{ buttonClass }}}">{{ confirmButton }}</button>
+		</div>
+	</div>
+</div>

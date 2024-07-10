@@ -1,0 +1,55 @@
+<div endereco-popup class="endereco-popup-container endereco-popup-container--direction-{{direction}}" id={{uniqueID}}>
+	<div class="endereco-modal">
+		<div class="endereco-modal__header">
+			<p class="endereco-modal__header-main">{{ addressSelectionModalTitle }}</p>
+			{{#rootErrors}}
+				<p class="endereco-modal__header-sub">{{ . }}</p>
+			{{/rootErrors}}		
+			{{#showClose}}<span class="endereco-modal__close" endereco-modal-close></span>{{/showClose}}
+		</div>
+		<div class="endereco-modal__body">
+			<div class="endereco-modal__divider">
+				<span class="endereco-modal__divider-innertext">{{ predictionSection }}</span>
+			</div>
+			<ul class="endereco-address-predictions endereco-address-predictions--suggestions">
+				{{#predictions}}
+					<li class="endereco-address-predictions__item">
+						<input 
+							class="endereco-address-predictions__radio" 
+							type="radio" 
+							name="endereco-address-predictions" 
+							value="{{ index }}" 
+							id="endereco-address-predictions__item_{{ index }}"
+							{{ attributes }}
+						>
+						<label class="endereco-address-predictions__label" for="endereco-address-predictions__item_{{ index }}">{{{ addressDiff }}}</label>
+					</li>
+				{{/predictions}}
+			</ul>
+			<div class="endereco-modal__divider">
+				<span class="endereco-modal__divider-innertext">{{ originalInputSection }} <small><a href="javascript:void(0)" endereco-edit-address>({{ editInputLink }})</a></small></span>
+			</div>
+			<ul class="endereco-address-predictions endereco-address-predictions--original">
+				<li class="endereco-address-predictions__item">
+					<input class="endereco-address-predictions__radio" type="radio" name="endereco-address-predictions" value="-1" id="endereco-address-predictions__item_original">
+					<label class="endereco-address-predictions__label" for="endereco-address-predictions__item_original">{{{ originalInput }}}</label>
+				</li>
+			</ul>
+			<div class="endereco-modal__warning" endereco-show-if-origin>
+				{{ warningText }}
+			</div>
+			{{#showConfirmCheckbox}}
+			<div class="endereco-modal__address-confirmation" endereco-show-if-origin>
+				<label>
+					<input type="checkbox" value="1" endereco-confirm-address-checkbox> {{ confirmCheckboxText }}
+				</label>
+			</div>
+			{{/showConfirmCheckbox}}
+		</div>
+		<div class="endereco-modal__footer">
+		  <button endereco-edit-address class="{{{ buttonClass }}}">{{ editButton }}</button>
+		  <button endereco-confirm-address class="{{{ buttonClass }}}">{{ confirmButton }}</button>
+			<button endereco-use-selected-address class="{{{ buttonClass }}}">{{ selectButton }}</button>
+		</div>
+	</div>
+</div>

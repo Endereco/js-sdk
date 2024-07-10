@@ -1,0 +1,15 @@
+<div class="endereco-predictions-wrapper" id="{{ uniqueID }}">
+    <div class="endereco-predictions-wrapper-inner">
+        <div class="endereco-flag-dropdown" >
+            <div class="endereco-flag-dropdown-inner">
+                {{#flags}}
+                    <div class="endereco-flag-dropdown-element {{#isActive}}active{{/isActive}}" data-code="{{{code}}}" endereco-collection-item>
+                        <div class="endereco-small-flag">{{{flag}}}</div>
+                        <div class="endereco-country-code-col">{{{iso2}}}</div>
+                        <div class="endereco-phone-code-col">{{{code}}}</div>
+                    </div>
+                {{/flags}}
+            </div>
+        </div>
+    </div>
+</div>

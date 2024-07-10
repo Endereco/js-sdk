@@ -1,0 +1,14 @@
+<div 
+  endereco-street-full-predictions 
+  endereco-predictions-dropdown 
+  class="endereco-predictions-wrapper endereco-predictions-wrapper--direction-{{direction}} {{#longList}}endereco-predictions-wrapper--longlist{{/longList}}" 
+  id="{{uniqueID}}"
+>
+	<div class="endereco-predictions-wrapper-inner">
+		<ul class="endereco-predictions">
+			{{#predictions}}
+			<li class="endereco-predictions__item {{#isActive}}active{{/isActive}}" endereco-collection-item endereco-street-full-prediction data-prediction-index="{{index}}" data-prediction-type="streetFull">{{{streetFullDiff}}}</li>
+			{{/predictions}}
+		</ul>
+	</div>
+</div>

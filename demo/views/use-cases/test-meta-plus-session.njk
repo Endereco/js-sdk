@@ -1,0 +1,72 @@
+{% extends "layout.njk" %}
+{% import "components/address.njk" as address %}
+{% import "components/meta.njk" as meta %}
+{% import "components/session.njk" as session %}
+{% import "components/submitdump.njk" as submitdump %}
+
+
+{% block content %}
+<h1 class="text-2xl font-bold text-gray-900 mb-4">Default</h1>
+<p class="text-gray-700 mb-6">
+  In this demonstration we read from a staticly set meta fields. The main reason is to read the
+  status and predictions
+  because those can possibly cause the display of modal window.
+</p>
+
+<div class="flex flex-col md:flex-row md:space-x-4">
+  <div class="w-full md:w-1/2 p-4 mb-4 md:mb-0 text-sm">
+    <form method="POST" action="">
+      <input type="hidden" name="form_name" value="first_form">
+
+      {{
+				address.defaultForm(
+					'Address with street full', 
+					'_address1', 
+					submittedData,
+					countriesData,
+          subdivisionsData
+				) 
+			}}
+
+      {{
+        session.mirrored(
+          'firstAddress',
+          submittedData
+        )
+      }}
+
+      {{
+        meta.mirrored(
+          'firstAddress',
+          submittedData
+        )
+      }}
+
+      <input type="hidden" name="endereco_data_marker" value="" data-endereco-service="ams"
+        data-has-object="no" data-name="firstAddress" data-type="general_address" data-format=""
+        data-country-code-selector="#countryCode_address1"
+        data-subdivision-code-selector="#subdivisionCode_address1"
+        data-postal-code-selector="#postalCode_address1" data-locality-selector="#locality_address1"
+        data-street-full-selector="#streetFull_address1"
+        data-street-name-selector="#street_address1"
+        data-building-number-selector="#buildingNumber_address1"
+        data-additional-info-selector="#additionalInfo_address1"
+        data-session-id-selector="[name='firstAddress_session_id']"
+        data-session-counter-selector="[name='firstAddress_session_counter']"
+        data-status-selector="[name='firstAddress_status']"
+        data-predictions-selector="[name='firstAddress_predictions']"
+        data-hash-selector="[name='firstAddress_hash']">
+
+      {% include "components/simpleSubmitButton.njk" %}
+    </form>
+  </div>
+  <div class="w-full md:w-1/2 p-4">
+    {{
+			submitdump.table(
+				submittedData
+			) 
+		}}
+  </div>
+</div>
+
+{% endblock %}

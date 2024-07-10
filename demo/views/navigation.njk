@@ -1,0 +1,62 @@
+<nav class="p-4">
+  <ul class="flex space-x-4">
+    {% for category in navigationData.categories %}
+
+    <li class="mb-2">
+      <button class="hover:underline">
+        {{ category.name }}
+        <svg class="inline transform pointer-events-none w-4 h-4 text-gray-600"
+          xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      <div class="absolute hidden pt-2 ul-container">
+        <ul class="bg-white border rounded-md py-2 space-y-2 group-hover:block">
+          {% for item in category.items %}
+          <li><a href="{{ item.link }}"
+              class="block px-4 hover:text-red-500 {% if currentPage == item.link %}font-bold text-red-500 selected{% endif %}">{{ item.name }}</a>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </li>
+
+    {% endfor %}
+  </ul>
+</nav>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const dropdownButtons = document.querySelectorAll('nav button');
+
+    dropdownButtons.forEach(button => {
+      const dropdown = button.nextElementSibling;
+
+      button.addEventListener('click', () => {
+        dropdown.classList.toggle('hidden');
+      });
+
+      button.addEventListener('mouseenter', () => {
+        dropdown.classList.remove('hidden');
+      });
+
+      button.parentElement.addEventListener('mouseleave', () => {
+        dropdown.classList.add('hidden');
+      });
+
+      const selectedItem = dropdown.querySelector('a.selected');
+      if (selectedItem) {
+        button.classList.add('underline');
+      }
+    });
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('nav')) {
+        document.querySelectorAll('nav ul .ul-container').forEach(dropdown => {
+          dropdown.classList.add('hidden');
+        });
+      }
+    });
+  });
+</script>

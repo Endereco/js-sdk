@@ -1,0 +1,96 @@
+{% import 'components/config/fields.njk' as fields %}
+
+<aside id="menuContainer" class="w-1/3">
+  <div class="w-full p-6 bg-white">
+    <h2 class="text-xl font-semibold text-gray-900 mb-3">JS-SDK Config</h2>
+
+    <!-- Integrator Config -->
+    <div class="bg-gray-200 rounded-lg p-6 my-4 text-xs">
+      <h3 class="font-bold text-lg mb-3">Integrator</h3>
+      {{ fields.input("themeName", "Theme Name", 'default') }}
+      {{ fields.select(
+        "cssInclude", 
+        "Inject CSS", 
+        [{id: "inline", title: "Inline"}, {id: "file", title: "From file"}, {id: "none", title: "No CSS"}]
+        ) 
+      }}
+      {{ fields.input("cssPath", "CSS File Path", '') }}
+      {{ fields.select(
+        "loggingTarget", 
+        "Logging Target", 
+        [{id: "console", title: "Browser Console"}, {id: "none", title: "No logging"}]
+        ) 
+      }}
+    </div>
+
+    <!-- Modals Config -->
+    <div class="bg-gray-200 rounded-lg p-6 my-4 text-xs">
+      <h3 class="font-bold text-lg mb-3">Modals</h3>
+      {{ fields.checkbox("showClose", "Show Close Icon") }}
+      {{ fields.checkbox("showConfirm", "Show Confirm Checkbox") }}
+      {{ fields.input("btnClass", "Button Class", 'btn btn-primary') }}
+    </div>
+
+    <!-- Address Modals Config -->
+    <div class="bg-gray-200 rounded-lg p-6 my-4 text-xs">
+      <h3 class="font-bold text-lg mb-3">Address Modals</h3>
+      {{ fields.checkbox("showCloseAMS", "Confirm With Checkbox") }}
+    </div>
+
+    <!-- API Config -->
+    <div class="bg-gray-200 rounded-lg p-6 my-4 text-xs">
+      <h3 class="font-bold text-lg mb-3">API</h3>
+      {{ fields.input("apiUrl", "API URL", '') }}
+      {{ fields.input("proxyUrl", "Proxy URL", '') }}
+      {{ fields.input("requestTimeout", "Request Timeout", '6000') }}
+      {{ fields.input("clientName", "Client Name", '') }}
+    </div>
+
+    <!-- Address Services Config -->
+    <div class="bg-gray-200 rounded-lg p-6 my-4 text-xs">
+      <h3 class="font-bold text-lg mb-3">Address Services</h3>
+
+      {{ fields.checkbox("useAutocomplete", "Autocomplete Fields") }}
+      {{ fields.checkbox("triggerBlur", "Validate On Blur") }}
+      {{ fields.checkbox("triggerSubmit", "Validate On Submit") }}
+      {{ fields.checkbox("changeFieldsOrder", "Change Fields Order") }}
+      {{ fields.input("defaultCountry", "Default Country Code", 'DE') }}
+      {{ fields.input("amsDataType", "Default Data Type", 'generalAddress') }}
+      {{ fields.input("amsDataFormat", "Default Data Format", '') }}
+    </div>
+
+    <!-- Phone Services Config -->
+    <div class="bg-gray-200 rounded-lg p-6 my-4 text-xs">
+      <h3 class="font-bold text-lg mb-3">Phone Services</h3>
+      {{ fields.checkbox("phsBlurTrigger", "Validate On Blur") }}
+      {{ fields.checkbox("phsSubmitTrigger", "Validate On Submit") }}
+      {{ fields.checkbox("phsShowError", "Show Error Messages") }}
+      {{ fields.checkbox("phsShowPhoneFlag", "Show Phone Flag") }}
+      {{ fields.input("phsDefaultCountry", "Default Country Code", 'DE') }}
+      {{ fields.input("phsDefaultDataType", "Default Data Type", '') }}
+      {{ fields.input("phsDefaultDataFormat", "Default Data Format", '') }}
+    </div>
+
+    <!-- Email Services Config -->
+    <div class="bg-gray-200 rounded-lg p-6 my-4 text-xs">
+      <h3 class="font-bold text-lg mb-3">Email Services</h3>
+      {{ fields.checkbox("emsBlurTrigger", "Validate On Blur") }}
+      {{ fields.checkbox("emsSubmitTrigger", "Validate On Submit") }}
+      {{ fields.checkbox("emsShowError", "Show Error Messages") }}
+      {{ fields.input("emsDefaultCountry", "Default Country Code", 'DE') }}
+      {{ fields.input("emsDefaultDataType", "Default Data Type", '') }}
+      {{ fields.input("emsDefaultDataFormat", "Default Data Format", '') }}
+    </div>
+
+    <!-- Person Services Config -->
+    <div class="bg-gray-200 rounded-lg p-6 my-4 text-xs">
+      <h3 class="font-bold text-lg mb-3">Person Services</h3>
+      {{ fields.checkbox("pmsBlurTrigger", "Validate On Blur") }}
+      {{ fields.checkbox("pmsSubmitTrigger", "Validate On Submit") }}
+      {{ fields.checkbox("pmsShowError", "Show Error Messages") }}
+      {{ fields.input("pmsDefaultDataType", "Default Data Type", '') }}
+      {{ fields.input("pmsDefaultDataFormat", "Default Data Format", '') }}
+    </div>
+
+  </div>
+</aside>

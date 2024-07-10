@@ -12,7 +12,7 @@ module.exports = {
     publicPath: '/',
   },
   optimization: {
-    minimize: true,
+    minimize: false,
     minimizer: [new TerserPlugin({
       sourceMap: false,
       terserOptions: {
@@ -46,6 +46,11 @@ module.exports = {
       },
       {
         test: /\.html$/,
+        exclude: /node_modules/,
+        use: {loader: 'html-loader'}
+      },
+      {
+        test: /\.mustache$/,
         exclude: /node_modules/,
         use: {loader: 'html-loader'}
       },

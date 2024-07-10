@@ -1,0 +1,226 @@
+<!-- js-sdk/demo/views/components/address.njk -->
+{% import 'components/formfields.njk' as formfields %}
+
+{% macro formular(
+  name, 
+  suffix, 
+  submittedData=null,
+  streetModus='streetFull',
+  showSubdivision=true,
+  showAdditionalInfo=true,
+  countries=[],
+  regions={}
+  )
+%}
+
+{% if submittedData %}
+<h2 class="text-xl font-semibold text-gray-900 mb-3">Submitted Data of {{ name }}
+</h2>
+<div id="submittedData-table" class="bg-gray-200 rounded-lg p-6 my-4">
+  <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+    <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+      <tr>
+        <th scope="col" class="bg-gray-100 py-3 px-6">Feld</th>
+        <th scope="col" class="bg-gray-100 py-3 px-6">Wert</th>
+      </tr>
+    </thead>
+    <tbody class="bg-white dark:bg-gray-800">
+      {% for key, value in submittedData %}
+      <tr
+        class="border-b dark:bg-gray-800 dark:border-gray-700 {% if loop.index0 is odd %}bg-gray-50 dark:bg-gray-700{% else %}bg-white dark:bg-gray-800{% endif %}">
+        <td class="py-1 px-6 {% if loop.index0 is odd %}bg-gray-100 dark:bg-gray-700{% endif %}">
+          {{ key }}
+        </td>
+        <td class="py-1 px-6 {% if loop.index0 is odd %}bg-gray-100 dark:bg-gray-700{% endif %}">
+          {{ value }}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+<h2 class="text-xl font-semibold text-gray-900 mb-3">{{ name }}</h2>
+<div class="bg-gray-200 rounded-lg p-6 my-4">
+  {% if streetModus == 'streetFull' %}
+  <div class="flex flex-wrap -mx-3 mb-6 hidden">
+    <div class="w-full md:w-1/2 px-3 mb-6 md:mb-0 hidden">
+      {{ formfields.inputField('street'+suffix, 'Street Name', submittedData['street' + suffix] ) }}
+    </div>
+    <div class="w-full md:w-1/2 px-3 hidden">
+      {{ formfields.inputField('buildingNumber'+suffix, 'Building Number', submittedData['buildingNumber'+suffix]) }}
+    </div>
+  </div>
+  <div class="flex flex-wrap -mx-3 mb-6">
+    <div class="w-full px-3">
+      {{ formfields.inputField('streetFull'+suffix, 'Street (full)', submittedData['streetFull'+suffix]) }}
+    </div>
+  </div>
+  {% elif streetModus == 'streetName' %}
+  <div class="flex flex-wrap -mx-3 mb-6">
+    <div class="w-full md:w-1/2 px-3 mb-6 md:mb-0">
+      {{ formfields.inputField('street'+suffix, 'Street Name', submittedData['street' + suffix] ) }}
+    </div>
+    <div class="w-full md:w-1/2 px-3">
+      {{ formfields.inputField('buildingNumber'+suffix, 'Building Number', submittedData['buildingNumber'+suffix]) }}
+    </div>
+  </div>
+  <div class="flex flex-wrap -mx-3 mb-6 hidden">
+    <div class="w-full px-3">
+      {{ formfields.inputField('streetFull'+suffix, 'Street (full)', submittedData['streetFull'+suffix]) }}
+    </div>
+  </div>
+  {% elif streetModus == 'onlyStreetFull' %}
+  <div class="flex flex-wrap -mx-3 mb-6">
+    <div class="w-full px-3">
+      {{ formfields.inputField('streetFull'+suffix, 'Street (full)', submittedData['streetFull'+suffix]) }}
+    </div>
+  </div>
+  {% elif streetModus == 'onlyStreetName' %}
+  <div class="flex flex-wrap -mx-3 mb-6">
+    <div class="w-full md:w-1/2 px-3 mb-6 md:mb-0">
+      {{ formfields.inputField('street'+suffix, 'Street Name', submittedData['street' + suffix] ) }}
+    </div>
+    <div class="w-full md:w-1/2 px-3">
+      {{ formfields.inputField('buildingNumber'+suffix, 'Building Number', submittedData['buildingNumber'+suffix]) }}
+    </div>
+  </div>
+  {% endif %}
+  <div class="flex flex-wrap -mx-3 mb-6">
+    <div class="w-full md:w-1/2 px-3 mb-6 md:mb-0">
+      {{ formfields.inputField('postalCode'+suffix, 'PostalCode', submittedData['postalCode'+suffix]) }}
+    </div>
+    <div class="w-full md:w-1/2 px-3">
+      {{ formfields.inputField('locality'+suffix, 'Locality', submittedData['locality'+suffix]) }}
+    </div>
+  </div>
+  <div class="flex flex-wrap -mx-3 mb-6">
+    <div class="w-full px-3">
+      {% if showAdditionalInfo %}
+      {{ formfields.inputField('additionalInfo'+suffix, 'Additional Info (Apartment, Door)', submittedData['additionalInfo'+suffix]) }}
+      {% endif %}
+    </div>
+  </div>
+  <div class="flex flex-wrap -mx-3 mb-6">
+    <div class="w-full md:w-1/2 px-3 mb-6 md:mb-0">
+      {{
+                formfields.selectField('countryCodeVisible'+suffix,
+                'Land (Visible)', 
+                countries, 
+                submittedData['countryCodeVisible'+suffix])
+            }}
+    </div>
+    <div class="w-full md:w-1/2 px-3">
+      {{
+                formfields.selectField('countryCodeMirror'+suffix,
+                'Land (Mirror / AMS)', 
+                countries, 
+                submittedData['countryCodeMirror'+suffix])
+            }}
+    </div>
+  </div>
+  <div class="flex flex-wrap -mx-3 mb-6">
+    <div class="w-full md:w-1/2 px-3 mb-6 md:mb-0">
+      {% if showSubdivision %}
+      {% set options = [] %}
+      {% if submittedData['countryCodeVisible' + suffix] %}
+      {% set options = regions[submittedData['countryCodeVisible' + suffix]] %}
+      {% else %}
+      {% set options = [{ value: '', text: '-- Please select a country first --' }] %}
+      {% endif %}
+
+      {{
+                    formfields.selectField('subdivisionCodeVisible' + suffix, 
+                    'Region (Visible)', 
+                    options, 
+                    submittedData['subdivisionCodeVisible' + suffix])
+                }}
+      {% endif %}
+    </div>
+    <div class="w-full md:w-1/2 px-3">
+      {% if showSubdivision %}
+      {% set options = [] %}
+      {% if submittedData['countryCodeMirror' + suffix] %}
+      {% set options = regions[submittedData['countryCodeMirror' + suffix]] %}
+      {% else %}
+      {% set options = [{ value: '', text: '-- Please select a country first --' }] %}
+      {% endif %}
+
+      {{
+                    formfields.selectField('subdivisionCodeMirror' + suffix, 
+                    'Region (Mirror / AMS)', 
+                    options, 
+                    submittedData['subdivisionCodeMirror' + suffix])
+                }}
+      {% endif %}
+    </div>
+  </div>
+  <script>
+    // event listener for changing the form
+    // triggers mirror fields to be updated when visible fields are changed
+    document.addEventListener('DOMContentLoaded', function() {
+      var countrySelectVisible = document.getElementById('countryCodeVisible_address1');
+      var regionSelectVisible = document.getElementById('subdivisionCodeVisible_address1');
+      var countrySelectMirror = document.getElementById('countryCodeMirror_address1');
+      var regionSelectMirror = document.getElementById('subdivisionCodeMirror_address1');
+
+      // init: set mirror as visible
+      countrySelectMirror.value = countrySelectVisible.value;
+      setRegionBySelectedCountry(countrySelectMirror, regionSelectMirror);
+
+      // visible country change event: set region, mirror country and mirror region
+      countrySelectVisible.addEventListener('change', function() {
+        setRegionBySelectedCountry(countrySelectVisible, regionSelectVisible);
+        countrySelectMirror.value = countrySelectVisible.value;
+        setRegionBySelectedCountry(countrySelectMirror, regionSelectMirror);
+      });
+      // mirror country change event: set mirror region
+      countrySelectMirror.addEventListener('change', function() {
+        setRegionBySelectedCountry(countrySelectMirror, regionSelectMirror);
+      });
+      // visible region change event: set mirror region
+      regionSelectVisible.addEventListener('change', function() {
+        countrySelectMirror.value = countrySelectVisible.value;
+        setRegionBySelectedCountry(countrySelectMirror, regionSelectMirror);
+        regionSelectMirror.value = regionSelectVisible.value;
+      });
+    });
+
+    // function to set region by selected country on different select fields
+    function setRegionBySelectedCountry(countrySelect, regionSelect) {
+      const regions = {
+        {
+          regions | dump | safe
+        }
+      };
+      var countrySelected = countrySelect.value;
+      var regionSelected = regionSelect.value;
+      regionSelect.innerHTML = '';
+      if (!countrySelected) {
+        //console.log('no country selected');
+        regionSelect.add(new Option("-- Please select a country first --", ""));
+      } else if (!regions[countrySelected] || regions[countrySelected].length === 0) {
+        //console.log('country ', countrySelected, 'with no regions available selected');
+        regionSelect.add(new Option("-- No regions available for this country --", ""));
+      } else {
+        //console.log('country', countrySelected, 'with region', regionSelected, 'selected');
+        regions[countrySelected].forEach(function(region) {
+          var option = new Option(region.text, region.value);
+          if (regionSelected == region.value) {
+            option.selected = true;
+          }
+          regionSelect.add(option);
+        });
+      }
+    }
+  </script>
+  <div class="hidden">
+    <!-- unsichtbare Felder, die ein Modul hinzufügen soll -->
+    <input type="hidden" name="{{ 'status'+suffix }}" value="{{ submittedData['status'+suffix] }}">
+    <input type="hidden" name="{{ 'timestamp'+suffix }}" value="{{ submittedData['timestamp'+suffix] }}">
+    <input type="hidden" name="{{ 'predictions'+suffix }}" value="{{ submittedData['predictions'+suffix] }}">
+  </div>
+</div>
+
+{% endmacro %}

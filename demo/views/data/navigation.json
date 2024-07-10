@@ -1,0 +1,62 @@
+{
+  "categories": [
+    {
+      "name": "Initialization examples",
+      "items": [
+        {
+          "name": "Init AMS with a script",
+          "link": "/use-cases/init-ams-with-script"
+        },
+        {
+          "name": "Init AMS with a datamarker",
+          "link": "/use-cases/init-ams-with-datamarker"
+        },
+        {
+          "name": "Init email services with a script",
+          "link": "/use-cases/init-email-services-with-script"
+        },
+        {
+          "name": "Init email services with a datamarker",
+          "link": "/use-cases/init-email-services-with-datamarker"
+        },
+        {
+          "name": "Init phone services with a script",
+          "link": "/use-cases/init-phone-services-with-script"
+        },
+        {
+          "name": "Init phone services with a datamarker",
+          "link": "/use-cases/init-phone-services-with-datamarker"
+        },
+        {
+          "name": "Init person services with a script",
+          "link": "/use-cases/init-person-services-with-script"
+        },
+        {
+          "name": "Init person services with a datamarker",
+          "link": "/use-cases/init-person-services-with-datamarker"
+        }
+      ]
+    },
+    {
+      "name": "Hidden fields management",
+      "items": [
+        {
+          "name": "Session (dynamic containing fields)",
+          "link": "/use-cases/test-session-dynamic-elements"
+        },
+        {
+          "name": "Session (static containing fields)",
+          "link": "/use-cases/test-session-static-elements"
+        },
+        {
+          "name": "Meta (static containing fields)",
+          "link": "/use-cases/test-meta-static"
+        },
+        {
+          "name": "Meta plus Session different variants",
+          "link": "/use-cases/test-meta-plus-session"
+        }
+      ]
+    }
+  ]
+}

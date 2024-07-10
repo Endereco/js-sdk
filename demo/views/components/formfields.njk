@@ -1,0 +1,116 @@
+{% macro selectField(id, label, options, selectedValue) %}
+<label class="block tracking-wide text-gray-800 mb-2">
+  <span class="font-bold uppercase">{{ label }}</span>
+  <div class="relative">
+    <select
+      class="appearance-none block w-full bg-white text-gray-800 border border-gray-400 rounded shadow-inner py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-600"
+      id="{{ id }}" name="{{ id }}">
+      {% for option in options %}
+      <option value="{{ option.id }}"
+        {% if option.id == selectedValue %}selected{% endif %}>
+        {{ option.title }}
+      </option>
+      {% endfor %}
+    </select>
+    <svg
+      class="absolute top-em right-4 transform -translate-y-1/2 pointer-events-none w-4 h-4 text-gray-600"
+      xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+    </svg>
+  </div>
+</label>
+{% endmacro %}
+
+{% macro countrySelect(id, label, options, selectedValue) %}
+<label class="block tracking-wide text-gray-800 mb-2">
+  <span class="font-bold uppercase">{{ label }}</span>
+  <div class="relative">
+    <select
+      class="appearance-none block w-full bg-white text-gray-800 border border-gray-400 rounded shadow-inner py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-600"
+      id="{{ id }}" name="{{ id }}"
+      data-initial-value="{{ selectedValue }}">
+      {% for option in options %}
+      <option value="{{ option.id }}"
+        {% if option.id == selectedValue %}selected{% endif %}>
+        {{ option.countryName }}
+      </option>
+      {% endfor %}
+    </select>
+    <svg
+      class="absolute top-em right-4 transform -translate-y-1/2 pointer-events-none w-4 h-4 text-gray-600"
+      xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+    </svg>
+  </div>
+</label>
+{% endmacro %}
+
+{% macro subdivisionSelect(id, label, options, selectedValue) %}
+<label class="block tracking-wide text-gray-800 mb-2">
+  <span class="font-bold uppercase">{{ label }}</span>
+  <div class="relative">
+    <select
+      class="appearance-none block w-full bg-white text-gray-800 border border-gray-400 rounded shadow-inner py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-600"
+      id="{{ id }}" name="{{ id }}"
+      data-initial-value="{{ selectedValue }}">
+
+      {% for option in options %}
+      <option value="{{ option.id }}"
+        {% if option.id == selectedValue %}selected{% endif %}>
+        {{ option.subdivisionName }}
+      </option>
+      {% endfor %}
+    </select>
+    <svg
+      class="absolute top-em right-4 transform -translate-y-1/2 pointer-events-none w-4 h-4 text-gray-600"
+      xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+    </svg>
+  </div>
+</label>
+{% endmacro %}
+
+{% macro inputField(id, label, value) %}
+<label class="block tracking-wide text-gray-800 mb-2">
+  <span class="font-bold uppercase">{{ label }}</span>
+  <input
+    class="appearance-none block w-full bg-white text-gray-800 border border-gray-400 rounded shadow-inner py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-600"
+    type="text" id="{{ id }}" name="{{ id }}"
+    value="{{ value | escape }}">
+</label>
+{% endmacro %}
+
+{% macro readOnlyInputField(id, label, value) %}
+<label class="block tracking-wide text-gray-800 mb-2">
+  <span class="font-bold uppercase">{{ label }}</span>
+  <input readonly
+    class="appearance-none block w-full bg-gray-200 text-gray-800 border border-gray-400 rounded shadow-inner py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-600"
+    type="text" id="{{ id }}" name="{{ id }}"
+    value="{{ value | escape }}">
+</label>
+{% endmacro %}
+
+{% macro readOnlyTextField(id, label, value) %}
+<label class="block tracking-wide text-gray-800 mb-2">
+  <span class="font-bold uppercase">{{ label }}</span>
+  <textarea
+    class="break-all appearance-none block w-full bg-gray-200 text-gray-800 border border-gray-400 rounded shadow-inner py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-600"
+    id="{{ id }}"
+    name="{{ id }}"
+    rows=6
+    >{{ value | escape }}
+    </textarea>
+</label>
+{% endmacro %}
+
+{% macro readOnlyPreformattedField(id, label, value) %}
+<label class="block tracking-wide text-gray-800 mb-2">
+  <span class="font-bold uppercase">{{ label }}</span>
+  <pre
+    class="break-all appearance-none block w-full bg-gray-200 text-gray-800 border border-gray-400 rounded shadow-inner py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-600"
+    id="{{ id }}"
+    name="{{ id }}"
+    >{{ value | escape }}
+    </pre>
+</label>
+{% endmacro %}

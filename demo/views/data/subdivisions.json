@@ -1,0 +1,482 @@
+[
+  {
+    "id": "de_bw",
+    "subdivisionName": "Baden-Württemberg",
+    "countryCode": "DE",
+    "subdivisionCode": "DE-BW"
+  },
+  {
+    "id": "de_by",
+    "subdivisionName": "Bavaria",
+    "countryCode": "DE",
+    "subdivisionCode": "DE-BY"
+  },
+  {
+    "id": "de_be",
+    "subdivisionName": "Berlin",
+    "countryCode": "DE",
+    "subdivisionCode": "DE-BE"
+  },
+  {
+    "id": "de_bb",
+    "subdivisionName": "Brandenburg",
+    "countryCode": "DE",
+    "subdivisionCode": "DE-BB"
+  },
+  {
+    "id": "de_hb",
+    "subdivisionName": "Bremen",
+    "countryCode": "DE",
+    "subdivisionCode": "DE-HB"
+  },
+  {
+    "id": "de_hh",
+    "subdivisionName": "Hamburg",
+    "countryCode": "DE",
+    "subdivisionCode": "DE-HH"
+  },
+  {
+    "id": "de_he",
+    "subdivisionName": "Hesse",
+    "countryCode": "DE",
+    "subdivisionCode": "DE-HE"
+  },
+  {
+    "id": "de_mv",
+    "subdivisionName": "Mecklenburg-Vorpommern",
+    "countryCode": "DE",
+    "subdivisionCode": "DE-MV"
+  },
+  {
+    "id": "de_ni",
+    "subdivisionName": "Lower Saxony",
+    "countryCode": "DE",
+    "subdivisionCode": "DE-NI"
+  },
+  {
+    "id": "de_nw",
+    "subdivisionName": "North Rhine-Westphalia",
+    "countryCode": "DE",
+    "subdivisionCode": "DE-NW"
+  },
+  {
+    "id": "de_rp",
+    "subdivisionName": "Rhineland-Palatinate",
+    "countryCode": "DE",
+    "subdivisionCode": "DE-RP"
+  },
+  {
+    "id": "de_sl",
+    "subdivisionName": "Saarland",
+    "countryCode": "DE",
+    "subdivisionCode": "DE-SL"
+  },
+  {
+    "id": "de_sn",
+    "subdivisionName": "Saxony",
+    "countryCode": "DE",
+    "subdivisionCode": "DE-SN"
+  },
+  {
+    "id": "de_st",
+    "subdivisionName": "Saxony-Anhalt",
+    "countryCode": "DE",
+    "subdivisionCode": "DE-ST"
+  },
+  {
+    "id": "de_sh",
+    "subdivisionName": "Schleswig-Holstein",
+    "countryCode": "DE",
+    "subdivisionCode": "DE-SH"
+  },
+  {
+    "id": "de_th",
+    "subdivisionName": "Thuringia",
+    "countryCode": "DE",
+    "subdivisionCode": "DE-TH"
+  },
+  {
+    "id": "us_al",
+    "subdivisionName": "Alabama",
+    "countryCode": "US",
+    "subdivisionCode": "US-AL"
+  },
+  {
+    "id": "us_ak",
+    "subdivisionName": "Alaska",
+    "countryCode": "US",
+    "subdivisionCode": "US-AK"
+  },
+  {
+    "id": "us_az",
+    "subdivisionName": "Arizona",
+    "countryCode": "US",
+    "subdivisionCode": "US-AZ"
+  },
+  {
+    "id": "us_ar",
+    "subdivisionName": "Arkansas",
+    "countryCode": "US",
+    "subdivisionCode": "US-AR"
+  },
+  {
+    "id": "us_ca",
+    "subdivisionName": "California",
+    "countryCode": "US",
+    "subdivisionCode": "US-CA"
+  },
+  {
+    "id": "us_co",
+    "subdivisionName": "Colorado",
+    "countryCode": "US",
+    "subdivisionCode": "US-CO"
+  },
+  {
+    "id": "us_ct",
+    "subdivisionName": "Connecticut",
+    "countryCode": "US",
+    "subdivisionCode": "US-CT"
+  },
+  {
+    "id": "us_de",
+    "subdivisionName": "Delaware",
+    "countryCode": "US",
+    "subdivisionCode": "US-DE"
+  },
+  {
+    "id": "us_fl",
+    "subdivisionName": "Florida",
+    "countryCode": "US",
+    "subdivisionCode": "US-FL"
+  },
+  {
+    "id": "us_ga",
+    "subdivisionName": "Georgia",
+    "countryCode": "US",
+    "subdivisionCode": "US-GA"
+  },
+  {
+    "id": "us_hi",
+    "subdivisionName": "Hawaii",
+    "countryCode": "US",
+    "subdivisionCode": "US-HI"
+  },
+  {
+    "id": "us_id",
+    "subdivisionName": "Idaho",
+    "countryCode": "US",
+    "subdivisionCode": "US-ID"
+  },
+  {
+    "id": "us_il",
+    "subdivisionName": "Illinois",
+    "countryCode": "US",
+    "subdivisionCode": "US-IL"
+  },
+  {
+    "id": "us_in",
+    "subdivisionName": "Indiana",
+    "countryCode": "US",
+    "subdivisionCode": "US-IN"
+  },
+  {
+    "id": "us_ia",
+    "subdivisionName": "Iowa",
+    "countryCode": "US",
+    "subdivisionCode": "US-IA"
+  },
+  {
+    "id": "us_ks",
+    "subdivisionName": "Kansas",
+    "countryCode": "US",
+    "subdivisionCode": "US-KS"
+  },
+  {
+    "id": "us_ky",
+    "subdivisionName": "Kentucky",
+    "countryCode": "US",
+    "subdivisionCode": "US-KY"
+  },
+  {
+    "id": "us_la",
+    "subdivisionName": "Louisiana",
+    "countryCode": "US",
+    "subdivisionCode": "US-LA"
+  },
+  {
+    "id": "us_me",
+    "subdivisionName": "Maine",
+    "countryCode": "US",
+    "subdivisionCode": "US-ME"
+  },
+  {
+    "id": "us_md",
+    "subdivisionName": "Maryland",
+    "countryCode": "US",
+    "subdivisionCode": "US-MD"
+  },
+  {
+    "id": "us_ma",
+    "subdivisionName": "Massachusetts",
+    "countryCode": "US",
+    "subdivisionCode": "US-MA"
+  },
+  {
+    "id": "us_mi",
+    "subdivisionName": "Michigan",
+    "countryCode": "US",
+    "subdivisionCode": "US-MI"
+  },
+  {
+    "id": "us_mn",
+    "subdivisionName": "Minnesota",
+    "countryCode": "US",
+    "subdivisionCode": "US-MN"
+  },
+  {
+    "id": "us_ms",
+    "subdivisionName": "Mississippi",
+    "countryCode": "US",
+    "subdivisionCode": "US-MS"
+  },
+  {
+    "id": "us_mo",
+    "subdivisionName": "Missouri",
+    "countryCode": "US",
+    "subdivisionCode": "US-MO"
+  },
+  {
+    "id": "us_mt",
+    "subdivisionName": "Montana",
+    "countryCode": "US",
+    "subdivisionCode": "US-MT"
+  },
+  {
+    "id": "us_ne",
+    "subdivisionName": "Nebraska",
+    "countryCode": "US",
+    "subdivisionCode": "US-NE"
+  },
+  {
+    "id": "us_nv",
+    "subdivisionName": "Nevada",
+    "countryCode": "US",
+    "subdivisionCode": "US-NV"
+  },
+  {
+    "id": "us_nh",
+    "subdivisionName": "New Hampshire",
+    "countryCode": "US",
+    "subdivisionCode": "US-NH"
+  },
+  {
+    "id": "us_nj",
+    "subdivisionName": "New Jersey",
+    "countryCode": "US",
+    "subdivisionCode": "US-NJ"
+  },
+  {
+    "id": "us_nm",
+    "subdivisionName": "New Mexico",
+    "countryCode": "US",
+    "subdivisionCode": "US-NM"
+  },
+  {
+    "id": "us_ny",
+    "subdivisionName": "New York",
+    "countryCode": "US",
+    "subdivisionCode": "US-NY"
+  },
+  {
+    "id": "us_nc",
+    "subdivisionName": "North Carolina",
+    "countryCode": "US",
+    "subdivisionCode": "US-NC"
+  },
+  {
+    "id": "us_nd",
+    "subdivisionName": "North Dakota",
+    "countryCode": "US",
+    "subdivisionCode": "US-ND"
+  },
+  {
+    "id": "us_oh",
+    "subdivisionName": "Ohio",
+    "countryCode": "US",
+    "subdivisionCode": "US-OH"
+  },
+  {
+    "id": "us_ok",
+    "subdivisionName": "Oklahoma",
+    "countryCode": "US",
+    "subdivisionCode": "US-OK"
+  },
+  {
+    "id": "us_or",
+    "subdivisionName": "Oregon",
+    "countryCode": "US",
+    "subdivisionCode": "US-OR"
+  },
+  {
+    "id": "us_pa",
+    "subdivisionName": "Pennsylvania",
+    "countryCode": "US",
+    "subdivisionCode": "US-PA"
+  },
+  {
+    "id": "us_ri",
+    "subdivisionName": "Rhode Island",
+    "countryCode": "US",
+    "subdivisionCode": "US-RI"
+  },
+  {
+    "id": "us_sc",
+    "subdivisionName": "South Carolina",
+    "countryCode": "US",
+    "subdivisionCode": "US-SC"
+  },
+  {
+    "id": "us_sd",
+    "subdivisionName": "South Dakota",
+    "countryCode": "US",
+    "subdivisionCode": "US-SD"
+  },
+  {
+    "id": "us_tn",
+    "subdivisionName": "Tennessee",
+    "countryCode": "US",
+    "subdivisionCode": "US-TN"
+  },
+  {
+    "id": "us_tx",
+    "subdivisionName": "Texas",
+    "countryCode": "US",
+    "subdivisionCode": "US-TX"
+  },
+  {
+    "id": "us_ut",
+    "subdivisionName": "Utah",
+    "countryCode": "US",
+    "subdivisionCode": "US-UT"
+  },
+  {
+    "id": "us_vt",
+    "subdivisionName": "Vermont",
+    "countryCode": "US",
+    "subdivisionCode": "US-VT"
+  },
+  {
+    "id": "us_va",
+    "subdivisionName": "Virginia",
+    "countryCode": "US",
+    "subdivisionCode": "US-VA"
+  },
+  {
+    "id": "us_wa",
+    "subdivisionName": "Washington",
+    "countryCode": "US",
+    "subdivisionCode": "US-WA"
+  },
+  {
+    "id": "us_wv",
+    "subdivisionName": "West Virginia",
+    "countryCode": "US",
+    "subdivisionCode": "US-WV"
+  },
+  {
+    "id": "us_wi",
+    "subdivisionName": "Wisconsin",
+    "countryCode": "US",
+    "subdivisionCode": "US-WI"
+  },
+  {
+    "id": "us_wy",
+    "subdivisionName": "Wyoming",
+    "countryCode": "US",
+    "subdivisionCode": "US-WY"
+  },
+  {
+    "id": "us_dc",
+    "subdivisionName": "District of Columbia",
+    "countryCode": "US",
+    "subdivisionCode": "US-DC"
+  },
+  {
+    "id": "mx_agu",
+    "subdivisionName": "Aguascalientes",
+    "countryCode": "MX",
+    "subdivisionCode": "MX-AGU"
+  },
+  {
+    "id": "mx_bcn",
+    "subdivisionName": "Baja California",
+    "countryCode": "MX",
+    "subdivisionCode": "MX-BCN"
+  },
+  {
+    "id": "mx_bcs",
+    "subdivisionName": "Baja California Sur",
+    "countryCode": "MX",
+    "subdivisionCode": "MX-BCS"
+  },
+  {
+    "id": "mx_cam",
+    "subdivisionName": "Campeche",
+    "countryCode": "MX",
+    "subdivisionCode": "MX-CAM"
+  },
+  {
+    "id": "mx_chp",
+    "subdivisionName": "Chiapas",
+    "countryCode": "MX",
+    "subdivisionCode": "MX-CHP"
+  },
+  {
+    "id": "mx_chh",
+    "subdivisionName": "Chihuahua",
+    "countryCode": "MX",
+    "subdivisionCode": "MX-CHH"
+  },
+  {
+    "id": "mx_coa",
+    "subdivisionName": "Coahuila",
+    "countryCode": "MX",
+    "subdivisionCode": "MX-COA"
+  },
+  {
+    "id": "mx_col",
+    "subdivisionName": "Colima",
+    "countryCode": "MX",
+    "subdivisionCode": "MX-COL"
+  },
+  {
+    "id": "mx_cmx",
+    "subdivisionName": "Ciudad de México",
+    "countryCode": "MX",
+    "subdivisionCode": "MX-CMX"
+  },
+  {
+    "id": "mx_dur",
+    "subdivisionName": "Durango",
+    "countryCode": "MX",
+    "subdivisionCode": "MX-DUR"
+  },
+  {
+    "id": "mx_gua",
+    "subdivisionName": "Guanajuato",
+    "countryCode": "MX",
+    "subdivisionCode": "MX-GUA"
+  },
+  {
+    "id": "mx_gro",
+    "subdivisionName": "Guerrero",
+    "countryCode": "MX",
+    "subdivisionCode": "MX-GRO"
+  },
+  {
+    "id": "mx_hid",
+    "subdivisionName": "Hidalgo",
+    "countryCode": "MX",
+    "subdivisionCode": "MX-HID"
+  }
+]

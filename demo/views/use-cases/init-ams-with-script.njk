@@ -1,0 +1,59 @@
+{% extends "layout.njk" %}
+{% import "components/address.njk" as address %}
+{% import "components/phoneNumber.njk" as phoneNumber %}
+{% import "components/submitdump.njk" as submitdump %}
+
+
+{% block content %}
+<h1 class="text-2xl font-bold text-gray-900 mb-4">Default</h1>
+<p class="text-gray-700 mb-6">
+  This site demonstrates how endereco services can be bound to an address via enderecoInitAMS call.
+</p>
+
+<div class="flex flex-col md:flex-row md:space-x-4">
+  <div class="w-full md:w-1/2 p-4 mb-4 md:mb-0 text-sm">
+    <form method="POST" action="">
+
+      {{
+				address.defaultForm(
+					'Address with street full', 
+					'_address1', 
+					submittedData,
+					countriesData,
+          subdivisionsData
+				) 
+			}}
+
+      <script>
+        enderecoInitAMS({
+          countryCode: '#countryCode_address1',
+          subdivisionCode: '#subdivisionCode_address1',
+          postalCode: '#postalCode_address1',
+          locality: '#locality_address1',
+          streetFull: '#streetFull_address1',
+          streetName: '#street_address1',
+          buildingNumber: '#buildingNumber_address1',
+          additionalInfo: '#additionalInfo_address1',
+          addressStatus: '[name="status_address1"]',
+          addressTimestamp: '[name="timestamp_address1"]',
+          addressPredictions: '[name="predictions_address1"]',
+        }, {
+          name: 'address',
+          addressType: 'general_address'
+        });
+      </script>
+
+      {% include "components/simpleSubmitButton.njk" %}
+    </form>
+  </div>
+  <div class="w-full md:w-1/2 p-4">
+    {{
+			submitdump.table(
+				submittedData
+			) 
+		}}
+  </div>
+</div>
+
+
+{% endblock %}

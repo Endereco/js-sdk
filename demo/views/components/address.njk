@@ -1,0 +1,151 @@
+<!-- js-sdk/demo/views/components/address.njk -->
+{% import 'components/formfields.njk' as formfields %}
+
+{% macro defaultForm(
+  name, 
+  suffix, 
+  submittedData=null,
+  countriesData = [],
+  subdivisionsData = [],
+  streetModus='streetFull',
+  showSubdivision=true,
+  showAdditionalInfo=true
+  ) 
+%}
+
+<h2 class="text-xl font-semibold text-gray-900 mb-3">{{ name }}</h2>
+
+<div class="bg-gray-200 rounded-lg p-6 my-4 text-xs">
+  {% if streetModus == 'streetFull' %}
+  <div class="flex flex-wrap -mx-3 mb-2 hidden">
+    <div class="w-full md:w-1/2 px-3 mb-2 md:mb-0 hidden">
+      {{ formfields.inputField('street'+suffix, 'Street Name', submittedData['street' + suffix] ) }}
+    </div>
+    <div class="w-full md:w-1/2 px-3 hidden">
+      {{ formfields.inputField('buildingNumber'+suffix, 'Building Number', submittedData['buildingNumber'+suffix]) }}
+    </div>
+  </div>
+  <div class="flex flex-wrap -mx-3 mb-2">
+    <div class="w-full px-3">
+      {{ formfields.inputField('streetFull'+suffix, 'Street (full)', submittedData['streetFull'+suffix]) }}
+    </div>
+  </div>
+  {% elif streetModus == 'streetName' %}
+  <div class="flex flex-wrap -mx-3 mb-2">
+    <div class="w-full md:w-1/2 px-3 mb-2 md:mb-0">
+      {{ formfields.inputField('street'+suffix, 'Street Name', submittedData['street' + suffix] ) }}
+    </div>
+    <div class="w-full md:w-1/2 px-3">
+      {{ formfields.inputField('buildingNumber'+suffix, 'Building Number', submittedData['buildingNumber'+suffix]) }}
+    </div>
+  </div>
+  <div class="flex flex-wrap -mx-3 mb-2 hidden">
+    <div class="w-full px-3">
+      {{ formfields.inputField('streetFull'+suffix, 'Street (full)', submittedData['streetFull'+suffix]) }}
+    </div>
+  </div>
+  {% elif streetModus == 'onlyStreetFull' %}
+  <div class="flex flex-wrap -mx-3 mb-2">
+    <div class="w-full px-3">
+      {{ formfields.inputField('streetFull'+suffix, 'Street (full)', submittedData['streetFull'+suffix]) }}
+    </div>
+  </div>
+  {% elif streetModus == 'onlyStreetName' %}
+  <div class="flex flex-wrap -mx-3 mb-2">
+    <div class="w-full md:w-1/2 px-3 mb-2 md:mb-0">
+      {{ formfields.inputField('street'+suffix, 'Street Name', submittedData['street' + suffix] ) }}
+    </div>
+    <div class="w-full md:w-1/2 px-3">
+      {{ formfields.inputField('buildingNumber'+suffix, 'Building Number', submittedData['buildingNumber'+suffix]) }}
+    </div>
+  </div>
+  {% endif %}
+  <div class="flex flex-wrap -mx-3 mb-2">
+    <div class="w-full md:w-1/2 px-3 mb-2 md:mb-0">
+      {{ formfields.inputField('postalCode'+suffix, 'PostalCode', submittedData['postalCode'+suffix]) }}
+    </div>
+    <div class="w-full md:w-1/2 px-3">
+      {{ formfields.inputField('locality'+suffix, 'Locality', submittedData['locality'+suffix]) }}
+    </div>
+  </div>
+  <div class="flex flex-wrap -mx-3 mb-2">
+    <div class="w-full px-3">
+      {% if showAdditionalInfo %}
+      {{ formfields.inputField('additionalInfo'+suffix, 'Additional Info (Apartment, Door)', submittedData['additionalInfo'+suffix]) }}
+      {% endif %}
+    </div>
+  </div>
+  <div class="flex flex-wrap -mx-3 mb-2">
+    <div class="w-full px-3">
+      {{ formfields.countrySelect('countryCode'+suffix, 'Country', countriesData, submittedData['countryCode'+suffix]) }}
+    </div>
+  </div>
+  <div class="flex flex-wrap -mx-3 mb-2">
+    <div class="w-full px-3">
+      {% if showSubdivision %}
+      {{ formfields.subdivisionSelect('subdivisionCode'+suffix, 'Region', [
+                    { id: '', title: '-- Please select a country first --' }
+                ], submittedData['subdivisionCode'+suffix]) }}
+      {% endif %}
+    </div>
+    <script>
+      (function() {
+        const countriesData = {{ countriesData | dump | safe }};
+        const subdivisionsData = {{ subdivisionsData | dump | safe }};
+
+        function setRegionOptions() {
+          const subdivisionElement = document.querySelector(
+            '#subdivisionCode{{suffix}}');
+          const selectedCountryId = document.querySelector(
+              '#countryCode{{suffix}}')
+            .value;
+          const selectedCountry = countriesData.find(c => c.id === selectedCountryId);
+
+          if (!selectedCountry) return;
+
+          const countryCode = selectedCountry.countryCode;
+          const subdivisions = subdivisionsData.filter(c => c.countryCode === countryCode);
+          // Clear existing options
+          subdivisionElement.innerHTML = '';
+
+          // Add default option
+          const defaultOption = document.createElement("option");
+          defaultOption.text = "-- Select a region --";
+          defaultOption.value = "";
+          subdivisionElement.add(defaultOption);
+          console.log("Subdivisions")
+
+          // Add subdivision options
+          subdivisions.forEach(subdivision => {
+            const option = document.createElement("option");
+            option.text = subdivision.subdivisionName;
+            option.value = subdivision.id;
+            subdivisionElement.add(option);
+          });
+
+          // Set the selected option if it exists in submittedData
+          const submittedSubdivision = "{{ submittedData['subdivisionCode' + suffix] }}";
+          if (submittedSubdivision) {
+            subdivisionElement.value = submittedSubdivision;
+          }
+        }
+
+        // Wait for DOM to be fully loaded
+        document.addEventListener('DOMContentLoaded', () => {
+          setRegionOptions();
+          document.querySelector('#countryCode{{suffix}}').addEventListener(
+            'change',
+            setRegionOptions);
+        });
+      })()
+    </script>
+  </div>
+  <div class="hidden">
+    <!-- unsichtbare Felder, die ein Modul hinzufügen soll -->
+    <input type="hidden" name="{{ 'status'+suffix }}" value="{{ submittedData['status'+suffix] }}">
+    <input type="hidden" name="{{ 'timestamp'+suffix }}" value="{{ submittedData['timestamp'+suffix] }}">
+    <input type="hidden" name="{{ 'predictions'+suffix }}" value="{{ submittedData['predictions'+suffix] }}">
+  </div>
+</div>
+
+{% endmacro %}

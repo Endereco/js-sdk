@@ -1,0 +1,15 @@
+{{#hasErrors}}
+<div 
+  endereco-field-errors
+	class="endereco-errorlist-wrapper"
+  id="{{uniqueID}}"
+>
+	<div class="endereco-errorlist-wrapper-inner">
+		<ul class="endereco-errorlist-wrapper-list">
+			{{#errors}}
+				<li class="endereco-errorlist-wrapper-list__item">{{{.}}}</li>
+			{{/errors}}
+		</ul>
+	</div>
+</div>
+{{/hasErrors}}

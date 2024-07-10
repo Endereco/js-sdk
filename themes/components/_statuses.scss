@@ -14,14 +14,17 @@
 	&--additional_info_correct,
 	&--country_code_correct,
 	&--subdivision_code_correct,
-	&--phone_correct {
+	&--phone_correct,
+	&--correct {
 		input,
-		select,
-		.form-control,
-		.btn {
-			border-color: rgb(76, 175, 80);
-			background-color: #f8fcf8;
-		}
+    select,
+    .form-control,
+    .btn,
+    &,
+    &.radio-inline {
+      border-color: rgb(76, 175, 80);
+      background-color: #f8fcf8;
+    }
 	}
 
 
@@ -43,17 +46,110 @@
 	&--subdivision_code_needs_correction,
 	&--phone_invalid,
 	&--phone_needs_correction,
-	&--phone_wrong_type {
+	&--phone_wrong_type,
+	&--incorrect {
 		input,
-		select,
-		.form-control,
-		.btn {
-			border-color: rgb(240, 173, 78);
-			background-color: #fefbf8;
-		}
+    select,
+    .form-control,
+    .btn,
+    &,
+    &.radio-inline {
+      border-color: rgb(240, 173, 78);
+      background-color: #fefbf8;
+    }
+    
+    &.radio-inline {
+      border-bottom: 2px dotted rgb(240, 173, 78);
+    }
+	}
+}
 
-		&.radio-inline  {
-			border-bottom: 2px dotted rgb(240, 173, 78);
+.endereco-status {
+	&__building_number_is_missing,
+	&__building_number_not_found {
+		.endereco-modal-field--missing-building-number-placeholder {
+			display: inline-block;
+		}
+	}
+
+	&__country_code_needs_correction {
+		.endereco-modal-field--countryCode,
+		.endereco-modal-field--countryName {
+			display: inline-block;
+			background-color: rgba(255, 0, 0, 0.125);
+			border-bottom: 1px solid red;
+			padding: 0 3px;
+			min-width: 20px;
+			min-height: 1em;
+		}
+	}
+
+	&__postal_code_needs_correction {
+		.endereco-modal-field--postalCode {
+			display: inline-block;
+			background-color: rgba(255, 0, 0, 0.125);
+			border-bottom: 1px solid red;
+			padding: 0 3px;
+			min-width: 20px;
+			min-height: 1em;
+		}
+	}
+
+	&__locality_needs_correction {
+		.endereco-modal-field--locality {
+			display: inline-block;
+			background-color: rgba(255, 0, 0, 0.125);
+			border-bottom: 1px solid red;
+			padding: 0 3px;
+			min-width: 20px;
+			min-height: 1em;
+		}
+	}
+
+	&__street_full_needs_correction {
+		.endereco-modal-field--streetFull,
+		.endereco-modal-field--streetName,
+		.endereco-modal-field--buildingNumber {
+			display: inline-block;
+			background-color: rgba(255, 0, 0, 0.125);
+			border-bottom: 1px solid red;
+			padding: 0 3px;
+			min-width: 20px;
+			min-height: 1em;
+		}
+	}
+
+	&__street_name_needs_correction {
+		.endereco-modal-field--streetFull,
+		.endereco-modal-field--streetName {
+			display: inline-block;
+			background-color: rgba(255, 0, 0, 0.125);
+			border-bottom: 1px solid red;
+			padding: 0 3px;
+			min-width: 20px;
+			min-height: 1em;
+		}
+	}
+
+	&__additional_info_needs_correction {
+		.endereco-modal-field--additionalInfo {
+			display: inline-block;
+			background-color: rgba(255, 0, 0, 0.125);
+			border-bottom: 1px solid red;
+			padding: 0 3px;
+			min-width: 20px;
+			min-height: 1em;
+		}
+	}
+
+	&__building_number_needs_correction {
+		.endereco-modal-field--buildingNumber {
+			display: inline-block;
+			background-color: rgba(255, 0, 0, 0.125);
+			border-bottom: 1px solid red;
+			padding: 0 3px;
+			min-width: 20px;
+			min-height: 1em;
 		}
 	}
 }

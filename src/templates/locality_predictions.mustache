@@ -1,0 +1,22 @@
+<div 
+  endereco-locality-predictions 
+  endereco-predictions-dropdown 
+  class="endereco-predictions-wrapper endereco-predictions-wrapper--direction-{{direction}} {{#longList}}endereco-predictions-wrapper--longlist{{/longList}}" 
+  id="{{uniqueID}}"	
+>
+	<div class="endereco-predictions-wrapper-inner">
+		<ul class="endereco-predictions">
+			{{#predictions}}
+			<li
+					class="endereco-predictions__item {{#isActive}}active{{/isActive}}"
+					endereco-locality-prediction
+					endereco-collection-item
+					data-prediction-index="{{index}}"
+					data-prediction-type="locality"
+			>
+				{{#postalCode}}{{{postalCode}}}, {{/postalCode}}{{{localityDiff}}}{{#subdivisionName}}<span class="endereco-text-gray">, {{{subdivisionName}}}</span> {{/subdivisionName}}
+			</li>
+			{{/predictions}}
+		</ul>
+	</div>
+</div>

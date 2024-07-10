@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+    rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="countryMapping" value="{{ countryMapping }}">
+  <meta name="subdivisionMapping" value="{{ subdivisionMapping }}">
+  <style>
+    .top-em {
+      top: 1.85em;
+    }
+  </style>
+  {% block customcss %}{% endblock %}
+  {% block header_configuration %}
+  <script>
+    if (undefined === window.EnderecoIntegrator) {
+      window.EnderecoIntegrator = {};
+    }
+    if (!window.EnderecoIntegrator.onLoad) {
+      window.EnderecoIntegrator.onLoad = [];
+      window.EnderecoIntegrator.delayedInits = [];
+    }
+
+    function enderecoInitAMS(selector, options) {
+      if (undefined !== window.EnderecoIntegrator.initAMS) {
+        window.EnderecoIntegrator.initAMS(selector, options);
+      } else {
+        window.EnderecoIntegrator.delayedInits.push(function() {
+          window.EnderecoIntegrator.initAMS(selector, options);
+        });
+      }
+    }
+
+    function enderecoInitPhoneServices(selector, options) {
+      if (undefined !== window.EnderecoIntegrator.initPhoneServices) {
+        window.EnderecoIntegrator.initPhoneServices(selector, options);
+      } else {
+        window.EnderecoIntegrator.delayedInits.push(function() {
+          window.EnderecoIntegrator.initPhoneServices(selector, options);
+        });
+      }
+    }
+
+    function enderecoInitPersonServices(selector, options) {
+      if (undefined !== window.EnderecoIntegrator.initPersonServices) {
+        window.EnderecoIntegrator.initPersonServices(selector, options);
+      } else {
+        window.EnderecoIntegrator.delayedInits.push(function() {
+          window.EnderecoIntegrator.initPersonServices(selector, options);
+        });
+      }
+    }
+
+    function enderecoInitEmailServices(selectors, options) {
+      if (undefined !== window.EnderecoIntegrator.initEmailServices) {
+        window.EnderecoIntegrator.initEmailServices(selectors, options);
+      } else {
+        window.EnderecoIntegrator.delayedInits.push(function() {
+          window.EnderecoIntegrator.initEmailServices(selectors, options);
+        });
+      }
+    }
+
+    function enderecoExtendIntegrator() {
+
+      window.EnderecoIntegrator.configService.setConfig('api', {
+        apiUrl: 'http://staging.endereco-service.de/rpc/v1',
+        proxyUrl: 'http://localhost:8888/proxyfile',
+      });
+
+      window.EnderecoIntegrator.configService.setConfig('modals', {
+        buttonClass: 'bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline'
+      });
+
+      // Parse and set country mapping
+
+      const countryMappingContainer = document.querySelector("[name='countryMapping']");
+      if (countryMappingContainer?.getAttribute('value')) {
+        try {
+          const countryMapping = JSON.parse(atob(countryMappingContainer.getAttribute('value')));
+          EnderecoIntegrator.mappingService.setMapping('country', countryMapping);
+        } catch (error) {
+          console.error("Error parsing country mapping:", error);
+        }
+      }
+
+      const subdivisionMappingContainer = document.querySelector("[name='subdivisionMapping']");
+      if (subdivisionMappingContainer?.getAttribute('value')) {
+        try {
+          const subdivisionMapping = JSON.parse(atob(subdivisionMappingContainer.getAttribute(
+            'value')));
+          EnderecoIntegrator.mappingService.setMapping('subdivision', subdivisionMapping);
+        } catch (error) {
+          console.error("Error parsing subdivision mapping:", error);
+        }
+      }
+
+      ['onLoad', 'delayedInits'].forEach(key =>
+        EnderecoIntegrator[key].forEach(callback => callback())
+      );
+
+      window.EnderecoIntegrator.ready = true;
+      window.EnderecoIntegrator.scanner.start();
+    }
+  </script>
+  {% endblock %}
+</head>
+
+<body class="text-base font-sans">
+  <header id="siteHeader">
+    <nav class="bg-gray-800 text-white p-4 flex items-center justify-between">
+      <div class="flex-grow text-center md:text-left">
+        Endereco Test Lab
+      </div>
+      <input
+        class="appearance-none bg-white text-gray-800 border border-gray-400 rounded shadow-inner py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-600 w-full md:w-1/2 lg:w-1/3 mt-4 md:mt-0 md:ml-4"
+        id="apiKey" type="text" name="apiKey" placeholder="API Key">
+    </nav>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const apiKeyInput = document.querySelector('#apiKey');
+
+        if (apiKeyInput) {
+          // Load API key from local storage if it exists
+          const storedApiKey = localStorage.getItem('apiKey');
+          if (storedApiKey) {
+            apiKeyInput.value = storedApiKey;
+            setApiKey();
+          }
+
+          apiKeyInput.addEventListener('change', updateApiKey);
+
+          function updateApiKey() {
+            const apiKey = apiKeyInput.value.trim();
+            if (window.EnderecoIntegrator.configService) {
+              window.EnderecoIntegrator.configService.setConfig('api', {
+                apiKey
+              })
+            }
+            // Save the API key to local storage
+            localStorage.setItem('apiKey', apiKey);
+          }
+
+          function setApiKey() {
+            const apiKey = apiKeyInput.value.trim();
+            if (window.EnderecoIntegrator && window.EnderecoIntegrator.onLoad && !window
+              .EnderecoIntegrator.ready) {
+              window.EnderecoIntegrator.onLoad.push(updateApiKey);
+            } else {
+              updateApiKey();
+            }
+          }
+
+          // Ensure apiKey is set if already present when page loads
+          if (apiKeyInput.value.trim()) {
+            setApiKey();
+          }
+        }
+      });
+    </script>
+
+
+    </nav>
+    {% include "navigation.njk" %}
+  </header>
+  <div class="flex">
+    {% include "config.njk" %}
+
+    <main id="contentContainer" class="w-full p-6 bg-white">
+      {% block content %}{% endblock %}
+    </main>
+    {% block jsbundle %}
+    <script defer async src="/assets/endereco.min.js"></script>
+    {% endblock %}
+  </div>
+</body>
+
+</html>

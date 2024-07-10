@@ -61,6 +61,30 @@
 		color: #0c517d;
 	}
 
+	&-field--missing-building-number-placeholder {
+		display: none;
+		background-color: rgba(255, 0, 0, 0.125);
+		min-height: 1em;
+		min-width: 1.5em;
+		position: relative;
+		border-bottom: 1px solid red;
+		border-radius: 2px;
+		padding: 0 3px;
+
+		&::after {
+			content: '?';
+			display: inline-block;
+			position: absolute;
+			color: red;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			font-size: 0.66em;
+			line-height: 1;
+		}
+	}
+	
+
 	&--no-prediction {
 		&.building_number_is_missing,
 		&.building_number_not_found {
