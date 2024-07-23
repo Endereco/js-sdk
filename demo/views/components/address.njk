@@ -1,3 +1,4 @@
+<!-- js-sdk/demo/views/components/address.njk -->
 {% import 'components/formfields.njk' as formfields %}
 
 {% macro formular(
@@ -85,23 +86,7 @@
         <div class="w-full px-3">
             {% if showSubdivision %}
                 {{ formfields.selectField('subdivisionCode'+suffix, 'Region', [
-                    { value: '', text: '-- Please select a region --' },
-                    { value: 'DE-BW', text: 'Baden-Württemberg (Baden-Wuerttemberg)' },
-                    { value: 'DE-BY', text: 'Bayern (Bavaria)' },
-                    { value: 'DE-BE', text: 'Berlin' },
-                    { value: 'DE-BB', text: 'Brandenburg' },
-                    { value: 'DE-HB', text: 'Bremen' },
-                    { value: 'DE-HH', text: 'Hamburg' },
-                    { value: 'DE-HE', text: 'Hessen (Hesse)' },
-                    { value: 'DE-MV', text: 'Mecklenburg-Vorpommern (Mecklenburg-Western Pomerania)' },
-                    { value: 'DE-NI', text: 'Niedersachsen (Lower Saxony)' },
-                    { value: 'DE-NW', text: 'Nordrhein-Westfalen (North Rhine-Westphalia)' },
-                    { value: 'DE-RP', text: 'Rheinland-Pfalz (Rhineland-Palatinate)' },
-                    { value: 'DE-SL', text: 'Saarland' },
-                    { value: 'DE-SN', text: 'Sachsen (Saxony)' },
-                    { value: 'DE-ST', text: 'Sachsen-Anhalt (Saxony-Anhalt)' },
-                    { value: 'DE-SH', text: 'Schleswig-Holstein' },
-                    { value: 'DE-TH', text: 'Thüringen (Thuringia)' }
+                    { value: '', text: '-- Please select a country first --' }
                 ], submittedData['subdivisionCode'+suffix]) }}
             {% endif %}
         </div>
