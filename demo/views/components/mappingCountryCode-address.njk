@@ -13,66 +13,27 @@
   )
 %}
 
-<div id="submittedData-table"></div>
-
-<script>
-    const submittedData = {{ submittedData | dump | safe }};
-    //console.log(submittedData);
-    const tableContainer = document.getElementById('submittedData-table');
-
-    if (submittedData) {
-        tableContainer.className = 'bg-gray-200 rounded-lg p-6 my-4';
-
-        const table = document.createElement('table');
-        table.className = 'w-full text-sm text-left text-gray-500 dark:text-gray-400';
-        const thead = document.createElement('thead');
-        thead.className = 'text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400';
-        const trHead = document.createElement('tr');
-
-        const thKey = document.createElement('th');
-        thKey.scope = 'col';
-        thKey.className = 'bg-gray-100 py-3 px-6';
-        thKey.textContent = 'Feld';
-        trHead.appendChild(thKey);
-
-        const thValue = document.createElement('th');
-        thValue.scope = 'col';
-        thValue.className = 'bg-gray-100 py-3 px-6';
-        thValue.textContent = 'Wert';
-        trHead.appendChild(thValue);
-
-        thead.appendChild(trHead);
-        table.appendChild(thead);
-
-        const tbody = document.createElement('tbody');
-        tbody.className = 'bg-white dark:bg-gray-800';
-        
-        let i = 0;
-        Object.entries(submittedData).forEach(([key, value]) => {
-            i++;
-            const trBody = document.createElement('tr');
-            trBody.className = 'border-b dark:bg-gray-800 dark:border-gray-700 odd:bg-white even:bg-gray-50 odd:dark:bg-gray-800 even:dark:bg-gray-700';
-
-            const tdKey = document.createElement('td');
-            tdKey.className = 'py-1 px-6';
-            if ( i % 2 === 0 ) tdKey.className = 'py-1 px-6 bg-gray-100 dark:bg-gray-700';
-            tdKey.textContent = key;
-            trBody.appendChild(tdKey);
-
-            const tdValue = document.createElement('td');
-            tdValue.className = 'py-1 px-6';
-            if ( i % 2 === 0 ) tdValue.className = 'py-1 px-6 bg-gray-100 dark:bg-gray-700';
-            tdValue.textContent = value;
-            trBody.appendChild(tdValue);
-
-            tbody.appendChild(trBody);
-        });
-
-        table.appendChild(tbody);
-
-        tableContainer.appendChild(table);
-    }
-</script>
+{% if submittedData %}
+    <h2 class="text-xl font-semibold text-gray-900 mb-3">Submitted Data of {{ name }}</h2>
+    <div id="submittedData-table" class="bg-gray-200 rounded-lg p-6 my-4">
+        <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                <tr>
+                    <th scope="col" class="bg-gray-100 py-3 px-6">Feld</th>
+                    <th scope="col" class="bg-gray-100 py-3 px-6">Wert</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white dark:bg-gray-800">
+                {% for key, value in submittedData %}
+                    <tr class="border-b dark:bg-gray-800 dark:border-gray-700 {% if loop.index0 is odd %}bg-gray-50 dark:bg-gray-700{% else %}bg-white dark:bg-gray-800{% endif %}">
+                        <td class="py-1 px-6 {% if loop.index0 is odd %}bg-gray-100 dark:bg-gray-700{% endif %}">{{ key }}</td>
+                        <td class="py-1 px-6 {% if loop.index0 is odd %}bg-gray-100 dark:bg-gray-700{% endif %}">{{ value }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}
 
 <h2 class="text-xl font-semibold text-gray-900 mb-3">{{ name }}</h2>
 <div class="bg-gray-200 rounded-lg p-6 my-4">
