@@ -1,6 +1,5 @@
 {% extends "layout.njk" %}
-{% import "components/address.njk" as address %}
-{% import "components/phoneNumber.njk" as phoneNumber %}
+{% import "components/phone.njk" as phone %}
 {% import "components/submitdump.njk" as submitdump %}
 
 
@@ -16,30 +15,36 @@
   <div class="w-full md:w-1/2 p-4 mb-4 md:mb-0 text-sm">
     <form method="POST" action="">
 
-      {{
-			address.defaultForm(
-				'Address with street full', 
-				'_address1', 
-				submittedData
-			) 
-		}}
+     {{
+        phone.defaultForm(
+          'Mobile Phone', 
+          '_phone1', 
+          submittedData
+        ) 
+      }}
 
       <script>
-        enderecoInitAMS({
-          countryCode: '#countryCode_address1',
-          subdivisionCode: '#subdivisionCode_address1',
-          postalCode: '#postalCode_address1',
-          locality: '#locality_address1',
-          streetFull: '#streetFull_address1',
-          streetName: '#street_address1',
-          buildingNumber: '#buildingNumber_address1',
-          additionalInfo: '#additionalInfo_address1',
-          addressStatus: '[name="status_address1"]',
-          addressTimestamp: '[name="timestamp_address1"]',
-          addressPredictions: '[name="predictions_address1"]',
+        enderecoInitPhoneServices({
+          phone: '#phone_phone1'
         }, {
-          name: 'address_with_streetfull',
-          addressType: 'general_address'
+          name: 'phone1'
+        });
+      </script>
+
+
+      {{
+        phone.defaultForm(
+          'Fixedline Phone', 
+          '_phone2', 
+          submittedData
+        ) 
+      }}
+
+      <script>
+        enderecoInitPhoneServices({
+          phone: '#phone_phone2'
+        }, {
+          name: 'phone2'
         });
       </script>
 

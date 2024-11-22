@@ -10,6 +10,7 @@ class ConfirmAddressAction extends ActionInterface {
           manager.meta.status.push('address_selected_by_customer')
           manager.displayStatus()
           manager.displayErrorMessages()
+          manager.syncMeta()
           resolve()
         },
         () => {

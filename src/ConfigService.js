@@ -86,7 +86,7 @@ class ConfigService {
   getConfig (category) {
     const config = this.configs[category] || {}
     const finalConfig = this.filterService.filter(
-      'getConfig',
+      'ConfigService.getConfig',
       config,
       {
         category

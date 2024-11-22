@@ -1,5 +1,4 @@
 import Promise from 'promise-polyfill';
-import merge from 'lodash.merge';
 import Integrator from './src/Integrator';
 import css from './themes/default-theme.scss';
 

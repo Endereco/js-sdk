@@ -1,0 +1,21 @@
+<!-- js-sdk/demo/views/components/address.njk -->
+{% import 'components/formfields.njk' as formfields %}
+
+{% macro defaultForm(
+  name, 
+  suffix, 
+  submittedData=null
+  ) 
+%}
+
+<h2 class="text-xl font-semibold text-gray-900 mb-3">{{ name }}</h2>
+
+<div class="bg-gray-200 rounded-lg p-6 my-4 text-xs">
+  <div class="flex flex-wrap -mx-3 mb-2">
+    <div class="w-full px-3 ">
+      {{ formfields.inputField('email'+suffix, 'Email-Address', submittedData['email'+suffix]) }}
+    </div>
+  </div>
+</div>
+
+{% endmacro %}

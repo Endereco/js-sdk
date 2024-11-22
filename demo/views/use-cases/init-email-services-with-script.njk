@@ -1,6 +1,5 @@
 {% extends "layout.njk" %}
-{% import "components/address.njk" as address %}
-{% import "components/phoneNumber.njk" as phoneNumber %}
+{% import "components/email.njk" as email %}
 {% import "components/submitdump.njk" as submitdump %}
 
 
@@ -17,29 +16,18 @@
     <form method="POST" action="">
 
       {{
-			address.defaultForm(
-				'Address with street full', 
-				'_address1', 
-				submittedData
-			) 
-		}}
+        email.defaultForm(
+          'Email-Address', 
+          '_email1', 
+          submittedData
+        ) 
+      }}
 
       <script>
-        enderecoInitAMS({
-          countryCode: '#countryCode_address1',
-          subdivisionCode: '#subdivisionCode_address1',
-          postalCode: '#postalCode_address1',
-          locality: '#locality_address1',
-          streetFull: '#streetFull_address1',
-          streetName: '#street_address1',
-          buildingNumber: '#buildingNumber_address1',
-          additionalInfo: '#additionalInfo_address1',
-          addressStatus: '[name="status_address1"]',
-          addressTimestamp: '[name="timestamp_address1"]',
-          addressPredictions: '[name="predictions_address1"]',
+        enderecoInitEmailServices({
+          email: '#email_email1'
         }, {
-          name: 'address_with_streetfull',
-          addressType: 'general_address'
+          name: 'email'
         });
       </script>
 

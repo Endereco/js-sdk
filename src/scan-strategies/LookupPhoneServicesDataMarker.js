@@ -1,7 +1,7 @@
 import DataMarkerLookup from "./DataMarkerLookup"
 
 class LookupPhoneServicesDataMarker extends DataMarkerLookup {
-  DATA_MARKER_SELECTOR = '[name="endereco_data_marker"][data-endereco-service="phoneService"][data-has-object="no"]'
+  DATA_MARKER_SELECTOR = '[name="endereco_data_marker"][data-endereco-service="phoneServices"][data-has-object="no"]'
 
   execute(integrator) {
     document.querySelectorAll(this.DATA_MARKER_SELECTOR).forEach(DOMElement => {
