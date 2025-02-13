@@ -3,8 +3,8 @@
   "version": "1.11.0",
   "main": "index.js",
   "scripts": {
-    "build": "npm run build-styles && cross-env NODE_ENV=production NODE_OPTIONS=--openssl-legacy-provider webpack --progress && npm run copy",
-    "build-styles": "cross-env NODE_ENV=production NODE_OPTIONS=--openssl-legacy-provider webpack --config webpack-styles.config.js && rimraf dist/style.js && npm run copy-styles",
+    "build": "npm run build-styles && cross-env NODE_ENV=production webpack --progress && npm run copy",
+    "build-styles": "cross-env NODE_ENV=production webpack --config webpack-styles.config.js && rimraf dist/style.js && npm run copy-styles",
     "copy": "copyfiles -u 1 ./dist/endereco.min.js ./demo/assets",
     "copy-styles": "copyfiles -u 1 ./dist/endereco.min.css ./demo/assets",
     "demo": "nodemon -e js,mjs,cjs,json,html demo/app.js & browser-sync start --proxy 'localhost:8888' --files 'demo/**/*.js, demo/**/*.css, demo/**/*.html' --open"
@@ -71,10 +71,10 @@
     "@eslint/eslintrc": "^3.0.2",
     "@eslint/js": "^9.1.1",
     "browser-sync": "^3.0.2",
-    "eslint": "^8.57.0",
+    "eslint": "^7.32.0",
     "eslint-config-standard": "^17.1.0",
     "eslint-plugin-import": "^2.29.1",
-    "eslint-plugin-n": "^16.6.2",
+    "eslint-plugin-n": "^14.0.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^6.1.1",
     "globals": "^15.0.0"

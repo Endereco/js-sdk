@@ -60,7 +60,7 @@ function EnderecoBase() {
         _changed: false,
 
         _awaits: 0,
-        waitForExtension: function(extensions, timeout=10) {
+        waitForExtension: function(extensions, timeout= 10) {
             var $self = this;
             return new Promise(function(resolve, reject) {
                 if ('string' === typeof extensions) {
@@ -222,6 +222,26 @@ function EnderecoBase() {
             generateId: function() {
                 return uuidv4();
             }
+        },
+
+        api: {
+
+        },
+
+        getEnderecoAPI: function() {
+            var $self = this;
+            return {
+                sendRequestToAPI: async function(body, headers) {
+                    return $self.util.axios.post(
+                        $self.config.apiUrl,
+                        body,
+                        {
+                            timeout: $self.config.ux.requestTimeout,
+                            headers
+                        }
+                    );
+                }
+            };
         },
 
         // Event Handling.

@@ -1,235 +1,736 @@
-import Mustache from "mustache";
+/**
+ * Extends the base object with "streetFull" field handling capabilities.
+ * Adds support for single-line street input ("streetFull") by:
+ * - Adding streetFull property with getter/setter
+ * - Parsing it into separate street name and building number components
+ * - Providing autocomplete suggestions for the full street input
+ * - Syncing parsed components with separate streetName/buildingNumber fields if present
+ * - Caching API parsing results for performance
+ * - Handling keyboard navigation for autocomplete suggestions
+ */
+
+import {diffChars} from "diff";
+import streetFullPredictionsTemplate from "../../../templates/street_full_predictions.html";
 import streetFullTemplateFactory from "../../../templates/streetNameTemplates";
 
-var StreetFullExtension = {
+const StreetFullExtension = {
     name: 'StreetFullExtension',
-    extend: function(ExtendableObject) {
-        var $self = this;
-        return new ExtendableObject.util.Promise(function(resolve, reject) {
-            ExtendableObject._streetFull = '';
-            ExtendableObject._subscribers.streetFull = [];
-            ExtendableObject._streetFullSplitRequestIndex = 1;
-            ExtendableObject.config.templates.streetFull = streetFullTemplateFactory;
 
-            ExtendableObject._localStreetFullState = 1;
+    /**
+     * Place for registering internal properties needed for streetFull functionality.
+     * Add here:
+     * - Internal storage fields (_fieldName)
+     * - Subscriber arrays (_subscribers.fieldName)
+     * - Cache objects
+     * - Control flags
+     * - Timeout and sequence tracking variables
+     * @param {Object} ExtendableObject - The base object being extended
+     */
+    registerProperties: (ExtendableObject) => {
+        // Internal storage for field values
+        ExtendableObject._streetFull = '';
+        ExtendableObject._streetFullPredictions = [];
 
-            ExtendableObject.cb.setStreetFull = function(streetFull) {
-                return new ExtendableObject.util.Promise(function(resolve, reject) {
-                    resolve(streetFull);
-                });
-            };
+        // Subscriber storage
+        ExtendableObject._subscribers.streetFull = [];
+        
+        // Cache
+        ExtendableObject.streetSplitCache = {
+            cachedResults: {}
+        };
+        ExtendableObject.streetFullAutocompleteCache = {
+            cachedResults: {}
+        };
 
-            ExtendableObject.cb.streetFullChange = function(subscriber) {
-                return function(e) {
-                    ExtendableObject.streetFull = subscriber.value;
-                }
-            };
+        // Flags
+        ExtendableObject._allowToNotifyStreetFullSubscribers = true;
+        ExtendableObject._allowStreetFullSplit = true;
+        ExtendableObject._allowStreetFullCompose = true;
+        ExtendableObject._allowFetchStreetFullAutocomplete = true;
 
-            ExtendableObject.cb.streetFullBlur = function(subscriber) {
-                return function(e) {
-                    ExtendableObject.waitUntilReady().then(function() {
+        // Timeout and sequence
+        ExtendableObject._streetFullAutocompleteTimeout = null;
+        ExtendableObject._streetFullAutocompleteRequestIndex = 0;
+        ExtendableObject._streetFullSplitTimeout = null;
+        ExtendableObject._streetFullSplitRequestIndex = 0;
+        ExtendableObject._streetFullPredictionsIndex = 0;
+    },
 
-                        if (ExtendableObject.onBlurTimeout) {
-                            clearTimeout(ExtendableObject.onBlurTimeout);
-                            ExtendableObject.onBlurTimeout = null;
-                        }
-                        ExtendableObject.onBlurTimeout = setTimeout( function() {
-                            if (ExtendableObject.config.trigger.onblur && !ExtendableObject.anyActive() && ExtendableObject.util.shouldBeChecked() && !window.EnderecoIntegrator.hasSubmit) {
-                                // Second. Check Address.
-                                clearTimeout(ExtendableObject.onBlurTimeout);
-                                ExtendableObject.onBlurTimeout = null;
-                                ExtendableObject.util.checkAddress().catch();
-                            }
-                        }, 300);
-                    }).catch()
-                }
-            };
+    /**
+     * Place for registering fields that should be exposed on the ExtendableObject.
+     * Add here:
+     * - Public properties with getters/setters
+     * - Field tracking registration
+     * - Property change handling logic
+     * @param {Object} ExtendableObject - The base object being extended
+     */
+    registerFields: (ExtendableObject) => {
+        // Add getter and setter for fields.
+        Object.defineProperty(ExtendableObject, 'streetFull', {
+            get: () => {
+                return ExtendableObject._streetFull;
+            },
+            set: async (value) => {
+                const needToNotify = ExtendableObject.active && ExtendableObject._allowToNotifyStreetFullSubscribers;
+                const needToDisplayAutocompleteDropdown = ExtendableObject.active &&
+                    ExtendableObject.config.useAutocomplete &&
+                    ExtendableObject._allowFetchStreetFullAutocomplete;
+                const needToSplit = ExtendableObject.active && ExtendableObject._allowStreetFullSplit;
 
-            ExtendableObject.util.splitStreet = function(streetFull = null) {
-                if (!streetFull) {
-                    streetFull = ExtendableObject.streetFull;
-                }
+                ExtendableObject._awaits++;
 
-                return new ExtendableObject.util.Promise(function(resolve, reject) {
-                    var message = {
-                        'jsonrpc': '2.0',
-                        'id': ExtendableObject._streetFullSplitRequestIndex,
-                        'method': 'splitStreet',
-                        'params': {
-                            'formatCountry': (!!ExtendableObject.countryCode)?ExtendableObject.countryCode:'de',
-                            'language': ExtendableObject.config.lang,
-                            'street': streetFull
-                        }
-                    };
+                try {
+                    let resolvedValue = await ExtendableObject.util.Promise.resolve(value);
+                    resolvedValue = await ExtendableObject.cb.setStreetFull(resolvedValue);
 
-                    // Send user data to remote server for validation.
-                    ExtendableObject._awaits++;
-                    ExtendableObject.util.axios.post(ExtendableObject.config.apiUrl, message, {
-                        timeout: 2000,
-                        headers: {
-                            'X-Auth-Key': ExtendableObject.config.apiKey,
-                            'X-Agent': ExtendableObject.config.agentName,
-                            'X-Remote-Api-Url': ExtendableObject.config.remoteApiUrl,
-                            'X-Transaction-Referer': window.location.href,
-                            'X-Transaction-Id': 'not_required'
-                        }
-                    })
-                        .then(function(response) {
-                            if (undefined !== response.data.result && (ExtendableObject._streetFullSplitRequestIndex === response.data.id)) {
-                                resolve(response.data);
-                            } else {
-                                reject(response.data)
-                            }
-                        })
-                        .catch(function(e) {
-                            reject(e.response)
-                        })
-                        .finally( function() {
-                            ExtendableObject._awaits--;
-                        });
-                })
-            }
-
-            // Add util function
-            ExtendableObject.util.formatStreetFull = function(streetData = null) {
-                var $self = ExtendableObject;
-                if (null === streetData) {
-                    streetData = {
-                        countryCode: $self.countryCode,
-                        streetName: $self.streetName,
-                        buildingNumber: $self.buildingNumber,
-                        additionalInfo: $self.additionalInfo
+                    // Early return.
+                    if (resolvedValue === ExtendableObject._streetFull) {
+                        return;
                     }
+
+                    ExtendableObject._streetFull = resolvedValue;
+
+                    if (ExtendableObject.active) {
+                        ExtendableObject._changed = true;
+                        ExtendableObject.addressStatus = [];
+                    }
+
+                    if (needToNotify) {
+                        // Inform all subscribers about the change.
+                        ExtendableObject._subscribers.streetFull.forEach(function (subscriber) {
+                            subscriber.value = resolvedValue;
+                        });
+                    }
+
+                    if (needToSplit) {
+                        await ExtendableObject.util.ensureStreetPartsIntegrity(resolvedValue);
+                    }
+
+                    if (needToDisplayAutocompleteDropdown) {
+                        await ExtendableObject.util.displayStreetFullAutocompleteDropdown(resolvedValue);
+                    }
+                } catch(e) {
+                    console.warn("Error while setting the field 'streetFull'", e);
+                } finally {
+                    ExtendableObject._awaits--;
                 }
-                return $self.util.Mustache.render(
-                    $self.config.templates.streetFull.getTemplate(streetData.countryCode),
-                    streetData
-                ).replace(/  +/g, ' ').replace(/(\r\n|\n|\r)/gm, "").trim();
+            }
+        });
+        ExtendableObject.fieldNames.push('streetFull'); // TODO: check if still needed
+
+        Object.defineProperty(ExtendableObject, 'streetFullPredictions', {
+            get: function() {
+                return this._streetFullPredictions;
+            },
+            set: async function(value) {
+                let resolvedValue = await ExtendableObject.util.Promise.resolve(value);
+                if (ExtendableObject.streetFullPredictions !== resolvedValue) {
+                    ExtendableObject._streetFullPredictions = resolvedValue;
+                    ExtendableObject._streetFullPredictionsIndex = 0;
+                }
+            }
+        });
+    },
+
+    /**
+     * Place for registering event-related callback functions.
+     * Add here:
+     * - DOM event handlers (onChange, onInput, onBlur, etc.)
+     * - Keyboard interaction handlers
+     * - Event propagation control
+     * - Event-triggered state updates
+     * @param {Object} ExtendableObject - The base object being extended
+     */
+    registerEventCallbacks: (ExtendableObject) => {
+
+        /**
+         * Handler for field value changes via normal input events (without the field being in focus)
+         * @param {Object} subscriber - The subscriber object that triggered the change
+         * @returns {Function} Event handler that updates streetFull while preventing circular updates
+         */
+        ExtendableObject.cb.streetFullChange = (subscriber) => {
+            return () => {
+                ExtendableObject._allowToNotifyStreetFullSubscribers = false;
+                ExtendableObject.streetFull = subscriber.value;
+                ExtendableObject._allowToNotifyStreetFullSubscribers = true;
+            };
+        };
+
+        /**
+         * Handler for field value changes via direct input events (while being in focus)
+         * @param {Object} subscriber - The subscriber object that triggered the input
+         * @returns {Function} Event handler that updates streetFull while preventing circular updates
+         */
+        ExtendableObject.cb.streetFullInput = (subscriber) => {
+            return () => {
+                ExtendableObject._allowToNotifyStreetFullSubscribers = false;
+                ExtendableObject.streetFull = subscriber.value;
+                ExtendableObject._allowToNotifyStreetFullSubscribers = true;
+            }
+        };
+
+        /**
+         * Handler for field blur events (field focus and de-focus)
+         * @returns {Function} Event handler that manages validation and dropdown cleanup
+         */
+        ExtendableObject.cb.streetFullBlur = () => {
+            return async () => {
+                // Handle dropdown cleanup
+                const isAnyActive = ExtendableObject._subscribers.streetFull.some(
+                    sub => document.activeElement === sub.object
+                );
+
+                if (!isAnyActive) {
+                    ExtendableObject.streetNamePredictions = [];
+                    ExtendableObject.util.removeStreetFullPredictionsDropdown();
+                }
+
+                await ExtendableObject.waitUntilReady();
+
+                // Clear existing timeout if any
+                if (ExtendableObject.onBlurTimeout) {
+                    clearTimeout(ExtendableObject.onBlurTimeout);
+                    ExtendableObject.onBlurTimeout = null;
+                }
+
+                // Set new timeout for address check
+                ExtendableObject.onBlurTimeout = setTimeout(async () => {
+                    const shouldCheckAddress = ExtendableObject.config.trigger.onblur &&
+                        !ExtendableObject.anyActive() &&
+                        ExtendableObject.util.shouldBeChecked() &&
+                        !window.EnderecoIntegrator.hasSubmit;
+
+                    if (shouldCheckAddress) {
+                        clearTimeout(ExtendableObject.onBlurTimeout);
+                        ExtendableObject.onBlurTimeout = null;
+                        try {
+                            await ExtendableObject.util.checkAddress();
+                        } catch (error) {
+                            console.warn('Error checking address:', error);
+                        }
+                    }
+                }, 300);
+            }
+        };
+
+        /**
+         * Handler for keyboard events on the streetFull field
+         * @returns {Function} Event handler that manages keyboard navigation and selection
+         */
+        ExtendableObject.cb.streetFullKeydown = () => {
+            return function(e) {
+                if ('ArrowUp' === e.key || 'Up' === e.key) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (-1 < ExtendableObject._streetFullPredictionsIndex) {
+                        ExtendableObject._streetFullPredictionsIndex = ExtendableObject._streetFullPredictionsIndex - 1;
+                        ExtendableObject.util.renderStreetFullPredictionsDropdown(
+                            ExtendableObject.streetFullPredictions
+                        );
+                    }
+                } else if ('ArrowDown' === e.key || 'Down' === e.key) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (ExtendableObject._streetFullPredictionsIndex < (ExtendableObject._streetFullPredictions.length-1)) {
+                        ExtendableObject._streetFullPredictionsIndex = ExtendableObject._streetFullPredictionsIndex + 1;
+                        ExtendableObject.util.renderStreetFullPredictionsDropdown(
+                            ExtendableObject.streetFullPredictions
+                        );
+                    }
+                } else if ('Tab' === e.key || 'Tab' === e.key) {
+                    // TODO: configurable activate in future releases.
+                    /*
+                    if (0 < ExtendableObject._streetFullPredictions.length) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        ExtendableObject.cb.copyStreetFullFromPrediction();
+                    }*/
+                } else if ('Enter' === e.key || 'Enter' === e.key) {
+                    if (0 < ExtendableObject._streetFullPredictions.length) {
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        ExtendableObject._allowFetchStreetFullAutocomplete = false;
+                        ExtendableObject.streetFull = ExtendableObject.streetFullPredictions[ExtendableObject._streetFullPredictionsIndex].streetFull;
+                        ExtendableObject.streetFullPredictions = [];
+                        ExtendableObject._allowFetchStreetFullAutocomplete = true;
+                        ExtendableObject.util.removeStreetFullPredictionsDropdown();
+                    }
+                } else if('Backspace' === e.key || 'Backspace' === e.key) {
+                    ExtendableObject.config.ux.smartFill = false;
+                }
+            }
+        };
+    },
+
+    /**
+     * Place for registering utility functions used across the extended object.
+     * Add here:
+     * - UI manipulation functions
+     * - Data processing helpers
+     * - State management utilities
+     * - Formatting functions
+     * @param {Object} ExtendableObject - The base object being extended
+     */
+    registerUtilities: (ExtendableObject) => {
+
+        /**
+         * Manages the display of autocomplete suggestions dropdown
+         * @param {string} streetFull - Current street input value
+         * @returns {Promise<void>}
+         */
+        ExtendableObject.util.displayStreetFullAutocompleteDropdown = async (streetFull) => {
+            ExtendableObject.util.removeStreetFullPredictionsDropdown();
+
+            if (ExtendableObject._streetFullAutocompleteTimeout) {
+                clearTimeout(ExtendableObject._streetFullAutocompleteTimeout)
             }
 
-            // Add getter and setter for fields.
-            var $oldFullStreet;
-            Object.defineProperty(ExtendableObject, 'streetFull', {
-                get: function() {
-                    return this._streetFull;
-                },
-                set: function(value) {
-                    ExtendableObject._awaits++;
-                    ExtendableObject.util.Promise.resolve(value).then(function(value) {
-                        ExtendableObject._awaits++;
-                        ExtendableObject.cb.setStreetFull(value).then( function(value) {
+            ExtendableObject._streetFullAutocompleteTimeout = setTimeout(async () => {
+                try {
+                    const autocompleteResult = await ExtendableObject.util.getStreetFullPredictions(streetFull);
 
-                            if (ExtendableObject.active) {
-                                ExtendableObject._localStreetFullState++;
-                            }
+                    if (autocompleteResult.originalStreetFull !== streetFull) {
+                        return;
+                    }
+                    ExtendableObject.streetFullPredictions = autocompleteResult.predictions;
+                    ExtendableObject.util.renderStreetFullPredictionsDropdown(autocompleteResult.predictions);
+                } catch (e) {
+                    console.warn("Failed fetching predictions", e, streetFull);
+                }
+                ExtendableObject._streetFullAutocompleteTimeout = null;
+            }, ExtendableObject.config.ux.delay.inputAssistant);
+        }
 
-                            if (
-                                ExtendableObject.hasLoadedExtension('StreetNameExtension') &&
-                                ExtendableObject.hasLoadedExtension('BuildingNumberExtension') &&
-                                ['general_address', 'shipping_address', 'billing_address'].includes(ExtendableObject.addressType) &&
-                                ExtendableObject._localStreetFullState > Math.max(ExtendableObject._localStreetNameState, ExtendableObject._localBuildingNumberState)
-                            ) {
-                                ExtendableObject.waitForActive().then(function() {
-                                    ExtendableObject._awaits++;
-                                    ExtendableObject.util.splitStreet(value).then(function(data) {
-                                        ExtendableObject._awaits++;
-                                        if (
-                                            ExtendableObject.hasLoadedExtension('BuildingNumberExtension')
-                                        ) {
-                                            ExtendableObject.buildingNumber = data.result.houseNumber;
-                                        }
+        /**
+         * Removes the predictions dropdown from the DOM
+         * Updates the dropdown counter and cleans up related state
+         */
+        ExtendableObject.util.removeStreetFullPredictionsDropdown = () => {
+            ExtendableObject._subscribers.streetFull.forEach(() => {
+                const dropdown = document.querySelector('[endereco-street-full-predictions]');
+                if (dropdown) {
+                    ExtendableObject._openDropdowns--;
+                    dropdown.parentNode.removeChild(dropdown);
+                }
+            });
+        }
 
-                                        if (
-                                            ExtendableObject.hasLoadedExtension('StreetNameExtension')
-                                        ) {
-                                            ExtendableObject.streetName = data.result.streetName;
-                                        }
+        /**
+         * Renders the predictions dropdown with diff highlighting
+         * @param {Array} predictions - Array of address predictions
+         * Handles:
+         * - Dropdown positioning
+         * - Diff highlighting
+         * - Event listeners for selection
+         */
+        ExtendableObject.util.renderStreetFullPredictionsDropdown = function(predictions) {
+            predictions = JSON.parse(JSON.stringify(predictions)); // Create a copy
 
-                                        ExtendableObject._awaits--;
-                                    }).catch(function(e) {
-                                        if (
-                                            ExtendableObject.hasLoadedExtension('StreetNameExtension')
-                                        ) {
-                                            ExtendableObject.streetName = ExtendableObject.streetFull;
-                                        }
-                                        if (
-                                            ExtendableObject.hasLoadedExtension('BuildingNumberExtension')
-                                        ) {
-                                            ExtendableObject.buildingNumber = '';
-                                        }
-                                    }).finally(function() {
-                                        ExtendableObject._awaits--;
-                                    })
-                                }).catch();
-                            }
+            // Render dropdown under the input element
+            ExtendableObject._subscribers.streetFull.forEach( function(subscriber) {
+                if (document.querySelector('[endereco-street-full-predictions]')) {
+                    ExtendableObject._openDropdowns--;
+                    document.querySelector('[endereco-street-full-predictions]').parentNode.removeChild(document.querySelector('[endereco-street-full-predictions]'));
+                }
 
-                            var oldValue = ExtendableObject._streetFull;
-                            var newValue = value;
+                // Render predictions only if the field is active and there are predictions.
+                if (
+                    0 < predictions.length &&
+                    (document.activeElement === subscriber.object)
+                ) {
+                    var startingIndex = 0;
+                    var preparedPredictions = [];
 
-                            var notSame = oldValue !== newValue;
-
-                            // Chunk set.
-                            if (ExtendableObject.hasLoadedExtension('StreetFullAutocompleteExtension')) {
-                                notSame = notSame || ( ExtendableObject._streetFullChunk !== newValue );
-                            }
-
-                            if (notSame) {
-                                ExtendableObject._streetFull = newValue;
-
-                                if (ExtendableObject.hasLoadedExtension('StreetFullAutocompleteExtension')) {
-                                    ExtendableObject._streetFullChunk = newValue;
-
-                                    // Inform all subscribers about the change.
-                                    ExtendableObject._subscribers.streetFullChunk.forEach(function (subscriber) {
-                                        subscriber.value = value;
-                                    });
-                                }
-
-                                // Inform all subscribers about the change.
-                                ExtendableObject._subscribers.streetFull.forEach(function (subscriber) {
-                                    subscriber.value = value;
-                                });
-
-                                if (ExtendableObject.active) {
-                                    ExtendableObject.fire(
-                                        new ExtendableObject.util.CustomEvent(
-                                            'change',
-                                            {
-                                                detail: {
-                                                    fieldName: 'streetFull',
-                                                    oldValue: oldValue,
-                                                    newValue: newValue,
-                                                    object: ExtendableObject
-                                                }
-                                            }
-                                        )
-                                    );
-                                }
-
-
-                            }
-
-                        }).catch(function(e) {
-                            if (ExtendableObject.config.showDebugInfo) {
-                                console.log('Error resolving streetFull', e);
-                            }
-                        }).finally(function() {
-                            ExtendableObject._awaits--;
+                    // Prepare predictions.
+                    predictions.forEach(function(prediction) {
+                        var diff = diffChars(ExtendableObject.streetFull, prediction.streetFull, {ignoreCase: true});
+                        var streetFullHtml = '';
+                        diff.forEach(function(part){
+                            var markClass = part.added ? 'endereco-span--add' :
+                                part.removed ? 'endereco-span--remove' : 'endereco-span--neutral';
+                            streetFullHtml += '<span class="' + markClass + '">' + part.value.replace(/[ ]/g,  '&nbsp;') + '</span>';
                         });
-                    }).catch().finally(function() {
-                        ExtendableObject._awaits--;
+
+                        preparedPredictions.push({
+                            streetFull: prediction.streetFull,
+                            streetFullDiff: streetFullHtml
+                        });
+                    })
+
+                    // Prepare dropdown.
+                    var predictionsHtml = ExtendableObject.util.Mustache.render(ExtendableObject.config.templates.streetFullPredictions, {
+                        ExtendableObject: ExtendableObject,
+                        predictions: preparedPredictions,
+                        offsetTop: subscriber.object.offsetTop + subscriber.object.offsetHeight,
+                        offsetLeft: subscriber.object.offsetLeft,
+                        width: subscriber.object.offsetWidth,
+                        direction: getComputedStyle(subscriber.object).direction,
+                        longList: (preparedPredictions.length > 6),
+                        index: function() {
+                            return (startingIndex-1); // TODO: add loop finishing function to increase counter.
+                        },
+                        isActive: function(){
+                            var isActive = (startingIndex === ExtendableObject._streetFullPredictionsIndex);
+                            startingIndex++;
+                            return isActive;
+                        }
+                    });
+
+                    // Attach it to HTML.
+                    subscriber.object.insertAdjacentHTML('afterend', predictionsHtml);
+                    ExtendableObject._openDropdowns++;
+                    document.querySelectorAll('[data-id="'+ExtendableObject.id+'"] [endereco-street-full-prediction]').forEach(function(DOMElement) {
+                        DOMElement.addEventListener('mousedown', function(e) {
+                            var index = parseInt(this.getAttribute('data-prediction-index'))
+                            e.preventDefault();
+                            e.stopPropagation();
+                            ExtendableObject._allowFetchStreetFullAutocomplete = false;
+                            ExtendableObject.streetFull = predictions[index].streetFull;
+                            ExtendableObject.streetFullPredictions = [];
+                            ExtendableObject._allowFetchStreetFullAutocomplete = true;
+                            ExtendableObject.util.removeStreetFullPredictionsDropdown();
+                        })
                     });
                 }
             });
+        }
 
-            ExtendableObject.fieldNames.push('streetFull');
-
-            if (ExtendableObject.config.showDebugInfo) {
-                console.log('StreetFullExtension applied');
+        /**
+         * Ensures street name and number are properly split and synchronized
+         * @param {string} streetFull - Combined street input to split
+         * @returns {Promise<void>}
+         */
+        ExtendableObject.util.ensureStreetPartsIntegrity = async function(streetFull) {
+            if (ExtendableObject._streetFullSplitTimeout) {
+                clearTimeout(ExtendableObject._streetFullSplitTimeout)
             }
 
-            resolve($self);
-        });
+            ExtendableObject._streetFullSplitTimeout = setTimeout(async () => {
+                try {
+                    let { streetName, buildingNumber } = await ExtendableObject.util.splitStreet(streetFull);
+
+                    // Check if splitStreet result is outdated
+                    if (ExtendableObject.streetFull !== streetFull) {
+                        return;
+                    }
+
+                    ExtendableObject._allowStreetFullCompose = false;
+                    ExtendableObject._allowFetchStreetNameAutocomplete = false;
+                    ExtendableObject.streetName = streetName;
+                    ExtendableObject.buildingNumber = buildingNumber;
+                    ExtendableObject._allowStreetFullCompose = true;
+                    ExtendableObject._allowFetchStreetNameAutocomplete = true;
+                } catch (e) {
+                    console.warn("Street split failed", e, streetFull)
+                }
+                ExtendableObject._streetFullSplitTimeout = null;
+            }, ExtendableObject.config.ux.delay.inputAssistant);
+        }
+
+        /**
+         * Formats street components according to country-specific template
+         * @param {Object} [streetData] - Optional street data object
+         * @param {string} [streetData.countryCode] - Country code for formatting
+         * @param {string} [streetData.streetName] - Street name
+         * @param {string} [streetData.buildingNumber] - Building number
+         * @param {string} [streetData.additionalInfo] - Additional address info
+         * @returns {string} Formatted street address
+         */
+        ExtendableObject.util.formatStreetFull = function(streetData = null) {
+            var $self = ExtendableObject;
+            if (null === streetData) {
+                streetData = {
+                    countryCode: $self.countryCode,
+                    streetName: $self.streetName,
+                    buildingNumber: $self.buildingNumber,
+                    additionalInfo: $self.additionalInfo
+                }
+            }
+            return $self.util.Mustache.render(
+                $self.config.templates.streetFull.getTemplate(streetData.countryCode),
+                streetData
+            ).replace(/  +/g, ' ').replace(/(\r\n|\n|\r)/gm, "").trim();
+        }
+    },
+
+    /**
+     * Place for registering API communication functions.
+     * Add here:
+     * - API request functions
+     * - Response handling
+     * - Error management
+     * - Caching logic
+     * @param {Object} ExtendableObject - The base object being extended
+     */
+    registerAPIHandlers: (ExtendableObject) => {
+
+        /**
+         * Splits a combined street address into components via API
+         * @param {string} streetFullRaw - Raw street input to split
+         * @returns {Promise<Object>} Split address components
+         * @throws {Error} If input is invalid or API request fails
+         */
+        ExtendableObject.util.splitStreet = async function(streetFullRaw) {
+            if (typeof streetFullRaw !== 'string') {
+                throw new Error("Invalid arguments. The streetFull has to be string");
+            }
+
+            if (!streetFullRaw.trim()) {
+                return { streetName: '', streetFull: '', buildingNumber: '' };
+            }
+
+            const streetFull = streetFullRaw.trim(); // Create copy:
+
+            if (!ExtendableObject.streetSplitCache.cachedResults[streetFull]) {
+                ExtendableObject._awaits++;
+
+                const streetFullSplitRequestIndex = ++ExtendableObject._streetFullSplitRequestIndex;
+
+                let splitStreetRequest = {
+                    'jsonrpc': '2.0',
+                    'id': streetFullSplitRequestIndex,
+                    'method': 'splitStreet',
+                    'params': {
+                        'formatCountry': ExtendableObject.countryCode || 'DE',
+                        'language': ExtendableObject.config.lang,
+                        'street': streetFull
+                    }
+                };
+
+                if (ExtendableObject._subscribers.additionalInfo.length > 0) {
+                    for (const listener of ExtendableObject._subscribers.additionalInfo) {
+                        if (!listener.object.disabled && listener.object.isConnected) {
+                            splitStreetRequest.params.additionalInfo = ExtendableObject.address.additionalInfo;
+                            break;
+                        }
+                    }
+                }
+
+                const headers = {
+                    'X-Auth-Key': ExtendableObject.config.apiKey,
+                    'X-Agent': ExtendableObject.config.agentName,
+                    'X-Remote-Api-Url': ExtendableObject.config.remoteApiUrl,
+                    'X-Transaction-Referer': window.location.href,
+                    'X-Transaction-Id': ExtendableObject.hasLoadedExtension?.('SessionExtension')
+                        ? ExtendableObject.sessionId
+                        : 'not_required'
+                }
+
+                try {
+                    const EnderecoAPI = ExtendableObject.getEnderecoAPI()
+
+                    let result = await EnderecoAPI.sendRequestToAPI(
+                        splitStreetRequest,
+                        headers
+                    )
+
+                    // Ensure that result exists.
+                    if (!result?.data?.result) {
+                        throw new Error("Invalid API response: Missing 'result' field in response data");
+                    }
+
+                    // Save in cache
+                    ExtendableObject.streetSplitCache.cachedResults[streetFull] = result.data.result
+                } catch (e) {
+                    console.warn("Error splitting street full", e, streetFull);
+                } finally {
+                    ExtendableObject._awaits--;
+                }
+            }
+
+            const result = ExtendableObject.streetSplitCache.cachedResults[streetFull];
+            let splitData = {
+                originalStreetFull: streetFull, // Used to invalidate outdated splits downstream
+                streetName: result.streetName || '',
+                streetFull: result.street || '',
+                buildingNumber: result.houseNumber || '',
+            }
+
+            if (result.additionalInfo !== undefined) {
+                splitData.additionalInfo = result.additionalInfo ?? "";
+            }
+
+            return splitData
+        }
+
+        /**
+         * Fetches street predictions (including buildingNumber) from API
+         * @param {string} streetFullRaw - Raw street input to get predictions for
+         * @returns {Promise<Object>} Prediction results with original input
+         * @throws {Error} If input is invalid or API request fails
+         */
+        ExtendableObject.util.getStreetFullPredictions = async function (streetFullRaw) {
+            if (typeof streetFullRaw !== "string") {
+                throw new Error("Invalid argument. The streetFullRaw has to be a string");
+            }
+
+            const streetFull = streetFullRaw.trim();
+            let autocompleteResult = {
+                originalStreetFull: streetFull,
+                predictions: [],
+            };
+
+            // Early return
+            if (streetFull === "") {
+                return autocompleteResult;
+            }
+
+            if (!ExtendableObject.streetFullAutocompleteCache.cachedResults[streetFull]) {
+                const autocompleteRequestIndex = ++ExtendableObject._streetFullAutocompleteRequestIndex;
+
+                const message = {
+                    jsonrpc: "2.0",
+                    id: autocompleteRequestIndex,
+                    method: "streetAutocomplete",
+                    params: {
+                        country: ExtendableObject.countryCode,
+                        language: ExtendableObject.config.lang,
+                        postCode: ExtendableObject.postalCode,
+                        cityName: ExtendableObject.locality,
+                        streetFull: streetFull,
+                    },
+                };
+
+                const headers = {
+                    "X-Auth-Key": ExtendableObject.config.apiKey,
+                    "X-Agent": ExtendableObject.config.agentName,
+                    "X-Remote-Api-Url": ExtendableObject.config.remoteApiUrl,
+                    "X-Transaction-Referer": window.location.href,
+                    "X-Transaction-Id": ExtendableObject.hasLoadedExtension?.("SessionExtension")
+                        ? ExtendableObject.sessionId
+                        : "not_required",
+                };
+
+                let streetFullPredictionsTemp = [];
+
+                try {
+                    const EnderecoAPI = ExtendableObject.getEnderecoAPI();
+                    if (!EnderecoAPI) {
+                        console.warn("EnderecoAPI is not available");
+                        return autocompleteResult;
+                    }
+
+                    let result = await EnderecoAPI.sendRequestToAPI(message, headers);
+
+                    if (result?.data?.error?.code === -32700) {
+                        ExtendableObject.util.updateSessionId?.();
+                    }
+
+                    if (!result || !result.data || !result.data.result) {
+                        console.warn("API didn't return a valid result");
+                        return autocompleteResult;
+                    }
+
+                    // If session counter is set, increase it.
+                    if (ExtendableObject.hasLoadedExtension("SessionExtension")) {
+                        ExtendableObject.sessionCounter++;
+                    }
+
+                    result.data.result.predictions.forEach((streetFullPrediction) => {
+                        if (!streetFullPrediction) return;
+
+                        const { country, street, buildingNumber, additionalInfo } = streetFullPrediction || {};
+
+                        let tempStreetFullContainer = {
+                            countryCode: country ?? ExtendableObject._countryCode,
+                            streetName: street ?? "",
+                            buildingNumber: buildingNumber ?? "",
+                            additionalInfo: additionalInfo ?? "",
+                        };
+
+                        if (streetFullPrediction.streetFull === undefined) {
+                            tempStreetFullContainer.streetFull = ExtendableObject.util.Mustache.render(
+                                streetFullTemplateFactory.getTemplate(tempStreetFullContainer.countryCode),
+                                {
+                                    streetName: tempStreetFullContainer.streetName,
+                                    buildingNumber: tempStreetFullContainer.buildingNumber,
+                                    additionalInfo: tempStreetFullContainer.additionalInfo,
+                                }
+                            )
+                                .replace(/(\r\n|\n|\r)/gm, "")
+                                .trim();
+                        }
+
+                        streetFullPredictionsTemp.push(tempStreetFullContainer);
+                    });
+                } catch (e) {
+                    console.warn("Error fetching street full predictions", e);
+                }
+
+                ExtendableObject.streetFullAutocompleteCache.cachedResults[streetFull] = streetFullPredictionsTemp;
+            }
+
+            autocompleteResult.predictions = ExtendableObject.streetFullAutocompleteCache.cachedResults[streetFull];
+
+            return autocompleteResult;
+        };
+    },
+
+    /**
+     * Place for registering data transformation and validation functions.
+     * Add here:
+     * - Input filters
+     * - Data validators
+     * - Value transformers
+     * - Custom formatters
+     * @param {Object} ExtendableObject - The base object being extended
+     */
+    registerFilterCallbacks: (ExtendableObject) => {
+
+        /**
+         * Filter function for streetFull value processing. Its not doing much, but it can be rewritten by
+         * user implementation.
+         * @param {string} streetFull - Street value to process
+         * @returns {Promise<string>} Processed street value
+         */
+        ExtendableObject.cb.setStreetFull = async (streetFull) => {
+            return streetFull;
+        }
+    },
+
+    /**
+     * Place for registering configuration.
+     * Add here:
+     * - HTML templates
+     * - UI configuration
+     * - Display format templates
+     * - Other configs
+     * @param {Object} ExtendableObject - The base object being extended
+     */
+    registerConfig: (ExtendableObject) => {
+        // Templates
+        ExtendableObject.config.templates.streetFull = streetFullTemplateFactory;
+        ExtendableObject.config.templates.streetFullPredictions = streetFullPredictionsTemplate;
+    },
+
+    /**
+     * Main extension function that sets up all streetFull functionality.
+     * @param {Object} ExtendableObject - The base object being extended
+     * @returns {Promise<Object>} - Resolves to the StreetFullExtension object
+     *
+     * Executes all registration functions in sequence:
+     * 1. registerProperties - Sets up internal state
+     * 2. registerFields - Adds streetFull field
+     * 3. registerConfig - Sets up templates and other configs
+     * 4. registerEventCallbacks - Adds event handlers
+     * 5. registerUtilities - Adds helper functions
+     * 6. registerAPIHandlers - Sets up API communication
+     * 7. registerFilterCallbacks - Adds data filters
+     *
+     * All registrations are handled asynchronously to ensure proper setup.
+     * The extension object is returned to confirm successful extension.
+     */
+    extend: async (ExtendableObject) => {
+        await StreetFullExtension.registerProperties(ExtendableObject);
+        await StreetFullExtension.registerFields(ExtendableObject);
+        await StreetFullExtension.registerConfig(ExtendableObject);
+        await StreetFullExtension.registerEventCallbacks(ExtendableObject);
+        await StreetFullExtension.registerUtilities(ExtendableObject);
+        await StreetFullExtension.registerAPIHandlers(ExtendableObject);
+        await StreetFullExtension.registerFilterCallbacks(ExtendableObject);
+
+        return StreetFullExtension;
     }
 }
 

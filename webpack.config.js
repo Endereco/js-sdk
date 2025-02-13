@@ -12,7 +12,7 @@ module.exports = {
     publicPath: '/',
   },
   optimization: {
-    minimize: true,
+    minimize: false,
     minimizer: [new TerserPlugin({
       sourceMap: false,
       terserOptions: {
@@ -81,7 +81,7 @@ module.exports = {
   performance: {
     hints: false
   },
-  devtool: 'source-map',
+  devtool: 'inline-source-map',
   plugins: [
   ],
 };
