@@ -1,3 +1,4 @@
+@use "sass:color";
 .endereco-button {
 	border: 0 none;
 	border-radius: 4px;
@@ -10,7 +11,7 @@
 	transition: background-color 300ms ease-in-out;
 
 	&:hover {
-		background-color: darken(#009EC0, 10%);
+		background-color: color.adjust(#009EC0, $lightness: -10%);
 		transition: background-color 300ms ease-in-out;
 	}
 }

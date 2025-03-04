@@ -14,11 +14,10 @@ module.exports = {
   optimization: {
     minimize: true,
     minimizer: [new TerserPlugin({
-      sourceMap: false,
       terserOptions: {
         output: {
           comments: false,
-        },
+        }
       },
       extractComments: false,
     })],
@@ -81,7 +80,7 @@ module.exports = {
   performance: {
     hints: false
   },
-  devtool: 'source-map',
+  devtool: false,
   plugins: [
   ],
 };

@@ -62,7 +62,7 @@ router.get('/', async (req, res) => {
         return stat.isDirectory() ? file : null;
     }));
 
-    const links = directories.filter(Boolean).map(dir => `<a href="/use-cases/${dir}/index.html">${dir}</a>`);
+    const links = directories.filter(Boolean).map(dir => `<a href="/use-cases/${dir}">${dir}</a>`);
     res.send(`Verfügbare Testfälle: ${links.join(', ')}`);
 });
 
