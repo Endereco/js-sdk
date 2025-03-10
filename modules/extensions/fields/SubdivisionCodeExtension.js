@@ -1,125 +1,204 @@
-var SubdivisionCodeExtension = {
+const SubdivisionCodeExtension = {
     name: 'SubdivisionCodeExtension',
-    extend: function(ExtendableObject) {
-        var $self = this;
-        return new ExtendableObject.util.Promise(function(resolve, reject) {
-            // Add _address, _addressStatus.
-            ExtendableObject._subdivisionCode = ''; // Germany is a preselected default.
-            ExtendableObject._subscribers.subdivisionCode = [];
 
-            ExtendableObject._localSubdivisionCodeState = 1;
-            ExtendableObject._globalSubdivisionCodeState = 1;
+    /**
+     * Registers required properties on the extendable object
+     * @param {Object} ExtendableObject - The object to extend with subdivision code properties
+     */
+    registerProperties: (ExtendableObject) => {
+        ExtendableObject._subdivisionCode = ''; // Germany is a preselected default.
+        ExtendableObject._subscribers.subdivisionCode = [];
 
-            // Add a setter callback promise.
-            ExtendableObject.cb.setSubdivisionCode = function(countryCode) {
-                return new ExtendableObject.util.Promise(function(resolve, reject) {
-                    resolve(countryCode);
-                });
-            };
+        ExtendableObject._allowToNotifySubdivisionCodeSubscribers = true;
+    },
 
-            ExtendableObject.cb.subdivisionCodeChange = function(subscriber) {
-                return function(e) {
-                    ExtendableObject.subdivisionCode = subscriber.value;
-                    if (ExtendableObject.active) {
-                        ExtendableObject._changed = true;
-                    }
+    /**
+     * Registers fields and their accessor methods on the extendable object
+     * @param {Object} ExtendableObject - The object to extend with subdivision code fields
+     */
+    registerFields: (ExtendableObject) => {
+        // Add getter and setter for fields.
+        Object.defineProperty(ExtendableObject, 'subdivisionCode', {
+            get: () => {
+                return ExtendableObject.getSubdivisionCode();
+            },
+            set: async (value) => {
+                await ExtendableObject.setSubdivisionCode(value);
+            }
+        });
+
+        /**
+         * Gets the current subdivision code
+         * @returns {string} The current subdivision code
+         */
+        ExtendableObject.getSubdivisionCode = () => {
+            return ExtendableObject._subdivisionCode;
+        };
+
+        /**
+         * Sets the subdivision code and notifies subscribers if needed
+         * @param {string|Promise<string>} subdivisionCode - The new subdivision code or a promise resolving to it
+         * @returns {Promise<void>} A promise that resolves when the subdivision code is set
+         */
+        ExtendableObject.setSubdivisionCode = async (subdivisionCode) => {
+            const needToNotify = ExtendableObject.active && ExtendableObject._allowToNotifySubdivisionCodeSubscribers;
+
+            ExtendableObject._awaits++;
+
+            try {
+                let resolvedValue = await ExtendableObject.util.Promise.resolve(subdivisionCode);
+
+                resolvedValue = await ExtendableObject.cb.setSubdivisionCode(resolvedValue);
+
+                // Early return.
+                if (resolvedValue === ExtendableObject._subdivisionCode) {
+                    return;
                 }
-            };
 
-            ExtendableObject.cb.subdivisionCodeInput = function(subscriber) {
-                return function(e) {
-                    ExtendableObject.subdivisionCode = subscriber.value;
-                    if (ExtendableObject.active) {
-                        ExtendableObject._changed = true;
-                        ExtendableObject.addressStatus = [];
-                    }
+                ExtendableObject._subdivisionCode = resolvedValue;
+
+                if (ExtendableObject.active) {
+                    ExtendableObject._changed = true;
+                    ExtendableObject.addressStatus = [];
                 }
-            };
 
-            ExtendableObject.cb.subdivisionCodeBlur = function(subscriber) {
-                return function(e) {
-                    ExtendableObject.waitUntilReady().then(function() {
-
-                        if (ExtendableObject.onBlurTimeout) {
-                            clearTimeout(ExtendableObject.onBlurTimeout);
-                            ExtendableObject.onBlurTimeout = null;
-                        }
-                        ExtendableObject.onBlurTimeout = setTimeout( function() {
-                            if (ExtendableObject.config.trigger.onblur && !ExtendableObject.anyActive() && ExtendableObject.util.shouldBeChecked() && !window.EnderecoIntegrator.hasSubmit) {
-                                // Second. Check Address.
-                                ExtendableObject.onBlurTimeout = null;
-                                ExtendableObject.util.checkAddress().catch();
-                            }
-                        }, 300);
-                    }).catch()
-                }
-            };
-
-            // Add getter and setter for fields.
-            Object.defineProperty(ExtendableObject, 'subdivisionCode', {
-                get: function() {
-                    return this._subdivisionCode;
-                },
-                set: function(value) {
-                    // value can be a string, array or promise.
-                    ExtendableObject._awaits++;
-                    ExtendableObject.util.Promise.resolve(value).then(function(value) {
-                        ExtendableObject._awaits++;
-                        ExtendableObject.cb.setSubdivisionCode(value).then( function(value) {
-                            var oldValue = ExtendableObject._subdivisionCode;
-                            var newValue = value.toUpperCase(); // Force normalize.
-                            if (ExtendableObject._subdivisionCode !== value) {
-                                ExtendableObject._subdivisionCode = value;
-
-                                // Inform all subscribers about the change while updating their inner state.
-                                ExtendableObject._subscribers.subdivisionCode.forEach(function (subscriber) {
-                                    subscriber.value = value;
-                                });
-
-                                // Fire change event for listeners.
-                                if (ExtendableObject.active) {
-                                    ExtendableObject.fire(
-                                        new ExtendableObject.util.CustomEvent(
-                                            'change',
-                                            {
-                                                detail: {
-                                                    fieldName: 'subdivisionCode',
-                                                    oldValue: oldValue,
-                                                    newValue: newValue,
-                                                    object: ExtendableObject
-                                                }
-                                            }
-                                        )
-                                    );
-                                }
-                            }
-                        }).catch(function(e) {
-                            if (ExtendableObject.config.showDebugInfo) {
-                                console.log('Error setting subdivisionCode', e);
-                            }
-                        }).finally(function() {
-                            ExtendableObject._awaits--;
-                        });
-                    }).catch(function(e) {
-                        if (ExtendableObject.config.showDebugInfo) {
-                            console.log('Error setting subdivisionCode', e);
-                        }
-                    }).finally(function() {
-                        ExtendableObject._awaits--;
+                if (needToNotify) {
+                    // Inform all subscribers about the change.
+                    ExtendableObject._subscribers.subdivisionCode.forEach(function (subscriber) {
+                        subscriber.value = resolvedValue;
                     });
                 }
-            });
-
-            if (ExtendableObject.config.showDebugInfo) {
-                console.log('SubdivisionCodeExtension applied');
+            } catch (e) {
+                console.warn("Error while setting the field 'subdivisionCode'", e);
+            } finally {
+                ExtendableObject._awaits--;
             }
+        };
+        // Add country code to field names list.
+        ExtendableObject.fieldNames.push('subdivisionCode');
+    },
 
-            // Add country code to field names list.
-            ExtendableObject.fieldNames.push('subdivisionCode');
+    /**
+     * Registers any configuration settings for subdivision code handling
+     * @param {Object} ExtendableObject - The object to extend with configuration
+     */
+    registerConfig: (ExtendableObject) => {
+        // Doesn't have any at the moment.
+    },
 
-            resolve($self);
-        });
+    /**
+     * Registers event callback handlers for subdivision code-related events
+     * @param {Object} ExtendableObject - The object to extend with event callbacks
+     */
+    registerEventCallbacks: (ExtendableObject) => {
+        /**
+         * Handles subdivision code change events
+         * @param {Object} subscriber - The subscriber object that triggered the change
+         * @returns {Function} Event handler function
+         */
+        ExtendableObject.cb.subdivisionCodeChange = (subscriber) => {
+            return (e) => {
+                ExtendableObject._allowToNotifySubdivisionCodeSubscribers = false;
+                ExtendableObject.subdivisionCode = subscriber.value;
+                ExtendableObject._allowToNotifySubdivisionCodeSubscribers = true;
+
+                if (ExtendableObject.active) {
+                    ExtendableObject._changed = true;
+                }
+            };
+        };
+
+        /**
+         * Handles subdivision code input events
+         * @param {Object} subscriber - The subscriber object that triggered the input
+         * @returns {Function} Event handler function
+         */
+        ExtendableObject.cb.subdivisionCodeInput = (subscriber) => {
+            return (e) => {
+                ExtendableObject._allowToNotifySubdivisionCodeSubscribers = false;
+                ExtendableObject.subdivisionCode = subscriber.value;
+                ExtendableObject._allowToNotifySubdivisionCodeSubscribers = true;
+
+                if (ExtendableObject.active) {
+                    ExtendableObject._changed = true;
+                    ExtendableObject.addressStatus = [];
+                }
+            };
+        };
+
+        /**
+         * Handles blur events on subdivision code fields
+         * @param {Object} subscriber - The subscriber object related to the field
+         * @returns {Function} Event handler function for blur events
+         */
+        ExtendableObject.cb.subdivisionCodeBlur = (subscriber) => {
+            return async (e) => {
+                try {
+                    await ExtendableObject.waitUntilReady();
+
+                    if (ExtendableObject.onBlurTimeout) {
+                        clearTimeout(ExtendableObject.onBlurTimeout);
+                        ExtendableObject.onBlurTimeout = null;
+                    }
+                    ExtendableObject.onBlurTimeout = setTimeout(function () {
+                        if (ExtendableObject.config.trigger.onblur &&
+                            !ExtendableObject.anyActive() &&
+                            ExtendableObject.util.shouldBeChecked() &&
+                            !window.EnderecoIntegrator.hasSubmit
+                        ) {
+                            // Second. Check Address.
+                            ExtendableObject.onBlurTimeout = null;
+                            ExtendableObject.util.checkAddress().catch();
+                        }
+                    }, ExtendableObject.config.ux.delay.onBlur);
+                } catch (err) {
+                    console.warn('Something went wrong with subdivisionCodeBlur', err);
+                }
+            };
+        };
+    },
+
+    /**
+     * Registers utility functions for subdivision code handling
+     * @param {Object} ExtendableObject - The object to extend with utilities
+     */
+    registerUtilities: (ExtendableObject) => {
+        // Doesn't have any at the moment.
+    },
+
+    /**
+     * Registers API handlers for subdivision code operations
+     * @param {Object} ExtendableObject - The object to extend with API handlers
+     */
+    registerAPIHandlers: (ExtendableObject) => {
+        // Doesn't have any at the moment.
+    },
+
+    /**
+     * Registers filter callbacks for processing subdivision code values
+     * @param {Object} ExtendableObject - The object to extend with filter callbacks
+     */
+    registerFilterCallbacks: (ExtendableObject) => {
+        // Add a setter callback promise.
+        ExtendableObject.cb.setSubdivisionCode = (subdivisionCode) => subdivisionCode;
+    },
+
+    /**
+     * Extends the provided object with all subdivision code functionality
+     * @param {Object} ExtendableObject - The object to extend
+     * @returns {Promise<Object>} A promise that resolves to the extension object
+     */
+    extend: async (ExtendableObject) => {
+        await SubdivisionCodeExtension.registerProperties(ExtendableObject);
+        await SubdivisionCodeExtension.registerFields(ExtendableObject);
+        await SubdivisionCodeExtension.registerConfig(ExtendableObject);
+        await SubdivisionCodeExtension.registerEventCallbacks(ExtendableObject);
+        await SubdivisionCodeExtension.registerUtilities(ExtendableObject);
+        await SubdivisionCodeExtension.registerAPIHandlers(ExtendableObject);
+        await SubdivisionCodeExtension.registerFilterCallbacks(ExtendableObject);
+
+        return SubdivisionCodeExtension;
     }
-}
+};
 
-export default SubdivisionCodeExtension
+export default SubdivisionCodeExtension;
