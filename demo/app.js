@@ -1,7 +1,7 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs').promises;
-const http = require('http');
+const https = require('https');
 const cors = require('cors');
 const app = express();
 const host = 'localhost';
@@ -46,6 +46,8 @@ const router = express.Router();
 router.post('/use-cases/:usecase', async (req, res) => {
     // Handle your POST request here
     // You can access the posted data with req.body
+    const filePath = path.join(__dirname, `/use-cases/${req.params.usecase}/index.html`);
+    readFile(filePath, res, "text/html");
 });
 
 // Handle GET requests to /use-cases
@@ -71,14 +73,15 @@ router.post('/proxyfile', async (req, res) => {
     let postData = req.body;
 
     const options = {
-        hostname: 'endereco-service.de',
-        port: 80,
+        hostname: 'staging.endereco-service.de',
+        port: 443,
         path: '/rpc/v1',
         method: 'POST',
-        headers: req.headers
+        headers: req.headers,
+        servername: 'staging.endereco-service.de'
     };
 
-    const proxyReq = http.request(options, proxyRes => {
+    const proxyReq = https.request(options, proxyRes => {
         let body = '';
         proxyRes.on('data', d => {
             body += d;
