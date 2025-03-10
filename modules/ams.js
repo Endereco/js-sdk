@@ -8,10 +8,8 @@ import SubdivisionCodeExtension from "./extensions/fields/SubdivisionCodeExtensi
 import SubdivisionCodeCheckExtension from "./extensions/checks/SubdivisionCodeCheckExtension";
 import PostalCodeExtension from './extensions/fields/PostalCodeExtension.js';
 import PostalCodeCheckExtension from './extensions/checks/PostalCodeCheckExtension.js';
-import PostalCodeAutocompleteExtension from './extensions/autocomplete/PostalCodeAutocompleteExtension.js';
 import LocalityExtension from './extensions/fields/LocalityExtension.js';
 import LocalityCheckExtension from './extensions/checks/LocalityCheckExtension.js';
-import LocalityAutocompleteExtension from './extensions/autocomplete/LocalityAutocompleteExtension.js';
 import StreetNameExtension from './extensions/fields/StreetNameExtension.js';
 import StreetNameCheckExtension from './extensions/checks/StreetNameCheckExtension.js';
 import BuildingNumberExtension from './extensions/fields/BuildingNumberExtension.js';
@@ -45,10 +43,8 @@ function EnderecoAddress(customConfig={}) {
         SubdivisionCodeCheckExtension,
         PostalCodeExtension,
         PostalCodeCheckExtension,
-        PostalCodeAutocompleteExtension,
         LocalityExtension,
         LocalityCheckExtension,
-        LocalityAutocompleteExtension,
         StreetNameExtension,
         StreetNameCheckExtension,
         StreetFullExtension,
