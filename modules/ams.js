@@ -14,12 +14,10 @@ import LocalityCheckExtension from './extensions/checks/LocalityCheckExtension.j
 import LocalityAutocompleteExtension from './extensions/autocomplete/LocalityAutocompleteExtension.js';
 import StreetNameExtension from './extensions/fields/StreetNameExtension.js';
 import StreetNameCheckExtension from './extensions/checks/StreetNameCheckExtension.js';
-import StreetNameAutocompleteExtension from './extensions/autocomplete/StreetNameAutocompleteExtension.js';
 import BuildingNumberExtension from './extensions/fields/BuildingNumberExtension.js';
 import BuildingNumberCheckExtension from './extensions/checks/BuildingNumberCheckExtension.js';
 import StreetFullExtension from './extensions/fields/StreetFullExtension.js';
 import StreetFullCheckExtension from './extensions/checks/StreetFullCheckExtension.js';
-import StreetFullAutocompleteExtension from './extensions/autocomplete/StreetFullAutocompleteExtension.js';
 import AdditionalInfoExtension from './extensions/fields/AdditionalInfoExtension.js';
 import AdditionalInfoCheckExtension from './extensions/checks/AdditionalInfoCheckExtension.js';
 import AddressExtension from './extensions/fields/AddressExtension.js';
@@ -53,10 +51,8 @@ function EnderecoAddress(customConfig={}) {
         LocalityAutocompleteExtension,
         StreetNameExtension,
         StreetNameCheckExtension,
-        StreetNameAutocompleteExtension,
         StreetFullExtension,
         StreetFullCheckExtension,
-        StreetFullAutocompleteExtension,
         BuildingNumberExtension,
         BuildingNumberCheckExtension,
         AdditionalInfoExtension,

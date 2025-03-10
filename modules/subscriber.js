@@ -228,16 +228,8 @@ function EnderecoSubscriber(propertyName, observableObject, options = {}) {
                 }
             }, 100);
 
-            // Add autocomplete subsriber.
             // Skip for hidden type inputs.
             if (!!this.object && ('hidden' !== this.object.type)) {
-                if (this.options.displayAutocompleteDropdown) {
-                    subject.addSubscriber(new EnderecoSubscriber(
-                        this.propertyName + 'Chunk',
-                        this.object // Subscribe to the same element
-                    ));
-                }
-
                 // Subscribe to status.
                 // If is fieldName -> subscribe to next visible parent.
                 if (subject.fieldNames.includes(this.propertyName) && this.options.autosubscribeToStatus) {
