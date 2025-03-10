@@ -82,14 +82,14 @@
 
 		// Hilfsfunktion. Damit lässt sich initAMS aufrufen, auch wenn die funktion noch nicht initiert ist.
 		// Bessere Art und Weise wäre ein Proxy Objekt.
-        function enderecoInitAMS(prefix, config) {
-            if (undefined !== window.EnderecoIntegrator.initAMS) {
-                let EAO = window.EnderecoIntegrator.initAMS(prefix, config);
-				setBlurListener(EAO, prefix);
+        async function enderecoInitAMS(selectors, config) {
+            if (window.EnderecoIntegrator.ready) {
+                let EAO = await window.EnderecoIntegrator.initAMS(selectors, config);
+				setBlurListener(EAO, selectors);
             } else {
-                window.EnderecoIntegrator.onLoad.push(function () {
-					let EAO = window.EnderecoIntegrator.initAMS(prefix, config);
-					setBlurListener(EAO, prefix);
+                window.EnderecoIntegrator.onLoad.push(async () => {
+					let EAO = await window.EnderecoIntegrator.initAMS(selectors, config);
+					setBlurListener(EAO, selectors);
                 });
             }
         }
@@ -140,6 +140,11 @@
 			for (const key in elements) {
 				if (Object.prototype.hasOwnProperty.call(elements, key)) {
 					const selector = elements[key];
+
+					if (!selector) {
+						return;
+					}
+
 					const element = document.querySelector(selector);
 
 					if (element) {
@@ -171,7 +176,7 @@
             window.EnderecoIntegrator.config.ux.useStandardCss = true;
 			window.EnderecoIntegrator.config.ux.cssFilePath = '/assets/endereco.min.css';
             window.EnderecoIntegrator.config.ux.showEmailStatus = true;
-            window.EnderecoIntegrator.config.ux.allowCloseModal = false;
+            window.EnderecoIntegrator.config.ux.allowCloseModal = true;
             window.EnderecoIntegrator.config.ux.confirmWithCheckbox = true;
             window.EnderecoIntegrator.config.ux.changeFieldsOrder = true;
 			window.EnderecoIntegrator.config.ux.showPhoneErrors = true;
@@ -250,11 +255,29 @@
 			}
 
             // Execute all function that have been called throughout the page.
-            window.EnderecoIntegrator.onLoad.forEach(function (callback) {
-                callback();
-            });
+			if (window.EnderecoIntegrator.onLoad && Array.isArray(window.EnderecoIntegrator.onLoad)) {
+				executeCallbacks(window.EnderecoIntegrator.onLoad).then(() => {
+					console.log('All EnderecoIntegrator callbacks executed successfully');
+					window.EnderecoIntegrator.ready = true;
+				}).catch(error => {
+					console.error('Error executing EnderecoIntegrator callbacks:', error);
+					window.EnderecoIntegrator.ready = true; // Set ready even if there were errors
+				});
+			}
+		}
 
-            window.EnderecoIntegrator.ready = true;
+		async function executeCallbacks(callbacks) {
+			for (let i = 0; i < callbacks.length; i++) {
+				const callback = callbacks[i];
+				try {
+					const result = callback();
+					if (result instanceof Promise) {
+						await result;
+					}
+				} catch (error) {
+					console.error('Error executing callback:', error);
+				}
+			}
 		}
 	</script>
 </head>
@@ -392,9 +415,9 @@
 </div>
 
 <div class="form-container">
-	<form>
-		<input type="hidden" name="irgendein_name_am_besten_mit_underscores_ams_session_id" value="328644cc-f006-4eec-bfcd-09f8a7009e1f">
-		<input type="hidden" name="irgendein_name_am_besten_mit_underscores_ams_session_counter" value="2">
+	<form method="POST" action="">
+		<input type="hidden" name="irgendein_name_am_besten_mit_underscores_ams_session_id" value="">
+		<input type="hidden" name="irgendein_name_am_besten_mit_underscores_ams_session_counter" value="">
 		<div class="row">
 			<div>
 				<label class="label">
@@ -685,10 +708,140 @@
 			<input type="hidden" name="enderecoamsts" value="">
 			<input type="hidden" name="enderecoamsapredictions" value="">
 		</div>
+
+		<hr>
+
+		<!-- Second form -->
+		<input type="hidden" name="shipping_session_id" value="">
+		<input type="hidden" name="shipping_session_counter" value="">
+		<div class="row">
+			<div>
+				<label class="label">
+					Straße
+					<input type="text" id="shipping_street">
+				</label>
+			</div>
+			<div>
+				<label class="label">
+					Hausnummer
+					<input type="text" id="shipping_street_n">
+				</label>
+			</div>
+		</div>
+		<div class="row">
+			<div>
+				<label class="label">
+					Postleitzahl
+					<input type="text" id="shipping_zip">
+				</label>
+			</div>
+			<div>
+				<label class="label">
+					Ort
+					<input type="text" id="shipping_loc">
+				</label>
+			</div>
+		</div>
+		<div class="row">
+			<div>
+				<label class="label">
+					Zusatzinformationen (Appartment, Tür)
+					<input type="text" id="shipping_address_1">
+				</label>
+			</div>
+		</div>
+		<div class="row">
+			<div>
+				<label class="label">
+					Land
+					<select class="country" id="shipping_country">
+						<option value="" selected>-- Bitte Land auswählen --</option>
+						<option value="DE">Deutschland</option>
+						<option value="FR">Frankreich</option>
+						<option value="US">USA</option>
+					</select>
+				</label>
+			</div>
+		</div>
+		<div class="row">
+			<input type="hidden" name="asd">
+			<label>HIDDEN FIELD</label>
+		</div>
+		<div style="display: none">
+			<!-- unsichtbare felder, die ein modul hinzufügen soll -->
+			<input type="hidden" name="shipping_enderecoamsstatus" value="">
+			<input type="hidden" name="shipping_enderecoamsts" value="">
+			<input type="hidden" name="shipping_enderecoamsapredictions" value="">
+		</div>
+
+		<!-- /Second form -->
+
+		<hr>
+
+		<!-- Third form -->
+		<input type="hidden" name="shipping2_session_id" value="">
+		<input type="hidden" name="shipping2_session_counter" value="">
+		<div class="row">
+			<div>
+				<label class="label">
+					Straße (voll)
+					<input type="text" id="shipping2_streetFull" value="Lindenstraße 2">
+				</label>
+			</div>
+		</div>
+		<div class="row">
+			<div>
+				<label class="label">
+					Postleitzahl
+					<input type="text" id="shipping2_zip">
+				</label>
+			</div>
+			<div>
+				<label class="label">
+					Ort
+					<input type="text" id="shipping2_loc">
+				</label>
+			</div>
+		</div>
+		<div class="row">
+			<div>
+				<label class="label">
+					Zusatzinformationen (Appartment, Tür)
+					<input type="text" id="shipping2_address_1">
+				</label>
+			</div>
+		</div>
+		<div class="row">
+			<div>
+				<label class="label">
+					Land
+					<select class="country" id="shipping2_country">
+						<option value="" selected>-- Bitte Land auswählen --</option>
+						<option value="DE">Deutschland</option>
+						<option value="FR">Frankreich</option>
+						<option value="US">USA</option>
+					</select>
+				</label>
+			</div>
+		</div>
+		<div class="row">
+			<input type="hidden" name="asd">
+			<label>HIDDEN FIELD</label>
+		</div>
+		<div style="display: none">
+			<!-- unsichtbare felder, die ein modul hinzufügen soll -->
+			<input type="hidden" name="shipping2_enderecoamsstatus" value="">
+			<input type="hidden" name="shipping2_enderecoamsts" value="">
+			<input type="hidden" name="shipping2_enderecoamsapredictions" value="">
+		</div>
+
+		<!-- /Third form -->
+
+
 		<div class="row">
 			<div style="margin-left: auto;">
-				<button class="btn btn-secondary" type="button">Reset</button>
-				<button class="btn btn-primary" type="button">Weiter</button>
+				<button class="btn btn-secondary" type="reset">Reset</button>
+				<button class="btn btn-primary" type="submit">Weiter</button>
 			</div>
 		</div>
 		<script>
@@ -708,6 +861,42 @@
                 name: 'irgendein_name_am_besten_mit_underscores',
                 addressType: 'general_address'
             });
+		</script>
+		<script>
+			enderecoInitAMS({
+				countryCode: '#shipping_country',
+				subdivisionCode: '',
+				postalCode: '#shipping_zip',
+				locality: '#shipping_loc',
+				streetFull: '#shipping_streetFull',
+				streetName: '#shipping_street',
+				buildingNumber: '#shipping_street_n',
+				additionalInfo: '#shipping_address_1',
+				addressStatus: '[name="shipping_enderecoamsstatus"]',
+				addressTimestamp: '[name="shipping_enderecoamsts"]',
+				addressPredictions: '[name="shipping_enderecoamsapredictions"]',
+			}, {
+				name: 'shipping_address',
+				addressType: 'shipping_address'
+			});
+		</script>
+		<script>
+			enderecoInitAMS({
+				countryCode: '#shipping2_country',
+				subdivisionCode: '',
+				postalCode: '#shipping2_zip',
+				locality: '#shipping2_loc',
+				streetFull: '#shipping2_streetFull',
+				streetName: '#shipping2_street',
+				buildingNumber: '#shipping2_street_n',
+				additionalInfo: '#shipping2_address_1',
+				addressStatus: '[name="shipping2_enderecoamsstatus"]',
+				addressTimestamp: '[name="shipping2_enderecoamsts"]',
+				addressPredictions: '[name="shipping2_enderecoamsapredictions"]',
+			}, {
+				name: 'shipping2_address',
+				addressType: 'shipping_address'
+			});
 		</script>
 	</form>
 </div>

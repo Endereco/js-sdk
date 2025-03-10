@@ -46,6 +46,8 @@ const router = express.Router();
 router.post('/use-cases/:usecase', async (req, res) => {
     // Handle your POST request here
     // You can access the posted data with req.body
+    const filePath = path.join(__dirname, `/use-cases/${req.params.usecase}/index.html`);
+    readFile(filePath, res, "text/html");
 });
 
 // Handle GET requests to /use-cases
