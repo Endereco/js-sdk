@@ -1,118 +1,205 @@
-var AdditionalInfoExtension = {
+const AdditionalInfoExtension = {
     name: 'AdditionalInfoExtension',
-    extend: function(ExtendableObject) {
-        var $self = this;
-        return new ExtendableObject.util.Promise(function(resolve, reject) {
-            ExtendableObject._additionalInfo = '';
-            ExtendableObject._subscribers.additionalInfo = [];
 
-            ExtendableObject.cb.setAdditionalInfo = function(additionalInfo) {
-                return new ExtendableObject.util.Promise(function(resolve, reject) {
-                    resolve(additionalInfo);
-                });
-            };
+    /**
+     * Registers private properties on the ExtendableObject
+     * @param {Object} ExtendableObject - The object to extend with additional properties
+     */
+    registerProperties: (ExtendableObject) => {
+        ExtendableObject._additionalInfo = '';
+        ExtendableObject._subscribers.additionalInfo = [];
 
-            ExtendableObject.cb.additionalInfoChange = function(subscriber) {
-                return function(e) {
-                    ExtendableObject.additionalInfo = subscriber.value;
+        ExtendableObject._allowToNotifyAdditionalInfoSubscribers = true;
+    },
 
-                    if (ExtendableObject.active) {
-                        ExtendableObject._changed = true;
-                        ExtendableObject.addressStatus = [];
-                    }
+    /**
+     * Registers getters, setters, and field-related methods on the ExtendableObject
+     * @param {Object} ExtendableObject - The object to extend with field definitions
+     */
+    registerFields: (ExtendableObject) => {
+        // Add getter and setter for fields.
+        Object.defineProperty(ExtendableObject, 'additionalInfo', {
+            get: () => {
+                return ExtendableObject.getAdditionalInfo();
+            },
+            set: (value) => {
+                ExtendableObject.setAdditionalInfo(value);
+            }
+        });
+
+        /**
+         * Gets the additional info value
+         * @returns {string} The current additional info value
+         */
+        ExtendableObject.getAdditionalInfo = () => {
+            return ExtendableObject._additionalInfo;
+        };
+
+        /**
+         * Sets the additional info value and notifies subscribers if needed
+         * @param {string|Promise<string>} value - The value to set or a promise that resolves to the value
+         * @returns {Promise<void>}
+         */
+        ExtendableObject.setAdditionalInfo = async (value) => {
+            const needToNotify = ExtendableObject.active &&
+                ExtendableObject._allowToNotifyAdditionalInfoSubscribers;
+
+            ExtendableObject._awaits++;
+
+            try {
+                const resolvedValue = await ExtendableObject.util.Promise.resolve(value);
+                const additionalInfo = await ExtendableObject.cb.setAdditionalInfo(resolvedValue);
+
+                // Early return.
+                if (additionalInfo === ExtendableObject._additionalInfo) {
+                    return;
                 }
-            };
 
-            ExtendableObject.cb.additionalInfoBlur = function(subscriber) {
-                return function(e) {
-                    ExtendableObject.waitUntilReady().then(function() {
+                ExtendableObject._additionalInfo = additionalInfo;
 
-                        if (ExtendableObject.onBlurTimeout) {
-                            clearTimeout(ExtendableObject.onBlurTimeout);
-                            ExtendableObject.onBlurTimeout = null;
-                        }
-                        ExtendableObject.onBlurTimeout = setTimeout( function() {
-                            if (ExtendableObject.config.trigger.onblur && !ExtendableObject.anyActive() && ExtendableObject.util.shouldBeChecked() && !window.EnderecoIntegrator.hasSubmit) {
-                                // Second. Check Address.
-                                ExtendableObject.onBlurTimeout = null;
-                                ExtendableObject.util.checkAddress().catch();
-                            }
-                        }, 300);
-                    }).catch()
+                if (ExtendableObject.active) {
+                    ExtendableObject._changed = true;
+                    ExtendableObject.addressStatus = [];
                 }
-            };
 
-            // Add getter and setter for fields.
-            Object.defineProperty(ExtendableObject, 'additionalInfo', {
-                get: function() {
-                    return this._additionalInfo;
-                },
-                set: function(value) {
-                    ExtendableObject._awaits++;
-                    ExtendableObject.util.Promise.resolve(value).then(function(value) {
-                        ExtendableObject._awaits++;
-                        ExtendableObject.cb.setAdditionalInfo(value).then( function(value) {
-                            var oldValue = ExtendableObject._additionalInfo;
-                            var newValue = value;
-
-                            var notSame = ExtendableObject._additionalInfo !== value;
-
-                            // Chunk set.
-                            if (ExtendableObject.hasLoadedExtension('AdditionalInfoAutocompleteExtension')) {
-                                notSame = notSame || ( ExtendableObject._additionalInfoChunk !== value );
-                            }
-
-                            if (notSame) {
-                                ExtendableObject._additionalInfo = value;
-
-                                if (ExtendableObject.hasLoadedExtension('AdditionalInfoAutocompleteExtension')) {
-                                    ExtendableObject._additionalInfoChunk = value;
-                                }
-
-
-                                // Inform all subscribers about the change.
-                                ExtendableObject._subscribers.additionalInfo.forEach(function (subscriber) {
-                                    subscriber.value = value;
-                                });
-
-                                if (ExtendableObject.active) {
-                                    ExtendableObject.fire(
-                                        new ExtendableObject.util.CustomEvent(
-                                            'change',
-                                            {
-                                                detail: {
-                                                    fieldName: 'additionalInfo',
-                                                    oldValue: oldValue,
-                                                    newValue: newValue,
-                                                    object: ExtendableObject
-                                                }
-                                            }
-                                        )
-                                    );
-                                }
-                            }
-                        }).catch(function(e) {
-                            if (ExtendableObject.config.showDebugInfo) {
-                                console.log('Error resolving additionalInfo', e);
-                            }
-                        }).finally(function() {
-                            ExtendableObject._awaits--;
-                        });
-                    }).catch().finally(function() {
-                        ExtendableObject._awaits--;
+                if (needToNotify) {
+                    // Inform all subscribers about the change.
+                    ExtendableObject._subscribers.additionalInfo.forEach((subscriber) => {
+                        subscriber.value = additionalInfo;
                     });
                 }
-            });
-
-            ExtendableObject.fieldNames.push('additionalInfo');
-
-            if (ExtendableObject.config.showDebugInfo) {
-                console.log('AdditionalInfoExtension applied');
+            } catch (e) {
+                console.warn("Error while setting the field 'additionalInfo'", e);
+            } finally {
+                ExtendableObject._awaits--;
             }
+        };
 
-            resolve($self);
-        });
+        ExtendableObject.fieldNames.push('additionalInfo');
+    },
+
+    /**
+     * Registers configuration options for the ExtendableObject
+     * @param {Object} ExtendableObject - The object to extend with configuration
+     */
+    registerConfig: (ExtendableObject) => {
+        // There are non atm.
+    },
+
+    /**
+     * Registers event callbacks for the ExtendableObject
+     * @param {Object} ExtendableObject - The object to extend with event callbacks
+     */
+    registerEventCallbacks: (ExtendableObject) => {
+        /**
+         * Callback for handling input events on additionalInfo fields
+         * @param {Object} subscriber - The subscriber object
+         * @returns {Function} Event handler function
+         */
+        ExtendableObject.cb.additionalInfoInput = (subscriber) => {
+            return (e) => {
+                ExtendableObject._allowToNotifyAdditionalInfoSubscribers = false;
+                ExtendableObject.additionalInfo = subscriber.value;
+                ExtendableObject._allowToNotifyAdditionalInfoSubscribers = true;
+
+                if (ExtendableObject.active) {
+                    ExtendableObject._changed = true;
+                    ExtendableObject.addressStatus = [];
+                }
+            };
+        };
+
+        /**
+         * Callback for handling change events on additionalInfo fields
+         * @param {Object} subscriber - The subscriber object
+         * @returns {Function} Event handler function
+         */
+        ExtendableObject.cb.additionalInfoChange = (subscriber) => {
+            return (e) => {
+                ExtendableObject._allowToNotifyAdditionalInfoSubscribers = false;
+                ExtendableObject.additionalInfo = subscriber.value;
+                ExtendableObject._allowToNotifyAdditionalInfoSubscribers = true;
+
+                if (ExtendableObject.active) {
+                    ExtendableObject._changed = true;
+                    ExtendableObject.addressStatus = [];
+                }
+            };
+        };
+
+        /**
+         * Callback for handling blur events on additionalInfo fields
+         * Schedules an address check after a delay if conditions are met
+         * @param {Object} subscriber - The subscriber object
+         * @returns {Function} Event handler function
+         */
+        ExtendableObject.cb.additionalInfoBlur = (subscriber) => {
+            return async (e) => {
+                await ExtendableObject.waitUntilReady();
+
+                try {
+                    if (ExtendableObject.onBlurTimeout) {
+                        clearTimeout(ExtendableObject.onBlurTimeout);
+                        ExtendableObject.onBlurTimeout = null;
+                    }
+                    ExtendableObject.onBlurTimeout = setTimeout(function () {
+                        if (ExtendableObject.config.trigger.onblur &&
+                            !ExtendableObject.anyActive() &&
+                            ExtendableObject.util.shouldBeChecked() &&
+                            !window.EnderecoIntegrator.hasSubmit
+                        ) {
+                            // Second. Check Address.
+                            ExtendableObject.onBlurTimeout = null;
+                            ExtendableObject.util.checkAddress().catch();
+                        }
+                    }, ExtendableObject.config.ux.delay.onBlur);
+                } catch (err) {
+                    console.warn('Error in additionalInfoBlur handler:', err);
+                }
+            };
+        };
+    },
+
+    /**
+     * Registers utility functions for the ExtendableObject
+     * @param {Object} ExtendableObject - The object to extend with utilities
+     */
+    registerUtilities: (ExtendableObject) => {
+        // There are none atm.
+    },
+
+    /**
+     * Registers API handlers for the ExtendableObject
+     * @param {Object} ExtendableObject - The object to extend with API handlers
+     */
+    registerAPIHandlers: (ExtendableObject) => {
+        // There are none atm.
+    },
+
+    /**
+     * Registers filter callbacks for the ExtendableObject
+     * @param {Object} ExtendableObject - The object to extend with filter callbacks
+     */
+    registerFilterCallbacks: (ExtendableObject) => {
+        ExtendableObject.cb.setAdditionalInfo = (additionalInfo) => additionalInfo;
+    },
+
+    /**
+     * Main extension method that applies all registered components to the ExtendableObject
+     * @param {Object} ExtendableObject - The object to extend
+     * @returns {Promise<Object>} Promise resolving to the extension object
+     */
+    extend: async (ExtendableObject) => {
+        await AdditionalInfoExtension.registerProperties(ExtendableObject);
+        await AdditionalInfoExtension.registerFields(ExtendableObject);
+        await AdditionalInfoExtension.registerConfig(ExtendableObject);
+        await AdditionalInfoExtension.registerEventCallbacks(ExtendableObject);
+        await AdditionalInfoExtension.registerUtilities(ExtendableObject);
+        await AdditionalInfoExtension.registerAPIHandlers(ExtendableObject);
+        await AdditionalInfoExtension.registerFilterCallbacks(ExtendableObject);
+
+        return AdditionalInfoExtension;
     }
-}
+};
 
-export default AdditionalInfoExtension
+export default AdditionalInfoExtension;
