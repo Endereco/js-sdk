@@ -94,11 +94,6 @@ const PostalCodeExtension = {
 
                 ExtendableObject._postalCode = resolvedValue;
 
-                if (ExtendableObject.active) {
-                    ExtendableObject._changed = true;
-                    ExtendableObject.addressStatus = [];
-                }
-
                 if (needToNotify) {
                     // Inform all subscribers about the change
                     ExtendableObject._subscribers.postalCode.forEach(function (subscriber) {
@@ -186,6 +181,10 @@ const PostalCodeExtension = {
                 ExtendableObject._allowToNotifyPostalCodeSubscribers = false;
                 ExtendableObject.postalCode = subscriber.value;
                 ExtendableObject._allowToNotifyPostalCodeSubscribers = true;
+
+                if (ExtendableObject.active) {
+                    ExtendableObject.util.invalidateAddressMeta()
+                }
             };
         };
 
@@ -203,8 +202,7 @@ const PostalCodeExtension = {
                 ExtendableObject._allowFetchPostalCodeAutocomplete = false;
 
                 if (ExtendableObject.active) {
-                    ExtendableObject._changed = true;
-                    ExtendableObject.addressStatus = [];
+                    ExtendableObject.util.invalidateAddressMeta()
                 }
             };
         };
@@ -217,8 +215,6 @@ const PostalCodeExtension = {
          */
         ExtendableObject.cb.postalCodeBlur = function (subscriber) {
             return async (e) => {
-                await ExtendableObject.waitUntilReady();
-
                 const isAnyActive = ExtendableObject._subscribers.postalCode.some(sub =>
                     document.activeElement === sub.object);
 
@@ -229,28 +225,12 @@ const PostalCodeExtension = {
                     ExtendableObject.util.removePostalCodePredictionsDropdown();
                 }
 
-                await ExtendableObject.waitUntilReady();
-
-                if (ExtendableObject.onBlurTimeout) {
-                    clearTimeout(ExtendableObject.onBlurTimeout);
-                    ExtendableObject.onBlurTimeout = null;
+                try {
+                    await ExtendableObject.waitUntilReady();
+                    await ExtendableObject.cb.handleFormBlur();
+                } catch (error) {
+                    console.warn('Error in buildingNumberBlur handler:', error);
                 }
-
-                ExtendableObject.onBlurTimeout = setTimeout(async () => {
-                    if (ExtendableObject.config.trigger.onblur &&
-                        !ExtendableObject.anyActive() &&
-                        ExtendableObject.util.shouldBeChecked() &&
-                        !window.EnderecoIntegrator.hasSubmit
-                    ) {
-                        // Second. Check Address.
-                        ExtendableObject.onBlurTimeout = null;
-                        try {
-                            await ExtendableObject.util.checkAddress();
-                        } catch (err) {
-                            console.warn('Something went wrong with address check', err);
-                        }
-                    }
-                }, ExtendableObject.config.ux.delay.onBlur);
             };
         };
 

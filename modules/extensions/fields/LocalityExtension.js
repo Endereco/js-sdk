@@ -92,11 +92,6 @@ const LocalityExtension = {
 
                 ExtendableObject._locality = resolvedValue;
 
-                if (ExtendableObject.active) {
-                    ExtendableObject._changed = true;
-                    ExtendableObject.addressStatus = [];
-                }
-
                 if (needToNotify) {
                     // Inform all subscribers about the change.
                     ExtendableObject._subscribers.locality.forEach(function (subscriber) {
@@ -184,6 +179,10 @@ const LocalityExtension = {
                 ExtendableObject._allowFetchLocalityAutocomplete = false;
                 ExtendableObject.locality = subscriber.value;
                 ExtendableObject._allowToNotifyLocalitySubscribers = true;
+
+                if (ExtendableObject.active) {
+                    ExtendableObject.util.invalidateAddressMeta()
+                }
             };
         };
 
@@ -199,6 +198,10 @@ const LocalityExtension = {
                 ExtendableObject.locality = subscriber.value;
                 ExtendableObject._allowToNotifyLocalitySubscribers = true;
                 ExtendableObject._allowFetchLocalityAutocomplete = false;
+
+                if (ExtendableObject.active) {
+                    ExtendableObject.util.invalidateAddressMeta()
+                }
             };
         };
 
@@ -220,27 +223,12 @@ const LocalityExtension = {
                     ExtendableObject.util.removeLocalityPredictionsDropdown();
                 }
 
-                await ExtendableObject.waitUntilReady();
-
-                if (ExtendableObject.onBlurTimeout) {
-                    clearTimeout(ExtendableObject.onBlurTimeout);
-                    ExtendableObject.onBlurTimeout = null;
+                try {
+                    await ExtendableObject.waitUntilReady();
+                    await ExtendableObject.cb.handleFormBlur();
+                } catch (error) {
+                    console.warn('Error in buildingNumberBlur handler:', error);
                 }
-
-                ExtendableObject.onBlurTimeout = setTimeout(async () => {
-                    if (ExtendableObject.config.trigger.onblur &&
-                        !ExtendableObject.anyActive() &&
-                        ExtendableObject.util.shouldBeChecked()
-                    ) {
-                        // Second. Check Address.
-                        ExtendableObject.onBlurTimeout = null;
-                        try {
-                            await ExtendableObject.util.checkAddress();
-                        } catch (err) {
-                            console.warn('Something went wrong with address check', err);
-                        }
-                    }
-                }, ExtendableObject.config.ux.delay.onBlur);
             };
         };
 

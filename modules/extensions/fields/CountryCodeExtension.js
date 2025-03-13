@@ -119,8 +119,8 @@ const CountryCodeExtension = {
                     }
                 }
 
-                if (ExtendableObject.active) {
-                    ExtendableObject._changed = true;
+                if (ExtendableObject.active && ExtendableObject.type === 'address') {
+                    ExtendableObject.util.invalidateAddressMeta();
                 }
             };
         };
@@ -145,9 +145,8 @@ const CountryCodeExtension = {
                     }
                 }
 
-                if (ExtendableObject.active) {
-                    ExtendableObject._changed = true;
-                    ExtendableObject.addressStatus = [];
+                if (ExtendableObject.active && ExtendableObject.type === 'address') {
+                    ExtendableObject.util.invalidateAddressMeta();
                 }
             };
         };
@@ -158,25 +157,16 @@ const CountryCodeExtension = {
          * @returns {Function} Event handler function
          */
         ExtendableObject.cb.countryCodeBlur = (subscriber) => {
-            return (e) => {
-                if (ExtendableObject.type === 'address') {
-                    ExtendableObject.waitUntilReady().then(function () {
-                        if (ExtendableObject.onBlurTimeout) {
-                            clearTimeout(ExtendableObject.onBlurTimeout);
-                            ExtendableObject.onBlurTimeout = null;
-                        }
-                        ExtendableObject.onBlurTimeout = setTimeout(function () {
-                            if (ExtendableObject.config.trigger.onblur &&
-                                !ExtendableObject.anyActive() &&
-                                ExtendableObject.util.shouldBeChecked() &&
-                                !window.EnderecoIntegrator.hasSubmit
-                            ) {
-                                // Second. Check Address.
-                                ExtendableObject.onBlurTimeout = null;
-                                ExtendableObject.util.checkAddress().catch();
-                            }
-                        }, ExtendableObject.config.ux.delay.onBlur);
-                    }).catch();
+            return async (e) => {
+                if (ExtendableObject.type !== 'address') {
+                    return;
+                }
+
+                try {
+                    await ExtendableObject.waitUntilReady();
+                    await ExtendableObject.cb.handleFormBlur();
+                } catch (error) {
+                    console.warn('Error in countryCodeBlur handler:', error);
                 }
             };
         };

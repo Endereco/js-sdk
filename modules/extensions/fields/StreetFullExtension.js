@@ -103,11 +103,6 @@ const StreetFullExtension = {
 
                 ExtendableObject._streetFull = resolvedValue;
 
-                if (ExtendableObject.active) {
-                    ExtendableObject._changed = true;
-                    ExtendableObject.addressStatus = [];
-                }
-
                 if (needToNotify) {
                     // Inform all subscribers about the change.
                     ExtendableObject._subscribers.streetFull.forEach(function (subscriber) {
@@ -174,6 +169,10 @@ const StreetFullExtension = {
                 ExtendableObject._allowFetchStreetFullAutocomplete = false;
                 ExtendableObject.streetFull = subscriber.value;
                 ExtendableObject._allowToNotifyStreetFullSubscribers = true;
+
+                if (ExtendableObject.active) {
+                    ExtendableObject.util.invalidateAddressMeta()
+                }
             };
         };
 
@@ -189,6 +188,10 @@ const StreetFullExtension = {
                 ExtendableObject.streetFull = subscriber.value;
                 ExtendableObject._allowToNotifyStreetFullSubscribers = true;
                 ExtendableObject._allowFetchStreetFullAutocomplete = false;
+
+                if (ExtendableObject.active) {
+                    ExtendableObject.util.invalidateAddressMeta()
+                }
             };
         };
 
@@ -209,31 +212,12 @@ const StreetFullExtension = {
                     ExtendableObject.util.removeStreetFullPredictionsDropdown();
                 }
 
-                await ExtendableObject.waitUntilReady();
-
-                // Clear existing timeout if any
-                if (ExtendableObject.onBlurTimeout) {
-                    clearTimeout(ExtendableObject.onBlurTimeout);
-                    ExtendableObject.onBlurTimeout = null;
+                try {
+                    await ExtendableObject.waitUntilReady();
+                    await ExtendableObject.cb.handleFormBlur();
+                } catch (error) {
+                    console.warn('Error in buildingNumberBlur handler:', error);
                 }
-
-                // Set new timeout for address check
-                ExtendableObject.onBlurTimeout = setTimeout(async () => {
-                    const shouldCheckAddress = ExtendableObject.config.trigger.onblur &&
-                        !ExtendableObject.anyActive() &&
-                        ExtendableObject.util.shouldBeChecked() &&
-                        !window.EnderecoIntegrator.hasSubmit;
-
-                    if (shouldCheckAddress) {
-                        clearTimeout(ExtendableObject.onBlurTimeout);
-                        ExtendableObject.onBlurTimeout = null;
-                        try {
-                            await ExtendableObject.util.checkAddress();
-                        } catch (error) {
-                            console.warn('Error checking address:', error);
-                        }
-                    }
-                }, ExtendableObject.config.ux.delay.onBlur);
             };
         };
 

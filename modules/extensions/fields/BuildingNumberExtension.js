@@ -65,11 +65,6 @@ const BuildingNumberExtension = {
 
                 ExtendableObject._buildingNumber = buildingNumber;
 
-                if (ExtendableObject.active) {
-                    ExtendableObject._changed = true;
-                    ExtendableObject.addressStatus = [];
-                }
-
                 if (needToNotify) {
                     // Inform all subscribers about the change.
                     ExtendableObject._subscribers.buildingNumber.forEach((subscriber) => {
@@ -112,6 +107,10 @@ const BuildingNumberExtension = {
             ExtendableObject._allowToNotifyBuildingNumberSubscribers = false;
             ExtendableObject.buildingNumber = subscriber.value;
             ExtendableObject._allowToNotifyBuildingNumberSubscribers = true;
+
+            if (ExtendableObject.active) {
+                ExtendableObject.util.invalidateAddressMeta()
+            }
         };
 
         /**
@@ -123,6 +122,10 @@ const BuildingNumberExtension = {
             ExtendableObject._allowToNotifyBuildingNumberSubscribers = false;
             ExtendableObject.buildingNumber = subscriber.value;
             ExtendableObject._allowToNotifyBuildingNumberSubscribers = true;
+
+            if (ExtendableObject.active) {
+                ExtendableObject.util.invalidateAddressMeta()
+            }
         };
 
         /**
@@ -136,30 +139,7 @@ const BuildingNumberExtension = {
             return async () => {
                 try {
                     await ExtendableObject.waitUntilReady();
-
-                    // Clear existing timeout if any
-                    if (ExtendableObject.onBlurTimeout) {
-                        clearTimeout(ExtendableObject.onBlurTimeout);
-                        ExtendableObject.onBlurTimeout = null;
-                    }
-
-                    // Set new timeout for address check
-                    ExtendableObject.onBlurTimeout = setTimeout(async () => {
-                        const shouldCheckAddress = ExtendableObject.config.trigger.onblur &&
-                            !ExtendableObject.anyActive() &&
-                            ExtendableObject.util.shouldBeChecked() &&
-                            !window.EnderecoIntegrator.hasSubmit;
-
-                        if (shouldCheckAddress) {
-                            clearTimeout(ExtendableObject.onBlurTimeout);
-                            ExtendableObject.onBlurTimeout = null;
-                            try {
-                                await ExtendableObject.util.checkAddress();
-                            } catch (error) {
-                                console.warn('Error checking address:', error);
-                            }
-                        }
-                    }, ExtendableObject.config.ux.delay.onBlur);
+                    await ExtendableObject.cb.handleFormBlur();
                 } catch (error) {
                     console.warn('Error in buildingNumberBlur handler:', error);
                 }
