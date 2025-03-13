@@ -57,16 +57,14 @@ const SubdivisionCodeExtension = {
 
                 ExtendableObject._subdivisionCode = resolvedValue;
 
-                if (ExtendableObject.active) {
-                    ExtendableObject._changed = true;
-                    ExtendableObject.addressStatus = [];
-                }
-
                 if (needToNotify) {
                     // Inform all subscribers about the change.
-                    ExtendableObject._subscribers.subdivisionCode.forEach(function (subscriber) {
-                        subscriber.value = resolvedValue;
+                    const notificationProcesses = [];
+
+                    ExtendableObject._subscribers.subdivisionCode.forEach((subscriber) => {
+                        notificationProcesses.push(subscriber.updateDOMValue(resolvedValue));
                     });
+                    await Promise.all(notificationProcesses);
                 }
             } catch (e) {
                 console.warn("Error while setting the field 'subdivisionCode'", e);
@@ -103,7 +101,7 @@ const SubdivisionCodeExtension = {
                 ExtendableObject._allowToNotifySubdivisionCodeSubscribers = true;
 
                 if (ExtendableObject.active) {
-                    ExtendableObject._changed = true;
+                    ExtendableObject.util.invalidateAddressMeta();
                 }
             };
         };
@@ -120,8 +118,7 @@ const SubdivisionCodeExtension = {
                 ExtendableObject._allowToNotifySubdivisionCodeSubscribers = true;
 
                 if (ExtendableObject.active) {
-                    ExtendableObject._changed = true;
-                    ExtendableObject.addressStatus = [];
+                    ExtendableObject.util.invalidateAddressMeta();
                 }
             };
         };
@@ -135,24 +132,9 @@ const SubdivisionCodeExtension = {
             return async (e) => {
                 try {
                     await ExtendableObject.waitUntilReady();
-
-                    if (ExtendableObject.onBlurTimeout) {
-                        clearTimeout(ExtendableObject.onBlurTimeout);
-                        ExtendableObject.onBlurTimeout = null;
-                    }
-                    ExtendableObject.onBlurTimeout = setTimeout(function () {
-                        if (ExtendableObject.config.trigger.onblur &&
-                            !ExtendableObject.anyActive() &&
-                            ExtendableObject.util.shouldBeChecked() &&
-                            !window.EnderecoIntegrator.hasSubmit
-                        ) {
-                            // Second. Check Address.
-                            ExtendableObject.onBlurTimeout = null;
-                            ExtendableObject.util.checkAddress().catch();
-                        }
-                    }, ExtendableObject.config.ux.delay.onBlur);
-                } catch (err) {
-                    console.warn('Something went wrong with subdivisionCodeBlur', err);
+                    await ExtendableObject.cb.handleFormBlur();
+                } catch (error) {
+                    console.warn('Error in subdivisionCodeBlur handler:', error);
                 }
             };
         };

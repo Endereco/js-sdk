@@ -17,18 +17,6 @@ if (!window.Promise) {
 }
 
 EnderecoIntegrator.postfix = {
-    ams: {
-        countryCode: '',
-        postalCode: '',
-        locality: '',
-        streetFull: '',
-        streetName: '',
-        buildingNumber: '',
-        addressStatus: '',
-        addressTimestamp: '',
-        addressPredictions: '',
-        additionalInfo: '',
-    },
     personServices: {
         salutation: '',
         firstName: ''
@@ -81,9 +69,65 @@ window.EnderecoIntegrator.asyncCallbacks.forEach(function(cb) {
 });
 window.EnderecoIntegrator.asyncCallbacks = [];
 
-window.EnderecoIntegrator.waitUntilReady().then( function() {
+const anExampleCallback = async (EAO) => {
+    console.log("Sleep for 5 sec");
+    // Sleep logic
+    await new Promise(resolve => setTimeout(resolve, 5000));
+    console.log("Now resolve anExampleCallback");
+}
 
+window.EnderecoIntegrator.afterAMSActivation.push((EAO) => {
+    EAO.onEditAddress.push((e) => {
+        return anExampleCallback(e);
+    })
 });
+
+window.EnderecoIntegrator.isAddressFormStillValid = (EAO) => {
+    if (EAO.fullName !== 'shipping2_address') {
+        return true;
+    }
+
+    // Check if EAO.forms exists and is an array
+    if (EAO.forms && Array.isArray(EAO.forms)) {
+        // Loop through each form in the forms array
+        for (let i = 0; i < EAO.forms.length; i++) {
+            const form = EAO.forms[i];
+
+            // Check if the form is a DOM element
+            if (form instanceof Element) {
+                // Look for a checkbox with id "disablethisform"
+                const disableCheckbox = form.querySelector('#disablethisform');
+
+                // If the checkbox exists and is checked, return false
+                if (disableCheckbox && disableCheckbox.checked) {
+                    return false;
+                }
+            }
+        }
+    }
+
+    return true;
+}
+
+window.EnderecoIntegrator.prepareDOMElement = (DOMElement) => {
+    // Check if the element has already been prepared
+    if (DOMElement._enderecoBlurListenerAttached) {
+        return; // Skip if already prepared
+    }
+
+    const enderecoBlurListener = (e) => {
+        // Dispatch 'focus' and 'blur' events on the target element
+        let prevActiveElement = document.activeElement;
+        e.target.dispatchEvent(new CustomEvent('focus', { bubbles: true, cancelable: true }));
+        e.target.dispatchEvent(new CustomEvent('blur', { bubbles: true, cancelable: true }));
+        prevActiveElement.dispatchEvent(new CustomEvent('focus', { bubbles: true, cancelable: true }));
+    }
+
+    DOMElement.addEventListener('endereco-blur', enderecoBlurListener);
+
+    // Mark the element as prepared
+    DOMElement._enderecoBlurListenerAttached = true;
+}
 
 var $waitForConfig = setInterval( function() {
     if(typeof enderecoLoadAMSConfig === 'function'){

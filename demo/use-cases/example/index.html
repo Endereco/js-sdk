@@ -35,6 +35,11 @@
             box-sizing: border-box;
 		}
 
+		.form-container input[type=checkbox] {
+			width: auto;
+			box-sizing: border-box;
+		}
+
 		.row > div:first-child {
 			margin-right: 20px;
 		}
@@ -84,12 +89,10 @@
 		// Bessere Art und Weise wäre ein Proxy Objekt.
         async function enderecoInitAMS(selectors, config) {
             if (window.EnderecoIntegrator.ready) {
-                let EAO = await window.EnderecoIntegrator.initAMS(selectors, config);
-				setBlurListener(EAO, selectors);
+                window.EnderecoIntegrator.initAMS(selectors, config);
             } else {
                 window.EnderecoIntegrator.onLoad.push(async () => {
-					let EAO = await window.EnderecoIntegrator.initAMS(selectors, config);
-					setBlurListener(EAO, selectors);
+					window.EnderecoIntegrator.initAMS(selectors, config);
                 });
             }
         }
@@ -121,42 +124,6 @@
 				window.EnderecoIntegrator.onLoad.push(function () {
 					window.EnderecoIntegrator.initEmailServices(prefix, config);
 				});
-			}
-		}
-
-		/**
-		 * Sets up a custom blur event listener on specified elements.
-		 *
-		 * This function iterates over a collection of elements, identified by their selectors,
-		 * and attaches a custom event listener for the 'endereco-blur' event. When the 'endereco-blur'
-		 * event is triggered on any of these elements, two custom events ('focus' and 'blur') are dispatched
-		 * on the target element. This can be useful for triggering custom logic on focus and blur events.
-		 *
-		 * @param {Object} EAO - The object containing utility functions, including CustomEvent.
-		 * @param {Object} elements - An object containing key-value pairs where the key is a unique identifier
-		 *                            and the value is a CSS selector for the DOM element.
-		 */
-		function setBlurListener(EAO, elements) {
-			for (const key in elements) {
-				if (Object.prototype.hasOwnProperty.call(elements, key)) {
-					const selector = elements[key];
-
-					if (!selector) {
-						return;
-					}
-
-					const element = document.querySelector(selector);
-
-					if (element) {
-						element.addEventListener('endereco-blur', function(e) {
-							// Dispatch 'focus' and 'blur' events on the target element
-							let prevActiveElement = document.activeElement;
-							e.target.dispatchEvent(new EAO.util.CustomEvent('focus', { bubbles: true, cancelable: true }));
-							e.target.dispatchEvent(new EAO.util.CustomEvent('blur', { bubbles: true, cancelable: true }));
-							prevActiveElement.dispatchEvent(new EAO.util.CustomEvent('focus', { bubbles: true, cancelable: true }));
-						});
-					}
-				}
 			}
 		}
 
@@ -203,6 +170,13 @@
                     billing_address: 'Rechnungsadresse prüfen',
                     shipping_address: 'Lieferadresse prüfen',
                 },
+				errorMessages: {
+					address_has_missing_building_number_content: 'Die Hausnummer fehlt in der Eingabe.',
+					address_has_unresolvable_building_number_content: 'Mit der eingegebenen Hausnummer konnte die Adresse nicht verifiziert werden.',
+					packstation_has_unresolvable_address: 'Die Packstation-Adresse konnte nicht gefunden werden.',
+					postoffice_has_unresolvable_address: 'Die Postfilialen-Adresse konnte nicht gefunden werden.',
+					packstation_has_unresolvable_postnummer: 'Die Postnummer ist ungültig.'
+				},
                 statuses: {
                     email_not_correct: 'Die E-Mail Adresse scheint nicht korrekt zu sein.',
                     email_cant_receive: 'Das E-Mail Postfach ist nicht erreichbar.',
@@ -781,6 +755,16 @@
 		<!-- Third form -->
 		<input type="hidden" name="shipping2_session_id" value="">
 		<input type="hidden" name="shipping2_session_counter" value="">
+
+		<div class="row">
+			<div>
+				<label class="label">
+					Diese Form ist für die Adressprüfung irrelevant
+					<input type="checkbox" id="disablethisform" value="1" style="">
+				</label>
+			</div>
+		</div>
+
 		<div class="row">
 			<div>
 				<label class="label">
