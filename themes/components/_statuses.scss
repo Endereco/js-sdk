@@ -1,4 +1,5 @@
 .endereco-s {
+	&--field_correct,
 	&--customer_verified,
 	&--salutation_correct,
 	&--first_name_correct,
@@ -25,6 +26,7 @@
 	}
 
 
+	&--field_not_correct,
 	&--salutation_needs_correction,
 	&--first_name_needs_correction,
 	&--last_name_needs_correction,
