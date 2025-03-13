@@ -132,7 +132,7 @@ function EnderecoSubscriber(propertyName, observableObject, options = {}) {
         observer.disconnect();
     }
 
-    var subscriber = {
+    const subscriber = {
         propertyName: propertyName,
         _subject: null,
         object: observableObject,
@@ -243,7 +243,6 @@ function EnderecoSubscriber(propertyName, observableObject, options = {}) {
                 }
             }
 
-            // Add autocomplete subscriber.
             if (this.options.syncValue) {
                 var $this = this;
                 var $key = this.propertyName;
@@ -326,6 +325,33 @@ function EnderecoSubscriber(propertyName, observableObject, options = {}) {
                     }
                 });
         },
+        updateDOMValue: async (value) => {
+            if (subscriber.object.disabled && value !== '') {
+                return;
+            }
+            try {
+                const resolvedValue = await subscriber.options.writeFilterCb(value, subscriber);
+                if ('classList' === subscriber.options.valueContainer) {
+                    subscriber.setClassList(resolvedValue);
+                } else if ('innerHTML' === subscriber.options.valueContainer) {
+                    subscriber.setInnerHTML(resolvedValue);
+                } else if ('value' === subscriber.options.valueContainer) {
+                    if (subscriber.options.customSetValue) {
+                        subscriber.options.customSetValue(subscriber, resolvedValue);
+                    } else {
+                        subscriber.setValue(resolvedValue);
+                    }
+                } else {
+                    return subscriber.set(subscriber.options.valueContainer, resolvedValue);
+                }
+            } catch (err) {
+                console.warn("Failed to update subscribed DOM element value", {
+                    error: err,
+                    value: value
+                });
+            }
+        },
+
         set: function(valueType, value) {
             if (this.object instanceof HTMLElement) {
                 this.object.setAttribute(valueType, value);

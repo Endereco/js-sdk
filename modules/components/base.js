@@ -7,7 +7,7 @@ import isEqual from 'lodash.isequal';
 import { v4 as uuidv4 } from 'uuid';
 
 function EnderecoBase() {
-    return {
+    const BaseObject = {
         id: uuidv4(),
         config: {
             agentName: "DefaultAgent v1.0.0",
@@ -267,19 +267,6 @@ function EnderecoBase() {
                     !!EnderecoSubscriberObject.object &&
                     !!EnderecoSubscriberObject.object.form
                 ) {
-
-                    if (EnderecoSubscriberObject.subject.config.trigger.onsubmit) {
-                        setTimeout(function() {
-                            if (
-                                !!EnderecoSubscriberObject.object &&
-                                !!EnderecoSubscriberObject.object.form
-                            ) {
-                                EnderecoSubscriberObject.object.form.removeEventListener('submit', $self.cb.onFormSubmit);
-                                EnderecoSubscriberObject.object.form.addEventListener('submit', $self.cb.onFormSubmit);
-                            }
-                        }, 1000);
-                    }
-
                     if (
                         undefined !== $self.forms &&
                         $self.hasLoadedExtension('SessionExtension') &&
@@ -301,47 +288,60 @@ function EnderecoBase() {
         removeSubscriber: function(EnderecoSubscriber) {
             // TODO: remove subscriber from subscribers list.
         },
-        syncValues: function(specificKeys) {
-            var $self = this;
-            return new Promise(function(resolve, reject) {
-                var keys = specificKeys || Object.keys($self._subscribers);
-                keys.forEach(function(key) {
-                    if ($self._subscribers[key]) {
-                        $self._subscribers[key].forEach(function(subscriber) {
-                            if (subscriber._subject) {
-                                subscriber._subject._awaits++;
-                            }
-                            // Sync values.
-                            $self.util.Promise.resolve(subscriber.value).then(function(subscriberValue) {
-                                var innerValue = $self[key];
-
-                                if (Array.isArray(innerValue)) {
-                                    innerValue = innerValue.join();
-                                }
-
-                                var innerValueEmpty = !innerValue && innerValue !== 0;
-                                var subscriberValueEmpty = !subscriberValue && subscriberValue !== 0;
-
-                                if (!subscriberValueEmpty && innerValueEmpty) {
-                                    $self[key] = subscriberValue;
-                                }
-                                if (subscriberValueEmpty && !innerValueEmpty) {
-                                    subscriber.value = $self[key];
-                                }
-                                if (subscriber._subject) {
-                                    subscriber._subject._awaits--;
-                                }
-                                resolve();
-                            }).catch(function(e) {
-                                if ($self.config.showDebugInfo) {
-                                    console.log('Error syncing values', e);
-                                }
-                                reject(e);
-                            });
-                        });
+        syncValues: async (specificKeys) => {
+            const fieldNamesToSync = specificKeys || Object.keys(BaseObject._subscribers);
+            try {
+                // Use Promise.all to wait for all async operations to complete
+                await Promise.all(fieldNamesToSync.map(async (fieldName) => {
+                    if (!BaseObject._subscribers[fieldName] || BaseObject._subscribers[fieldName].length === 0) {
+                        return;
                     }
-                });
-            });
+
+                    // Use Promise.all again to wait for all subscribers to be processed
+                    await Promise.all(BaseObject._subscribers[fieldName].map(async (subscriber) => {
+                        const resolvedSubscriberValue = await BaseObject.util.Promise.resolve(subscriber.value);
+
+                        // Get the value using getter if available
+                        const getterMethodName = `get${fieldName.charAt(0).toUpperCase() + fieldName.slice(1)}`;
+                        let innerValue;
+                        if (typeof BaseObject[getterMethodName] === 'function') {
+                            innerValue = await BaseObject[getterMethodName]();
+                        } else {
+                            innerValue = BaseObject[fieldName];
+                        }
+
+                        // Fix: Declare these variables properly in their respective scopes
+                        let resolvedInnerValue;
+                        if (Array.isArray(innerValue)) {
+                            resolvedInnerValue = innerValue.join();
+                        } else {
+                            resolvedInnerValue = innerValue;
+                        }
+
+                        const innerValueEmpty = !resolvedInnerValue && resolvedInnerValue !== 0;
+                        const subscriberValueEmpty = !resolvedSubscriberValue && resolvedSubscriberValue !== 0;
+
+                        if (!subscriberValueEmpty && innerValueEmpty) {
+                            // Use setter if available
+                            const setterMethodName = `set${fieldName.charAt(0).toUpperCase() + fieldName.slice(1)}`;
+                            if (typeof BaseObject[setterMethodName] === 'function') {
+                                await BaseObject[setterMethodName](resolvedSubscriberValue);
+                            } else {
+                                BaseObject[fieldName] = resolvedSubscriberValue;
+                            }
+                        }
+
+                        if (subscriberValueEmpty && !innerValueEmpty) {
+                            await subscriber.updateDOMValue(BaseObject[fieldName]);
+                        }
+                    }));
+                }));
+            } catch (err) {
+                console.warn("Syncing value failed", err);
+                throw err; // Re-throw to allow upstream error handling
+            }
+
+            return;
         },
         setField: function(fieldName, fieldValue, markAsChanged=true) {
             var $self = this;
@@ -413,6 +413,7 @@ function EnderecoBase() {
         }
     }
 
+    return BaseObject;
 }
 
 export default EnderecoBase

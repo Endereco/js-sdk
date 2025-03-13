@@ -57,16 +57,14 @@ const AdditionalInfoExtension = {
 
                 ExtendableObject._additionalInfo = additionalInfo;
 
-                if (ExtendableObject.active) {
-                    ExtendableObject._changed = true;
-                    ExtendableObject.addressStatus = [];
-                }
-
                 if (needToNotify) {
                     // Inform all subscribers about the change.
+                    const notificationProcesses = [];
+
                     ExtendableObject._subscribers.additionalInfo.forEach((subscriber) => {
-                        subscriber.value = additionalInfo;
+                        notificationProcesses.push(subscriber.updateDOMValue(additionalInfo));
                     });
+                    await Promise.all(notificationProcesses);
                 }
             } catch (e) {
                 console.warn("Error while setting the field 'additionalInfo'", e);
@@ -103,8 +101,7 @@ const AdditionalInfoExtension = {
                 ExtendableObject._allowToNotifyAdditionalInfoSubscribers = true;
 
                 if (ExtendableObject.active) {
-                    ExtendableObject._changed = true;
-                    ExtendableObject.addressStatus = [];
+                    ExtendableObject.util.invalidateAddressMeta();
                 }
             };
         };
@@ -121,8 +118,7 @@ const AdditionalInfoExtension = {
                 ExtendableObject._allowToNotifyAdditionalInfoSubscribers = true;
 
                 if (ExtendableObject.active) {
-                    ExtendableObject._changed = true;
-                    ExtendableObject.addressStatus = [];
+                    ExtendableObject.util.invalidateAddressMeta();
                 }
             };
         };
@@ -135,26 +131,11 @@ const AdditionalInfoExtension = {
          */
         ExtendableObject.cb.additionalInfoBlur = (subscriber) => {
             return async (e) => {
-                await ExtendableObject.waitUntilReady();
-
                 try {
-                    if (ExtendableObject.onBlurTimeout) {
-                        clearTimeout(ExtendableObject.onBlurTimeout);
-                        ExtendableObject.onBlurTimeout = null;
-                    }
-                    ExtendableObject.onBlurTimeout = setTimeout(function () {
-                        if (ExtendableObject.config.trigger.onblur &&
-                            !ExtendableObject.anyActive() &&
-                            ExtendableObject.util.shouldBeChecked() &&
-                            !window.EnderecoIntegrator.hasSubmit
-                        ) {
-                            // Second. Check Address.
-                            ExtendableObject.onBlurTimeout = null;
-                            ExtendableObject.util.checkAddress().catch();
-                        }
-                    }, ExtendableObject.config.ux.delay.onBlur);
-                } catch (err) {
-                    console.warn('Error in additionalInfoBlur handler:', err);
+                    await ExtendableObject.waitUntilReady();
+                    await ExtendableObject.cb.handleFormBlur();
+                } catch (error) {
+                    console.warn('Error in additionalInfoBlur handler:', error);
                 }
             };
         };

@@ -64,6 +64,106 @@
 	}
 
 	&--no-prediction {
+		&.endereco-invalid-country-code {
+			.endereco-country-code {
+				display: inline-block;
+				background-color: rgba(255, 0, 0, 0.125);
+				border-bottom: 1px solid red;
+				padding: 0 3px;
+				min-width: 20px;
+				min-height: 1em;
+			}
+		}
+
+		&.endereco-invalid-subdivision-code {
+			.endereco-subdivision-code {
+				display: inline-block;
+				background-color: rgba(255, 0, 0, 0.125);
+				border-bottom: 1px solid red;
+				padding: 0 3px;
+				min-width: 20px;
+				min-height: 1em;
+			}
+		}
+
+		&.endereco-invalid-postal-code {
+			.endereco-postal-code {
+				display: inline-block;
+				background-color: rgba(255, 0, 0, 0.125);
+				border-bottom: 1px solid red;
+				padding: 0 3px;
+				min-width: 20px;
+				min-height: 1em;
+			}
+		}
+
+		&.endereco-invalid-locality {
+			.endereco-locality {
+				display: inline-block;
+				background-color: rgba(255, 0, 0, 0.125);
+				border-bottom: 1px solid red;
+				padding: 0 3px;
+				min-width: 20px;
+				min-height: 1em;
+			}
+		}
+
+		&.endereco-invalid-street-name {
+			.endereco-street-name {
+				display: inline-block;
+				background-color: rgba(255, 0, 0, 0.125);
+				border-bottom: 1px solid red;
+				padding: 0 3px;
+				min-width: 20px;
+				min-height: 1em;
+			}
+		}
+
+		&.endereco-invalid-building-number {
+			.endereco-building-number,
+			.endereco-street-full {
+				display: inline-block;
+				background-color: rgba(255, 0, 0, 0.125);
+				border-bottom: 1px solid red;
+				padding: 0 3px;
+				min-width: 20px;
+				min-height: 1em;
+			}
+		}
+
+		&.endereco-invalid-postnummer {
+			.endereco-additional-info {
+				display: inline-block;
+				background-color: rgba(255, 0, 0, 0.125);
+				border-bottom: 1px solid red;
+				padding: 0 3px;
+				min-width: 20px;
+				min-height: 1em;
+			}
+		}
+
+		&.endereco-invalid-street-full {
+			.endereco-street-full {
+				display: inline-block;
+				background-color: rgba(255, 0, 0, 0.125);
+				border-bottom: 1px solid red;
+				padding: 0 3px;
+				min-width: 20px;
+				min-height: 1em;
+			}
+		}
+
+		&.endereco-invalid-additional-info-full {
+			.endereco-additional-info {
+				display: inline-block;
+				background-color: rgba(255, 0, 0, 0.125);
+				border-bottom: 1px solid red;
+				padding: 0 3px;
+				min-width: 20px;
+				min-height: 1em;
+			}
+		}
+
 		&.building_number_is_missing,
 		&.building_number_not_found {
 			.endereco-building-number {
