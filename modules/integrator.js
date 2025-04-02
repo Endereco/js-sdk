@@ -24,7 +24,7 @@ const bindFieldsToAddressObject = async (addressObject, fieldSelectors, Endereco
         }
 
         const options = {};
-        if (autocompletableFields.includes(fieldName)) {
+        if (autocompletableFields.includes(fieldName) && EnderecoIntegrator.config.useAutocomplete) {
             options.displayAutocompleteDropdown = true;
         }
 
@@ -117,6 +117,7 @@ const EnderecoIntegrator = {
         })(),
         showDebugInfo: false,
         splitStreet: true,
+        useAutocomplete: true,
         ux: {
             smartFill: true,
             smartFillBlockTime: 600,
@@ -373,7 +374,9 @@ const EnderecoIntegrator = {
         addressObject.fullName = options.name;
 
         // Initiate change field order logic
-        if (integrator.config.ux.changeFieldsOrder) {
+        if (integrator.config.ux.changeFieldsOrder &&
+            integrator.config.useAutocomplete
+        ) {
             EnderecoIntegrator.changeFieldsOrder(fieldSelectors)
         }
 
