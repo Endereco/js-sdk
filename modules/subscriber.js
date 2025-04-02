@@ -213,7 +213,10 @@ function EnderecoSubscriber(propertyName, observableObject, options = {}) {
             }
 
             // Add autocomplete disabler.
-            if (this._subject.config.ux.disableBrowserAutocomplete && ['text','number'].includes(this.object.type)) {
+            if (this._subject.config.ux.disableBrowserAutocomplete &&
+                ['text','number'].includes(this.object.type) &&
+                subscriber.options.displayAutocompleteDropdown
+            ) {
                 if (/chrom(e|ium)/.test( navigator.userAgent.toLowerCase( ) )) {
                     this.object.setAttribute('autocomplete', 'autocomplete_' + Math.random().toString(36).substring(2) + Date.now());
                 } else {
