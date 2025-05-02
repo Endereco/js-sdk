@@ -362,13 +362,8 @@ const LocalityExtension = {
             // Is subdivision visible?
             let isSubdivisionVisible = false;
 
-            if ((ExtendableObject._subscribers.subdivisionCode.length > 0)) {
-                ExtendableObject._subscribers.subdivisionCode.forEach(function (listener) {
-                    if (!listener.object.disabled &&
-                        listener.object.isConnected) {
-                        isSubdivisionVisible = true;
-                    }
-                });
+            if (ExtendableObject.util.hasSubscribedField('subdivisionCode')) {
+                isSubdivisionVisible = true;
             }
 
             // Render dropdown under the input element
@@ -404,11 +399,8 @@ const LocalityExtension = {
                             localityDiff: localityHtml
                         };
 
-                        if (prediction.subdivisionCode) {
+                        if (isSubdivisionVisible && prediction.subdivisionCode) {
                             tempData.subdivisionCode = prediction.subdivisionCode;
-                        }
-
-                        if (isSubdivisionVisible) {
                             if (window.EnderecoIntegrator.subdivisionCodeToNameMapping &&
                                 window.EnderecoIntegrator.subdivisionCodeToNameMapping[prediction.subdivisionCode.toUpperCase()]
                             ) {
@@ -500,11 +492,17 @@ const LocalityExtension = {
                 return autocompleteResult;
             }
 
-            const cacheKey = [
+            const cacheKeyData = [
                 ExtendableObject.countryCode,
                 ExtendableObject.config.lang,
                 locality
-            ].join('-');
+            ];
+
+            if (ExtendableObject.util.hasSubscribedField('subdivisionCode')) {
+                cacheKeyData.push(ExtendableObject.getSubdivisionCode());
+            }
+
+            const cacheKey = cacheKeyData.join('-');
 
             if (!ExtendableObject.localityAutocompleteCache.cachedResults[cacheKey]) {
                 const autocompleteRequestIndex = ++ExtendableObject._localityAutocompleteRequestIndex;
@@ -520,8 +518,8 @@ const LocalityExtension = {
                     }
                 };
 
-                if (ExtendableObject._subscribers.subdivisionCode && ExtendableObject._subscribers.subdivisionCode.length > 0) {
-                    message.params.subdivisionCode = '';
+                if (ExtendableObject.util.hasSubscribedField('subdivisionCode')) {
+                    message.params.subdivisionCode = ExtendableObject.getSubdivisionCode();
                 }
 
                 const headers = {
@@ -571,9 +569,11 @@ const LocalityExtension = {
                         locality: cityName
                     };
 
-                    if (subdivisionCode !== undefined) {
-                        tempLocalityContainer.subdivisionCode = subdivisionCode;
-                    }
+                        if ((subdivisionCode !== undefined) &&
+                            ExtendableObject.util.hasSubscribedField('subdivisionCode')
+                        ) {
+                            tempLocalityContainer.subdivisionCode = subdivisionCode;
+                        }
 
                     localityPredictionsTemp.push(tempLocalityContainer);
                 });
