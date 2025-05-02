@@ -150,7 +150,7 @@
 			window.EnderecoIntegrator.config.phoneFormat = "E164";
 			window.EnderecoIntegrator.config.ux.showPhoneFlag = true;
             window.EnderecoIntegrator.countryMappingUrl = '';
-			window.EnderecoIntegrator.config.useAutocomplete = false;
+			window.EnderecoIntegrator.config.useAutocomplete = true;
             window.EnderecoIntegrator.config.templates.primaryButtonClasses = 'btn btn-primary btn-lg';
             window.EnderecoIntegrator.config.templates.secondaryButtonClasses = 'btn btn-secondary btn-lg';
             window.EnderecoIntegrator.config.texts = {
@@ -217,7 +217,92 @@
 				'US': 3
             };
 
-            // Country matching functions.
+			window.EnderecoIntegrator.subdivisionMapping = {
+				// Germany (DE)
+				'DE-BW': 'DE-BW', 'DE-BY': 'DE-BY', 'DE-BE': 'DE-BE', 'DE-BB': 'DE-BB',
+				'DE-HB': 'DE-HB', 'DE-HH': 'DE-HH', 'DE-HE': 'DE-HE', 'DE-MV': 'DE-MV',
+				'DE-NI': 'DE-NI', 'DE-NW': 'DE-NW', 'DE-RP': 'DE-RP', 'DE-SL': 'DE-SL',
+				'DE-SN': 'DE-SN', 'DE-ST': 'DE-ST', 'DE-SH': 'DE-SH', 'DE-TH': 'DE-TH',
+
+				// France (FR) - Add all codes from your HTML select list here
+				'FR-ARA': 'FR-ARA', 'FR-01': 'FR-01', 'FR-03': 'FR-03', 'FR-07': 'FR-07',
+				'FR-15': 'FR-15', 'FR-26': 'FR-26', 'FR-38': 'FR-38', 'FR-42': 'FR-42',
+				'FR-43': 'FR-43', 'FR-63': 'FR-63', 'FR-69': 'FR-69', 'FR-73': 'FR-73',
+				'FR-74': 'FR-74', 'FR-69M': 'FR-69M', 'FR-BFC': 'FR-BFC', 'FR-21': 'FR-21',
+				'FR-25': 'FR-25', 'FR-39': 'FR-39', 'FR-58': 'FR-58', 'FR-70': 'FR-70',
+				'FR-71': 'FR-71', 'FR-89': 'FR-89', 'FR-90': 'FR-90', 'FR-BRE': 'FR-BRE',
+				'FR-22': 'FR-22', 'FR-29': 'FR-29', 'FR-35': 'FR-35', 'FR-56': 'FR-56',
+				'FR-CVL': 'FR-CVL', 'FR-18': 'FR-18', 'FR-28': 'FR-28', 'FR-36': 'FR-36',
+				'FR-37': 'FR-37', 'FR-41': 'FR-41', 'FR-45': 'FR-45', 'FR-GES': 'FR-GES',
+				'FR-08': 'FR-08', 'FR-10': 'FR-10', 'FR-51': 'FR-51', 'FR-52': 'FR-52',
+				'FR-54': 'FR-54', 'FR-55': 'FR-55', 'FR-57': 'FR-57', 'FR-88': 'FR-88',
+				'FR-6AE': 'FR-6AE', 'FR-67': 'FR-67', 'FR-68': 'FR-68', 'FR-HDF': 'FR-HDF',
+				'FR-02': 'FR-02', 'FR-59': 'FR-59', 'FR-60': 'FR-60', 'FR-62': 'FR-62',
+				'FR-80': 'FR-80', 'FR-IDF': 'FR-IDF', 'FR-77': 'FR-77', 'FR-78': 'FR-78',
+				'FR-91': 'FR-91', 'FR-92': 'FR-92', 'FR-93': 'FR-93', 'FR-94': 'FR-94',
+				'FR-95': 'FR-95', 'FR-75C': 'FR-75C', 'FR-NAQ': 'FR-NAQ', 'FR-16': 'FR-16',
+				'FR-17': 'FR-17', 'FR-19': 'FR-19', 'FR-23': 'FR-23', 'FR-24': 'FR-24',
+				'FR-33': 'FR-33', 'FR-40': 'FR-40', 'FR-47': 'FR-47', 'FR-64': 'FR-64',
+				'FR-79': 'FR-79', 'FR-86': 'FR-86', 'FR-87': 'FR-87', 'FR-NOR': 'FR-NOR',
+				'FR-14': 'FR-14', 'FR-27': 'FR-27', 'FR-50': 'FR-50', 'FR-61': 'FR-61',
+				'FR-76': 'FR-76', 'FR-OCC': 'FR-OCC', 'FR-09': 'FR-09', 'FR-11': 'FR-11',
+				'FR-12': 'FR-12', 'FR-30': 'FR-30', 'FR-31': 'FR-31', 'FR-32': 'FR-32',
+				'FR-34': 'FR-34', 'FR-46': 'FR-46', 'FR-48': 'FR-48', 'FR-65': 'FR-65',
+				'FR-66': 'FR-66', 'FR-81': 'FR-81', 'FR-82': 'FR-82', 'FR-PAC': 'FR-PAC',
+				'FR-04': 'FR-04', 'FR-05': 'FR-05', 'FR-06': 'FR-06', 'FR-13': 'FR-13',
+				'FR-83': 'FR-83', 'FR-84': 'FR-84', 'FR-PDL': 'FR-PDL', 'FR-44': 'FR-44',
+				'FR-49': 'FR-49', 'FR-53': 'FR-53', 'FR-72': 'FR-72', 'FR-85': 'FR-85',
+				'FR-CP': 'FR-CP', 'FR-BL': 'FR-BL', 'FR-MF': 'FR-MF', 'FR-PF': 'FR-PF',
+				'FR-PM': 'FR-PM', 'FR-WF': 'FR-WF', 'FR-20R': 'FR-20R', 'FR-2A': 'FR-2A',
+				'FR-2B': 'FR-2B', 'FR-NC': 'FR-NC', 'FR-TF': 'FR-TF', 'FR-972': 'FR-972',
+				'FR-973': 'FR-973', 'FR-971': 'FR-971', 'FR-974': 'FR-974', 'FR-976': 'FR-976',
+
+				// USA (US)
+				'US-DC': 'US-DC', 'US-AS': 'US-AS', 'US-GU': 'US-GU', 'US-MP': 'US-MP',
+				'US-PR': 'US-PR', 'US-UM': 'US-UM', 'US-VI': 'US-VI', 'US-AK': 'US-AK',
+				'US-AL': 'US-AL', 'US-AR': 'US-AR', 'US-AZ': 'US-AZ', 'US-CA': 'US-CA',
+				'US-CO': 'US-CO', 'US-CT': 'US-CT', 'US-DE': 'US-DE', 'US-FL': 'US-FL',
+				'US-GA': 'US-GA', 'US-HI': 'US-HI', 'US-IA': 'US-IA', 'US-ID': 'US-ID',
+				'US-IL': 'US-IL', 'US-IN': 'US-IN', 'US-KS': 'US-KS', 'US-KY': 'US-KY',
+				'US-LA': 'US-LA', 'US-MA': 'US-MA', 'US-MD': 'US-MD', 'US-ME': 'US-ME',
+				'US-MI': 'US-MI', 'US-MN': 'US-MN', 'US-MO': 'US-MO', 'US-MS': 'US-MS',
+				'US-MT': 'US-MT', 'US-NC': 'US-NC', 'US-ND': 'US-ND', 'US-NE': 'US-NE',
+				'US-NH': 'US-NH', 'US-NJ': 'US-NJ', 'US-NM': 'US-NM', 'US-NV': 'US-NV',
+				'US-NY': 'US-NY', 'US-OH': 'US-OH', 'US-OK': 'US-OK', 'US-OR': 'US-OR',
+				'US-PA': 'US-PA', 'US-RI': 'US-RI', 'US-SC': 'US-SC', 'US-SD': 'US-SD',
+				'US-TN': 'US-TN', 'US-TX': 'US-TX', 'US-UT': 'US-UT', 'US-VA': 'US-VA',
+				'US-VT': 'US-VT', 'US-WA': 'US-WA', 'US-WI': 'US-WI', 'US-WV': 'US-WV',
+				'US-WY': 'US-WY'
+			};
+
+			window.EnderecoIntegrator.subdivisionMappingReverse = JSON.parse(JSON.stringify(window.EnderecoIntegrator.subdivisionMapping));
+
+			const originalMapping = window.EnderecoIntegrator.subdivisionMapping;
+			window.EnderecoIntegrator.subdivisionMappingReverse = Object.entries(originalMapping).reduce((reversedObj, [key, value]) => {
+				reversedObj[value] = key;
+				return reversedObj;
+			}, {});
+
+			window.EnderecoIntegrator.subdivisionCodeToNameMapping = {
+				"DE-BW": "Baden-Württemberg",
+				"DE-BY": "Bayern",
+				"DE-BE": "Berlin",
+				"DE-BB": "Brandenburg",
+				"DE-HB": "Bremen",
+				"DE-HH": "Hamburg",
+				"DE-HE": "Hessen",
+				"DE-MV": "Mecklenburg-Vorpommern",
+				"DE-NI": "Niedersachsen",
+				"DE-NW": "Nordrhein-Westfalen",
+				"DE-RP": "Rheinland-Pfalz",
+				"DE-SL": "Saarland",
+				"DE-SN": "Sachsen",
+				"DE-ST": "Sachsen-Anhalt",
+				"DE-SH": "Schleswig-Holstein",
+				"DE-TH": "Thüringen"
+			};
+
+			// Country matching functions.
 			EnderecoIntegrator.resolvers.countryCodeWrite = function(value) {
 				return new Promise(function(resolve, reject) {
 					resolve(value.toUpperCase());
@@ -226,6 +311,20 @@
 			EnderecoIntegrator.resolvers.countryCodeRead = function(value) {
 				return new Promise(function(resolve, reject) {
 					resolve(value.toUpperCase());
+				});
+			}
+
+			EnderecoIntegrator.resolvers.subdivisionCodeWrite = function(value) {
+				return new Promise(function(resolve, reject) {
+					const processedValue = value ? String(value) : value;
+					resolve(processedValue);
+				});
+			}
+
+			EnderecoIntegrator.resolvers.subdivisionCodeRead = function(value) {
+				return new Promise(function(resolve, reject) {
+					const processedValue = value ? String(value) : value;
+					resolve(processedValue);
 				});
 			}
 

@@ -368,13 +368,8 @@ const PostalCodeExtension = {
             // Is subdivision visible?
             let isSubdivisionVisible = false;
 
-            if ((ExtendableObject._subscribers.subdivisionCode.length > 0)) {
-                ExtendableObject._subscribers.subdivisionCode.forEach(function (listener) {
-                    if (!listener.object.disabled &&
-                        listener.object.isConnected) {
-                        isSubdivisionVisible = true;
-                    }
-                });
+            if (ExtendableObject.util.hasSubscribedField('subdivisionCode')) {
+                isSubdivisionVisible = true;
             }
 
             // Render dropdown under the input element
@@ -405,22 +400,20 @@ const PostalCodeExtension = {
                             postalCodeDiff: postalCodeHtml
                         };
 
-                        if (prediction.subdivisionCode) {
+                        if (isSubdivisionVisible && prediction.subdivisionCode) {
                             tempData.subdivisionCode = prediction.subdivisionCode;
 
-                            if (isSubdivisionVisible) {
-                                if (window.EnderecoIntegrator.subdivisionCodeToNameMapping &&
-                                    window.EnderecoIntegrator.subdivisionCodeToNameMapping[prediction.subdivisionCode.toUpperCase()]
-                                ) {
-                                    tempData.subdivisionName = window.EnderecoIntegrator.subdivisionCodeToNameMapping[
-                                        prediction.subdivisionCode.toUpperCase()
-                                    ];
+                            if (window.EnderecoIntegrator.subdivisionCodeToNameMapping &&
+                                window.EnderecoIntegrator.subdivisionCodeToNameMapping[prediction.subdivisionCode.toUpperCase()]
+                            ) {
+                                tempData.subdivisionName = window.EnderecoIntegrator.subdivisionCodeToNameMapping[
+                                    prediction.subdivisionCode.toUpperCase()
+                                ];
+                            } else {
+                                if (prediction.subdivisionCode.toUpperCase()) {
+                                    tempData.subdivisionName = prediction.subdivisionCode.split('-')[1];
                                 } else {
-                                    if (prediction.subdivisionCode.toUpperCase()) {
-                                        tempData.subdivisionName = prediction.subdivisionCode.split('-')[1];
-                                    } else {
-                                        tempData.subdivisionName = '&nbsp;';
-                                    }
+                                    tempData.subdivisionName = '&nbsp;';
                                 }
                             }
                         }
@@ -505,14 +498,20 @@ const PostalCodeExtension = {
                 return autocompleteResult;
             }
 
-            const cacheKey = [
+            const cacheKeyData = [
                 ExtendableObject.countryCode,
                 ExtendableObject.config.lang,
                 postalCode,
                 ExtendableObject.locality,
                 ExtendableObject.streetName,
                 ExtendableObject.buildingNumber
-            ].join('-');
+            ];
+
+            if (ExtendableObject.util.hasSubscribedField('subdivisionCode')) {
+                cacheKeyData.push(ExtendableObject.getSubdivisionCode());
+            }
+
+            const cacheKey = cacheKeyData.join('-');
 
             if (!ExtendableObject.postalCodeAutocompleteCache.cachedResults[cacheKey]) {
                 const autocompleteRequestIndex = ++ExtendableObject._postalCodeAutocompleteRequestIndex;
@@ -530,6 +529,10 @@ const PostalCodeExtension = {
                         houseNumber: ExtendableObject.buildingNumber
                     }
                 };
+
+                if (ExtendableObject.util.hasSubscribedField('subdivisionCode')) {
+                    message.params.subdivisionCode = ExtendableObject.getSubdivisionCode();
+                }
 
                 const headers = {
                     'X-Auth-Key': ExtendableObject.config.apiKey,
@@ -582,9 +585,12 @@ const PostalCodeExtension = {
                         locality: postalCodePrediction.cityName || ''
                     };
 
-                    if (postalCodePrediction.subdivisionCode) {
-                        tempPostalCodeContainer.subdivisionCode = postalCodePrediction.subdivisionCode;
-                    }
+                        // Fix around API
+                        if (postalCodePrediction.subdivisionCode &&
+                            ExtendableObject.util.hasSubscribedField('subdivisionCode')
+                        ) {
+                            tempPostalCodeContainer.subdivisionCode = postalCodePrediction.subdivisionCode;
+                        }
 
                     postalCodePredictionsTemp.push(tempPostalCodeContainer);
                 });
@@ -631,10 +637,6 @@ const PostalCodeExtension = {
         await PostalCodeExtension.registerUtilities(ExtendableObject);
         await PostalCodeExtension.registerAPIHandlers(ExtendableObject);
         await PostalCodeExtension.registerFilterCallbacks(ExtendableObject);
-
-        if (ExtendableObject.config.showDebugInfo) {
-            console.log('PostalCodeExtension applied');
-        }
 
         return PostalCodeExtension;
     }

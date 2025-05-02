@@ -1716,9 +1716,11 @@ const AddressExtension = {
         ExtendableObject.util.hasSubscribedField = (fieldName) => {
             const subscribers = ExtendableObject._subscribers[fieldName] || [];
             const hasActiveSubscriber = subscribers.some((listener) => {
-                return listener.object &&
+                const domElementExists = listener.object &&
                     !listener.object.disabled &&
                     listener.object.isConnected;
+
+                return domElementExists && window.EnderecoIntegrator.hasActiveSubscriber(fieldName, listener.object, ExtendableObject);
             });
 
             return hasActiveSubscriber;
