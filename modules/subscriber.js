@@ -33,29 +33,31 @@ function EnderecoSubscriber(propertyName, observableObject, options = {}) {
     function setupValueChangeDetection(subscriber, callback, interval = 300) {
         let element = subscriber.object;
 
-        // Initially get the value, ensuring it's treated as a Promise
-        Promise.resolve(subscriber.value).then(value => subscriber.lastValue = value);
+        subscriber.lastValue = subscriber.getDOMValue();
 
         const checkValueChange = () => {
-            // Ensure the current value is treated as a Promise
-            Promise.resolve(subscriber.value).then(currentValue => {
-                if (subscriber.object.type === 'radio') {
-                    if (subscriber.object.checked) {
-                        subscriber.lastValue = currentValue;
-                        callback();
-                    }
-                } else if (subscriber.object.type === 'checkbox') {
-                    if (currentValue !== subscriber.lastValue && document.activeElement !== element) {
-                        subscriber.lastValue = currentValue;
-                        callback();
-                    }
-                } else {
-                    if (currentValue !== subscriber.lastValue && document.activeElement !== element) {
-                        subscriber.lastValue = currentValue;
-                        callback();
-                    }
+            if(!subscriber._allowFieldInspection) {
+                return;
+            }
+
+            const currentValue = subscriber.getDOMValue();
+
+            if (subscriber.object.type === 'radio') {
+                if (subscriber.object.checked) {
+                    subscriber.lastValue = currentValue;
+                    callback();
                 }
-            });
+            } else if (subscriber.object.type === 'checkbox') {
+                if (currentValue !== subscriber.lastValue && document.activeElement !== element) {
+                    subscriber.lastValue = currentValue;
+                    callback();
+                }
+            } else {
+                if (currentValue !== subscriber.lastValue && document.activeElement !== element) {
+                    subscriber.lastValue = currentValue;
+                    callback();
+                }
+            }
         };
 
         const intervalId = setInterval(checkValueChange, interval);
@@ -70,17 +72,17 @@ function EnderecoSubscriber(propertyName, observableObject, options = {}) {
     function setupValueInputDetection(subscriber, callback, interval = 10) {
         let element = subscriber.object;
 
-        // Initially get the value, ensuring it's treated as a Promise
-        Promise.resolve(subscriber.value).then(value => subscriber.lastValue = value);
+        subscriber.lastValue = subscriber.getDOMValue();
 
         const checkValueInput = () => {
-            // Ensure the current value is treated as a Promise
-            Promise.resolve(subscriber.value).then(currentValue => {
-                if (currentValue !== subscriber.lastValue && document.activeElement === element) {
-                    subscriber.lastValue = currentValue;
-                    callback();
-                }
-            });
+            if(!subscriber._allowFieldInspection) {
+                return;
+            }
+            const currentValue = subscriber.getDOMValue();
+            if (currentValue !== subscriber.lastValue && document.activeElement === element) {
+                subscriber.lastValue = currentValue;
+                callback();
+            }
         };
 
         const intervalId = setInterval(checkValueInput, interval);
@@ -139,8 +141,9 @@ function EnderecoSubscriber(propertyName, observableObject, options = {}) {
         options: options,
         cleanupFunctions: [],
         lastValue: undefined,
+        _allowFieldInspection: true,
         getLastValue: function() {
-          return this.lastValue;
+            return this.lastValue;
         },
         updateCheckedValue(newValue) {
             if (this.dispatchEvent('endereco-change')) {
@@ -149,6 +152,7 @@ function EnderecoSubscriber(propertyName, observableObject, options = {}) {
             }
         },
         updateValue(newValue, updateInnerState = true) {
+            this._allowFieldInspection = false;
             if (this.dispatchEvent('endereco-change')) {
                 this.object.value = newValue;
 
@@ -158,6 +162,7 @@ function EnderecoSubscriber(propertyName, observableObject, options = {}) {
 
                 this.dispatchEvent('endereco-blur');
             }
+            this._allowFieldInspection = true;
         },
         dispatchEvent(eventName) {
             if (this._subject) {
@@ -286,9 +291,12 @@ function EnderecoSubscriber(propertyName, observableObject, options = {}) {
                 if ($self.object.disabled) {
                     value = '';
                 } else {
-                    value = this.getValue();
+                    if (!!$self.options.customGetValue) {
+                        value = $self.options.customGetValue($self);
+                    } else {
+                        value = $self.getValue();
+                    }
                 }
-
             } else {
                 value = this.get(this.options.valueContainer);
             }
@@ -353,6 +361,28 @@ function EnderecoSubscriber(propertyName, observableObject, options = {}) {
                     value: value
                 });
             }
+        },
+
+        getDOMValue: () => {
+            let value = '';
+            if ('classList' === subscriber.options.valueContainer) {
+                value = subscriber.getClassList();
+            } else if ('innerHTML' === subscriber.options.valueContainer) {
+                value = subscriber.getInnerHTML();
+            } else if ('value' === subscriber.options.valueContainer) {
+                if (subscriber.object.disabled) {
+                    value = '';
+                } else {
+                    if (!!subscriber.options.customGetValue) {
+                        value = subscriber.options.customGetValue(subscriber);
+                    } else {
+                        value = subscriber.getValue();
+                    }
+                }
+            } else {
+                value = subscriber.get(subscriber.options.valueContainer);
+            }
+            return value;
         },
 
         set: function(valueType, value) {

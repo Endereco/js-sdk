@@ -44,7 +44,6 @@ const SubdivisionCodeExtension = {
             const needToNotify = ExtendableObject.active && ExtendableObject._allowToNotifySubdivisionCodeSubscribers;
 
             ExtendableObject._awaits++;
-
             try {
                 let resolvedValue = await ExtendableObject.util.Promise.resolve(subdivisionCode);
 
@@ -60,7 +59,6 @@ const SubdivisionCodeExtension = {
                 if (needToNotify) {
                     // Inform all subscribers about the change.
                     const notificationProcesses = [];
-
                     ExtendableObject._subscribers.subdivisionCode.forEach((subscriber) => {
                         notificationProcesses.push(subscriber.updateDOMValue(resolvedValue));
                     });
@@ -95,9 +93,9 @@ const SubdivisionCodeExtension = {
          * @returns {Function} Event handler function
          */
         ExtendableObject.cb.subdivisionCodeChange = (subscriber) => {
-            return (e) => {
+            return async (e) => {
                 ExtendableObject._allowToNotifySubdivisionCodeSubscribers = false;
-                ExtendableObject.subdivisionCode = subscriber.value;
+                await ExtendableObject.setSubdivisionCode(subscriber.value);
                 ExtendableObject._allowToNotifySubdivisionCodeSubscribers = true;
 
                 if (ExtendableObject.active) {
@@ -112,9 +110,9 @@ const SubdivisionCodeExtension = {
          * @returns {Function} Event handler function
          */
         ExtendableObject.cb.subdivisionCodeInput = (subscriber) => {
-            return (e) => {
+            return async (e) => {
                 ExtendableObject._allowToNotifySubdivisionCodeSubscribers = false;
-                ExtendableObject.subdivisionCode = subscriber.value;
+                await ExtendableObject.setSubdivisionCode(subscriber.value);
                 ExtendableObject._allowToNotifySubdivisionCodeSubscribers = true;
 
                 if (ExtendableObject.active) {

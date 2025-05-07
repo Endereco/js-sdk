@@ -46,6 +46,12 @@ const bindFieldsToAddressObject = async (addressObject, fieldSelectors, Endereco
             };
         }
 
+        if (EnderecoIntegrator.resolvers && EnderecoIntegrator.resolvers[`${fieldName}GetValue`]) {
+            options.customGetValue = function(subscriber) {
+                return EnderecoIntegrator.resolvers[`${fieldName}GetValue`](subscriber);
+            };
+        }
+
         elements.forEach( (DOMElement) => {
             const subscriber = new EnderecoSubscriber(
                 fieldName,
