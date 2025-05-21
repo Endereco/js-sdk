@@ -426,12 +426,28 @@ const StreetNameExtension = {
 
         /**
          * Ensures street full is properly composed from name and number
+         * Can operate in either synchronous (immediate await) or asynchronous (debounced) mode
          * @param {string} countryCode - Country code for formatting
          * @param {string} streetName - Street name component
          * @param {string} buildingNumber - Building number component
-         * @returns {Promise<void>}
+         * @returns {Promise<void|string>} - Returns void in async mode, composed street in sync mode
          */
-        ExtendableObject.util.ensureStreetFullIntegrity = function (countryCode, streetName, buildingNumber) {
+        ExtendableObject.util.ensureStreetFullIntegrity = (countryCode, streetName, buildingNumber) => {
+            // Based on internal flag, choose appropriate execution mode
+            if (ExtendableObject._isIntegrityOperationSynchronous) {
+                return ExtendableObject.util.ensureStreetFullIntegrityAsync(countryCode, streetName, buildingNumber);
+            } else {
+                ExtendableObject.util.ensureStreetFullIntegrityWithDebounce(countryCode, streetName, buildingNumber);
+            }
+        };
+
+        /**
+         * Ensures street full integrity with debouncing (original behavior)
+         * @param {string} countryCode - Country code for formatting
+         * @param {string} streetName - Street name component
+         * @param {string} buildingNumber - Building number component
+         */
+        ExtendableObject.util.ensureStreetFullIntegrityWithDebounce = (countryCode, streetName, buildingNumber) => {
             if (ExtendableObject._streetFullComposeTimeout) {
                 clearTimeout(ExtendableObject._streetFullComposeTimeout);
             }
@@ -461,6 +477,42 @@ const StreetNameExtension = {
                 }
                 ExtendableObject._streetFullComposeTimeout = null;
             }, ExtendableObject.config.ux.delay.inputAssistant);
+        };
+
+        /**
+         * Ensures street full integrity synchronously (immediate execution)
+         * @param {string} countryCode - Country code for formatting
+         * @param {string} streetName - Street name component
+         * @param {string} buildingNumber - Building number component
+         * @returns {Promise<string|null>} Composed street full or null if failed
+         */
+        ExtendableObject.util.ensureStreetFullIntegrityAsync = async function (countryCode, streetName, buildingNumber) {
+            try {
+                const streetFull = ExtendableObject.util.Mustache.render(
+                    ExtendableObject.config.templates.streetFull.getTemplate(countryCode),
+                    {
+                        streetName,
+                        buildingNumber
+                    }
+                ).replace(/  +/g, ' ').replace(/(\r\n|\n|\r)/gm, '').trim();
+
+                // Check if result is outdated
+                if ((ExtendableObject.streetName !== streetName) || (ExtendableObject.buildingNumber !== buildingNumber)) {
+                    return null;
+                }
+
+                ExtendableObject._allowStreetFullSplit = false;
+                ExtendableObject._allowFetchStreetFullAutocomplete = false;
+                await ExtendableObject.setStreetFull(streetFull);
+                ExtendableObject._allowStreetFullSplit = true;
+                ExtendableObject._allowFetchStreetFullAutocomplete = true;
+
+                return streetFull;
+            } catch (e) {
+                console.warn('Synchronous street compose failed', e, countryCode, streetName, buildingNumber);
+
+                return null;
+            }
         };
     },
 
