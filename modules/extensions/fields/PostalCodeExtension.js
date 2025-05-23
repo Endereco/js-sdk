@@ -259,9 +259,21 @@ const PostalCodeExtension = {
                         ExtendableObject._postalCodePredictionsIndex = ExtendableObject._postalCodePredictionsIndex + 1;
                         ExtendableObject.util.renderPostalCodePredictionsDropdown();
                     }
-                } else if (e.key === 'Tab' || e.key === 'Tab') {
-                    // TODO: configurable activate in future releases.
-                } else if (e.key === 'Enter' || e.key === 'Enter') {
+                } else if (e.key === 'Tab') {
+                    if (ExtendableObject._postalCodePredictions.length > 0 && ExtendableObject._postalCodePredictionsIndex >= 0) {
+                        ExtendableObject.cb.applyPostalCodePredictionSelection(
+                            ExtendableObject._postalCodePredictionsIndex,
+                            ExtendableObject._postalCodePredictions
+                        );
+                        ExtendableObject.postalCodePredictions = [];
+                        ExtendableObject.util.removePostalCodePredictionsDropdown();
+                    }
+                    // Fokus ins nächste Feld setzen
+                    const nextElement = e.target.nextElementSibling;
+                    if (nextElement && typeof nextElement.focus === 'function') {
+                        nextElement.focus();
+                    }
+                } else if (e.key === 'Enter') {
                     if (ExtendableObject._postalCodePredictions.length > 0 && ExtendableObject._postalCodePredictionsIndex >= 0) {
                         e.preventDefault();
                         e.stopImmediatePropagation();
@@ -274,8 +286,20 @@ const PostalCodeExtension = {
                     }
 
                     ExtendableObject.util.removePostalCodePredictionsDropdown();
-                } else if (e.key === 'Backspace' || e.key === 'Backspace') {
+                } else if (e.key === 'Backspace') {
                     ExtendableObject.config.ux.smartFill = false;
+                } else if (e.key === 'Escape') {
+                    ExtendableObject.util.removePostalCodePredictionsDropdown();
+                } else if (e.key === 'Home') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    ExtendableObject._postalCodePredictionsIndex = 0;
+                    ExtendableObject.util.renderPostalCodePredictionsDropdown();
+                } else if (e.key === 'End') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    ExtendableObject._postalCodePredictionsIndex = ExtendableObject._postalCodePredictions.length - 1;
+                    ExtendableObject.util.renderPostalCodePredictionsDropdown();
                 }
             };
         };

@@ -257,9 +257,21 @@ const LocalityExtension = {
                         ExtendableObject._localityPredictionsIndex = ExtendableObject._localityPredictionsIndex + 1;
                         ExtendableObject.util.renderLocalityPredictionsDropdown();
                     }
-                } else if (e.key === 'Tab' || e.key === 'Tab') {
-                    // TODO: configurable activate in future releases.
-                } else if (e.key === 'Enter' || e.key === 'Enter') {
+                } else if (e.key === 'Tab') {
+                    if (ExtendableObject._localityPredictions.length > 0 && ExtendableObject._localityPredictionsIndex >= 0) {
+                        ExtendableObject.cb.applyLocalityPredictionSelection(
+                            ExtendableObject._localityPredictionsIndex,
+                            ExtendableObject._localityPredictions
+                        );
+                        ExtendableObject.localityPredictions = [];
+                        ExtendableObject.util.removeLocalityPredictionsDropdown();
+                    }
+                    // Fokus ins nächste Feld setzen
+                    const nextElement = e.target.nextElementSibling;
+                    if (nextElement && typeof nextElement.focus === 'function') {
+                        nextElement.focus();
+                    }
+                } else if (e.key === 'Enter') {
                     if (ExtendableObject._localityPredictions.length > 0 && ExtendableObject._localityPredictionsIndex >= 0) {
                         e.preventDefault();
                         e.stopImmediatePropagation();
@@ -272,8 +284,20 @@ const LocalityExtension = {
                     }
 
                     ExtendableObject.util.removeLocalityPredictionsDropdown();
-                } else if (e.key === 'Backspace' || e.key === 'Backspace') {
+                } else if (e.key === 'Backspace') {
                     ExtendableObject.config.ux.smartFill = false;
+                } else if (e.key === 'Escape') {
+                    ExtendableObject.util.removeLocalityPredictionsDropdown();
+                } else if (e.key === 'Home') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    ExtendableObject._localityPredictionsIndex = 0;
+                    ExtendableObject.util.renderLocalityPredictionsDropdown();
+                } else if (e.key === 'End') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    ExtendableObject._localityPredictionsIndex = ExtendableObject._localityPredictions.length - 1;
+                    ExtendableObject.util.renderLocalityPredictionsDropdown();
                 }
             };
         };
@@ -348,6 +372,9 @@ const LocalityExtension = {
                     dropdown.parentNode.removeChild(dropdown);
                 }
             });
+
+            // Reset the predictions index to clear the selection
+            ExtendableObject._localityPredictionsIndex = -1;
         };
 
         /**

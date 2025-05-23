@@ -242,7 +242,7 @@ const StreetNameExtension = {
                     e.preventDefault();
                     e.stopPropagation();
                     if (ExtendableObject._streetNamePredictionsIndex > -1) {
-                        ExtendableObject._streetNamePredictionsIndex = ExtendableObject._streetNamePredictionsIndex - 1;
+                        ExtendableObject._streetNamePredictionsIndex -= 1;
                         ExtendableObject.util.renderStreetNamePredictionsDropdown(
                             ExtendableObject.streetNamePredictions
                         );
@@ -251,35 +251,93 @@ const StreetNameExtension = {
                     e.preventDefault();
                     e.stopPropagation();
                     if (ExtendableObject._streetNamePredictionsIndex < (ExtendableObject._streetNamePredictions.length - 1)) {
-                        ExtendableObject._streetNamePredictionsIndex = ExtendableObject._streetNamePredictionsIndex + 1;
+                        ExtendableObject._streetNamePredictionsIndex += 1;
                         ExtendableObject.util.renderStreetNamePredictionsDropdown(
                             ExtendableObject.streetNamePredictions
                         );
                     }
-                } else if (e.key === 'Tab' || e.key === 'Tab') {
-                    // TODO: configurable activate in future releases.
-                    /*
-                    if (0 < ExtendableObject._streetNamePredictions.length) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        ExtendableObject.cb.copyStreetNameFromPrediction();
-                    } */
-                } else if (e.key === 'Enter' || e.key === 'Enter') {
+                } else if (e.key === 'Tab') {
+                    if (ExtendableObject._streetNamePredictions.length > 0 && ExtendableObject._streetNamePredictionsIndex >= 0) {
+                        ExtendableObject.cb.applyStreetNamePredictionSelection(
+                            ExtendableObject._streetNamePredictionsIndex,
+                            ExtendableObject._streetNamePredictions
+                        );
+                        ExtendableObject.streetNamePredictions = [];
+                        ExtendableObject.util.removeStreetNamePredictionsDropdown();
+                    }
+                    // Fokus ins nächste Feld setzen
+                    const nextElement = e.target.nextElementSibling;
+                    if (nextElement && typeof nextElement.focus === 'function') {
+                        nextElement.focus();
+                    }
+                } else if (e.key === 'Enter') {
                     if (ExtendableObject._streetNamePredictions.length > 0) {
                         e.preventDefault();
                         e.stopImmediatePropagation();
 
-                        ExtendableObject._allowFetchStreetNameAutocomplete = false;
-                        ExtendableObject.streetName = ExtendableObject.streetNamePredictions[ExtendableObject._streetNamePredictionsIndex].streetName;
+                        ExtendableObject.cb.applyStreetNamePredictionSelection(
+                            ExtendableObject._streetNamePredictionsIndex,
+                            ExtendableObject._streetNamePredictions
+                        );
                         ExtendableObject.streetNamePredictions = [];
-                        ExtendableObject._streetNamePredictionsIndex = 0;
-                        ExtendableObject._allowFetchStreetNameAutocomplete = true;
-                        ExtendableObject.util.removeStreetNamePredictionsDropdown();
                     }
-                } else if (e.key === 'Backspace' || e.key === 'Backspace') {
+
+                    ExtendableObject.util.removeStreetNamePredictionsDropdown();
+                } else if (e.key === 'Backspace') {
                     ExtendableObject.config.ux.smartFill = false;
+                } else if (e.key === 'Escape') {
+                    ExtendableObject.util.removeStreetNamePredictionsDropdown();
+                } else if (e.key === 'Home') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    ExtendableObject._streetNamePredictionsIndex = 0;
+                    ExtendableObject.util.renderStreetNamePredictionsDropdown(
+                        ExtendableObject.streetNamePredictions
+                    );
+                } else if (e.key === 'End') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    ExtendableObject._streetNamePredictionsIndex = ExtendableObject._streetNamePredictions.length - 1;
+                    ExtendableObject.util.renderStreetNamePredictionsDropdown(
+                        ExtendableObject.streetNamePredictions
+                    );
                 }
             };
+        };
+
+        /**
+         * Applies the selected prediction from the streetName predictions dropdown.
+         *
+         * This method updates the `streetName` field with the selected prediction
+         * and optionally updates related fields such as `buildingNumber` and `additionalInfo`
+         * if they are present in the selected prediction.
+         *
+         * @param {number} index - The index of the selected prediction in the predictions array.
+         * @param {Array} predictions - An array of prediction objects containing streetName data.
+         *
+         * Each prediction object can have the following properties:
+         * - streetName: {string} The name of the street.
+         * - buildingNumber: {string} (Optional) The building number.
+         * - additionalInfo: {string} (Optional) Additional address information.
+         *
+         * If the index is valid, the method updates the `streetName` field and any
+         * related fields with the corresponding values from the selected prediction.
+         */
+        ExtendableObject.cb.applyStreetNamePredictionSelection = (index, predictions) => {
+            if (index >= 0 && index < predictions.length) {
+                const selectedPrediction = predictions[index];
+
+                // Set the streetName value to the selected prediction
+                ExtendableObject.streetName = selectedPrediction.streetName;
+
+                // Optionally, update other related fields if necessary
+                if (selectedPrediction.buildingNumber) {
+                    ExtendableObject.buildingNumber = selectedPrediction.buildingNumber;
+                }
+                if (selectedPrediction.additionalInfo) {
+                    ExtendableObject.additionalInfo = selectedPrediction.additionalInfo;
+                }
+            }
         };
     },
 
@@ -418,10 +476,12 @@ const StreetNameExtension = {
                 const dropdown = document.querySelector('[endereco-street-name-predictions]');
 
                 if (dropdown) {
-                    ExtendableObject._openDropdowns--;
                     dropdown.parentNode.removeChild(dropdown);
                 }
             });
+
+            // Reset the predictions index to clear the selection
+            ExtendableObject._streetNamePredictionsIndex = -1;
         };
 
         /**
