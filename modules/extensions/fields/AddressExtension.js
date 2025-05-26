@@ -629,6 +629,7 @@ const AddressExtension = {
 
         // Flags
         ExtendableObject._addressIsBeingChecked = false;
+        ExtendableObject._isIntegrityOperationSynchronous = false;
 
         // Timeout and sequence
         ExtendableObject._addressCheckRequestIndex = 0;
@@ -1567,23 +1568,25 @@ const AddressExtension = {
                 finalResult.processStatus = 'finished';
             }
 
+            ExtendableObject._isIntegrityOperationSynchronous = true;
             await onBeforeResultPersisted(ExtendableObject, finalResult);
-
             try {
+
                 await Promise.all([
                     ExtendableObject.setAddress(finalResult.address),
                     ExtendableObject.setAddressStatus(finalResult.addressStatus),
                     ExtendableObject.setAddressPredictions(finalResult.addressPredictions),
                     ExtendableObject.setAddressTimestamp(Math.floor(Date.now() / MILLISECONDS_IN_SECOND))
                 ]);
+
             } catch (err) {
                 // This will catch if any of the promises reject
                 console.error('Failed updating the state in processAddressCheck', {
                     error: err
                 });
             }
-
             await onAfterResultPersisted(ExtendableObject, finalResult);
+            ExtendableObject._isIntegrityOperationSynchronous = false;
 
             // Display status codes
             await ExtendableObject.util.indicateStatuscodes(

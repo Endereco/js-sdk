@@ -418,10 +418,24 @@ const StreetFullExtension = {
 
         /**
          * Ensures street name and number are properly split and synchronized
+         * Can operate in either synchronous (immediate await) or asynchronous (debounced) mode
          * @param {string} streetFull - Combined street input to split
-         * @returns {Promise<void>}
+         * @returns {Promise<void|Object>} - Returns void in async mode, split data in sync mode
          */
-        ExtendableObject.util.ensureStreetPartsIntegrity = function (streetFull) {
+        ExtendableObject.util.ensureStreetPartsIntegrity = (streetFull) => {
+            // Based on internal flag, choose appropriate execution mode
+            if (ExtendableObject._isIntegrityOperationSynchronous) {
+                return ExtendableObject.util.ensureStreetPartsIntegrityAsync(streetFull);
+            } else {
+                ExtendableObject.util.ensureStreetPartsIntegrityWithDebounce(streetFull);
+            }
+        };
+
+        /**
+         * Ensures street parts integrity with debouncing (original behavior)
+         * @param {string} streetFull - Combined street input to split
+         */
+        ExtendableObject.util.ensureStreetPartsIntegrityWithDebounce = (streetFull) => {
             if (ExtendableObject._streetFullSplitTimeout) {
                 clearTimeout(ExtendableObject._streetFullSplitTimeout);
             }
@@ -446,6 +460,35 @@ const StreetFullExtension = {
                 }
                 ExtendableObject._streetFullSplitTimeout = null;
             }, ExtendableObject.config.ux.delay.inputAssistant);
+        };
+
+        /**
+         * Ensures street parts integrity synchronously (immediate execution)
+         * @param {string} streetFull - Combined street input to split
+         * @returns {Promise<Object>} Split address components
+         */
+        ExtendableObject.util.ensureStreetPartsIntegrityAsync = async function (streetFull) {
+            try {
+                const splitResult = await ExtendableObject.util.splitStreet(streetFull);
+
+                // Check if splitStreet result is outdated
+                if (ExtendableObject.streetFull !== streetFull) {
+                    return null;
+                }
+
+                ExtendableObject._allowStreetFullCompose = false;
+                ExtendableObject._allowFetchStreetNameAutocomplete = false;
+                ExtendableObject.streetName = splitResult.streetName;
+                ExtendableObject.buildingNumber = splitResult.buildingNumber;
+                ExtendableObject._allowStreetFullCompose = true;
+                ExtendableObject._allowFetchStreetNameAutocomplete = true;
+
+                return splitResult;
+            } catch (e) {
+                console.warn('Synchronous street split failed', e, streetFull);
+
+                return null;
+            }
         };
 
         /**
