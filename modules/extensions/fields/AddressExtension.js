@@ -1492,6 +1492,12 @@ const AddressExtension = {
                 return finalResult;
             }
 
+            if (ExtendableObject.anyMissing() || ExtendableObject.areEssentialsDisabled()) {
+                finalResult.processStatus = 'invalid_result';
+
+                return finalResult;
+            }
+
             const autocorrectNeeded = allowedToAutocorrect &&
                 (isAutomaticCorrection(statuses) || isAddressCorrect(statuses));
             const manualActionNeeded = (isPredictionOrMetaFeedbackNeeded(statuses, predictions) ||
@@ -1514,6 +1520,12 @@ const AddressExtension = {
                 }
 
                 if (generateAddressCacheKey(addressToCheck) !== generateAddressCacheKey(ExtendableObject.address)) {
+                    finalResult.processStatus = 'invalid_result';
+
+                    return finalResult;
+                }
+
+                if (ExtendableObject.anyMissing() || ExtendableObject.areEssentialsDisabled()) {
                     finalResult.processStatus = 'invalid_result';
 
                     return finalResult;
@@ -1548,6 +1560,12 @@ const AddressExtension = {
                     return finalResult;
                 }
 
+                if (ExtendableObject.anyMissing() || ExtendableObject.areEssentialsDisabled()) {
+                    finalResult.processStatus = 'invalid_result';
+
+                    return finalResult;
+                }
+
                 if (userFeedback.userConfirmedSelection) {
                     finalResult.address = finalAddress;
                     finalResult.addressStatus = [...finalStatuses, 'address_selected_by_customer'];
@@ -1560,6 +1578,13 @@ const AddressExtension = {
             if (!autocorrectNeeded && !manualActionNeeded) {
                 if (generateAddressCacheKey(addressToCheck) !== generateAddressCacheKey(ExtendableObject.address)) {
                     finalResult.processStatus = 'invalid_result';
+
+                    return finalResult;
+                }
+
+                if (ExtendableObject.anyMissing() || ExtendableObject.areEssentialsDisabled()) {
+                    finalResult.processStatus = 'invalid_result';
+
                     return finalResult;
                 }
 
@@ -1571,14 +1596,12 @@ const AddressExtension = {
             ExtendableObject._isIntegrityOperationSynchronous = true;
             await onBeforeResultPersisted(ExtendableObject, finalResult);
             try {
-
                 await Promise.all([
                     ExtendableObject.setAddress(finalResult.address),
                     ExtendableObject.setAddressStatus(finalResult.addressStatus),
                     ExtendableObject.setAddressPredictions(finalResult.addressPredictions),
                     ExtendableObject.setAddressTimestamp(Math.floor(Date.now() / MILLISECONDS_IN_SECOND))
                 ]);
-
             } catch (err) {
                 // This will catch if any of the promises reject
                 console.error('Failed updating the state in processAddressCheck', {
@@ -1892,6 +1915,46 @@ const AddressExtension = {
                     ExtendableObject.modalClosed();
                 }
             }
+        };
+
+        /**
+         * Determines if essential address fields are disabled.
+         *
+         * TODO: clarify the use case for this. As of now its transferred from the old AddressCheck Extension for
+         *       eventual backward compatibility.
+         *
+         * @returns {boolean} True if essential locality and postal code are disabled, false otherwise
+         */
+        ExtendableObject.areEssentialsDisabled = () => {
+            // Check if postal code subscribers exist and are available
+            const hasPostalCodeSubscribers = ExtendableObject._subscribers?.postalCode?.length > 0;
+            const hasLocalitySubscribers = ExtendableObject._subscribers?.locality?.length > 0;
+
+            // If no subscribers exist for either type, essentials are not disabled
+            if (!hasPostalCodeSubscribers && !hasLocalitySubscribers) {
+                return false;
+            }
+
+            // Check if all postal code subscribers are disabled
+            if (hasPostalCodeSubscribers) {
+                const allPostalCodesDisabled = !ExtendableObject._subscribers.postalCode
+                    .some(subscriber => !subscriber.object.disabled);
+
+                if (allPostalCodesDisabled) {
+                    return true; // All postal code DOM objects are disabled, address incomplete
+                }
+            }
+
+            // Check if all locality subscribers are disabled
+            if (hasLocalitySubscribers) {
+                const allLocalitiesDisabled = !ExtendableObject._subscribers.locality
+                    .some(subscriber => !subscriber.object.disabled);
+
+                return allLocalitiesDisabled; // Return true if all localities are disabled
+            }
+
+            // If we reach here, most likely the address is complete.
+            return false;
         };
     },
 
