@@ -30,10 +30,13 @@ const PostalCodeExtension = {
         ExtendableObject._postalCode = '';
         ExtendableObject._subscribers.postalCode = [];
 
+        // Default values
+        ExtendableObject._postalCodePredictionsIndexDefault = -1;
+
         // Add fields related to autocomplete
         ExtendableObject._postalCodeAutocompleteRequestIndex = 1;
         ExtendableObject._postalCodePredictions = [];
-        ExtendableObject._postalCodePredictionsIndex = 0;
+        ExtendableObject._postalCodePredictionsIndex = ExtendableObject._postalCodePredictionsIndexDefault;
         ExtendableObject._postalCodeTimeout = null;
 
         ExtendableObject._allowToNotifyPostalCodeSubscribers = true;
@@ -225,7 +228,7 @@ const PostalCodeExtension = {
                 if (!isAnyActive) {
                     // Reset values and remove dropdown
                     ExtendableObject.postalCodePredictions = [];
-                    ExtendableObject._postalCodePredictionsIndex = 0;
+                    ExtendableObject._postalCodePredictionsIndex = ExtendableObject._postalCodePredictionsIndexDefault;
                     ExtendableObject.util.removePostalCodePredictionsDropdown();
                 }
 

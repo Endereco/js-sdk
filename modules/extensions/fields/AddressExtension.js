@@ -1268,6 +1268,48 @@ const AddressExtension = {
 
                 const modalElement = document.querySelector('[endereco-popup]');
 
+                // Accessibility: Set focus on the modal and trap focus within it
+                setTimeout(() => {
+                    if (modalElement) {
+                        modalElement.querySelector('.endereco-modal').focus();
+                    }
+                }, 0);
+                const focusableSelectors = [
+                    'a[href]', 'button', 'input', 'select', 'textarea', '[tabindex]:not([tabindex="-1"])'
+                ];
+                const getFocusableElements = () => Array.from(
+                    modalElement.querySelectorAll(focusableSelectors.join(','))
+                ).filter(el => !el.disabled && el.offsetParent !== null);
+                function trapFocus(e) {
+                    if (e.key !== 'Tab') return;
+                    const focusableEls = getFocusableElements();
+                    if (focusableEls.length === 0) return;
+                    const firstEl = focusableEls[0];
+                    const lastEl = focusableEls[focusableEls.length - 1];
+                    if (e.shiftKey) {
+                        if (document.activeElement === firstEl) {
+                            e.preventDefault();
+                            lastEl.focus();
+                        }
+                    } else {
+                        if (document.activeElement === lastEl) {
+                            e.preventDefault();
+                            firstEl.focus();
+                        }
+                    }
+                }
+                modalElement.addEventListener('keydown', trapFocus);
+                function escClose(e) {
+                    if (e.key === 'Escape') {
+                        e.preventDefault();
+                        if (typeof ExtendableObject.util.removePopup === 'function') {
+                            ExtendableObject.util.removePopup();
+                        }
+                    }
+                }
+                modalElement.addEventListener('keydown', escClose);
+                // End Accessibility
+
                 return new Promise((resolve) => {
                     attachModalCloseHandlers(ExtendableObject, modalElement, () => {
                         resolve({
@@ -1402,6 +1444,49 @@ const AddressExtension = {
             });
 
             const modalElement = document.querySelector('[endereco-popup]');
+
+            // --- Barrierefreiheit: Fokusmanagement und Fokusfalle ---
+            // 1. Fokus auf das Modal setzen
+            setTimeout(() => {
+                if (modalElement) {
+                    modalElement.querySelector('.endereco-modal').focus();
+                }
+            }, 0);
+            const focusableSelectors = [
+                'a[href]', 'button', 'input', 'select', 'textarea', '[tabindex]:not([tabindex="-1"])'
+            ];
+            const getFocusableElements = () => Array.from(
+                modalElement.querySelectorAll(focusableSelectors.join(','))
+            ).filter(el => !el.disabled && el.offsetParent !== null);
+            function trapFocus(e) {
+                if (e.key !== 'Tab') return;
+                const focusableEls = getFocusableElements();
+                if (focusableEls.length === 0) return;
+                const firstEl = focusableEls[0];
+                const lastEl = focusableEls[focusableEls.length - 1];
+                if (e.shiftKey) {
+                    if (document.activeElement === firstEl) {
+                        e.preventDefault();
+                        lastEl.focus();
+                    }
+                } else {
+                    if (document.activeElement === lastEl) {
+                        e.preventDefault();
+                        firstEl.focus();
+                    }
+                }
+            }
+            modalElement.addEventListener('keydown', trapFocus);
+            function escClose(e) {
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    if (typeof ExtendableObject.util.removePopup === 'function') {
+                        ExtendableObject.util.removePopup();
+                    }
+                }
+            }
+            modalElement.addEventListener('keydown', escClose);
+            // --- Ende Barrierefreiheit ---
 
             return new Promise((resolve) => {
                 attachModalCloseHandlers(ExtendableObject, modalElement, () => {

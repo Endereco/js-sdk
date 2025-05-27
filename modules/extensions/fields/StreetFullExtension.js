@@ -422,7 +422,7 @@ const StreetFullExtension = {
                     predictions.length > 0 &&
                     (document.activeElement === subscriber.object)
                 ) {
-                    let startingIndex = ExtendableObject._streetFullPredictionsIndexDefault;
+                    let startingIndex = 0;
                     const preparedPredictions = [];
 
                     // Prepare predictions.

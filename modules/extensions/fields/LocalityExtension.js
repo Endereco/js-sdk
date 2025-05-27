@@ -24,13 +24,16 @@ const LocalityExtension = {
         ExtendableObject._locality = '';
         ExtendableObject._subscribers.locality = [];
 
+        // Default values
+        ExtendableObject._localityPredictionsIndexDefault = -1;
+
         // Add fields.
         ExtendableObject._localityAutocompleteRequestIndex = 1;
         ExtendableObject._localityChunk = '';
         ExtendableObject._localityPredictions = [];
         ExtendableObject._localityPredictionsIndex = 0;
         ExtendableObject._localityTimeout = null;
-        ExtendableObject._localityPredictionsIndex = 0;
+        ExtendableObject._localityPredictionsIndex = ExtendableObject._localityPredictionsIndexDefault;
 
         ExtendableObject._allowToNotifyLocalitySubscribers = true;
         ExtendableObject._allowFetchLocalityAutocomplete = false;
@@ -223,7 +226,7 @@ const LocalityExtension = {
                 if (!isAnyActive) {
                     // Reset values and remove dropdown
                     ExtendableObject.localityPredictions = [];
-                    ExtendableObject._localityPredictionsIndex = 0;
+                    ExtendableObject._localityPredictionsIndex = ExtendableObject._localityPredictionsIndexDefault;
                     ExtendableObject.util.removeLocalityPredictionsDropdown();
                 }
 
@@ -374,7 +377,7 @@ const LocalityExtension = {
             });
 
             // Reset the predictions index to clear the selection
-            ExtendableObject._localityPredictionsIndex = -1;
+            ExtendableObject._localityPredictionsIndex = ExtendableObject._localityPredictionsIndexDefault;
         };
 
         /**

@@ -45,11 +45,14 @@ const StreetNameExtension = {
         ExtendableObject._allowToNotifyStreetNameSubscribers = true;
         ExtendableObject._allowFetchStreetNameAutocomplete = false;
 
+        // Default values
+        ExtendableObject._streetFullPredictionsIndexDefault = -1;
+
         // Timeout and sequence
         ExtendableObject._streetFullComposeTimeout = null;
         ExtendableObject._streetNameAutocompleteTimeout = null;
         ExtendableObject._streetNameAutocompleteRequestIndex = 0;
-        ExtendableObject._streetNamePredictionsIndex = 0;
+        ExtendableObject._streetNamePredictionsIndex = ExtendableObject._streetFullPredictionsIndexDefault;
     },
 
     /**
@@ -144,7 +147,7 @@ const StreetNameExtension = {
 
             if (ExtendableObject.streetNamePredictions !== resolvedValue) {
                 ExtendableObject._streetNamePredictions = resolvedValue;
-                ExtendableObject._streetNamePredictionsIndex = 0;
+                ExtendableObject._streetNamePredictionsIndex = ExtendableObject._streetFullPredictionsIndexDefault;
             }
         };
     },
@@ -213,7 +216,7 @@ const StreetNameExtension = {
 
                     if (!isAnyActive) {
                         ExtendableObject.streetNamePredictions = [];
-                        ExtendableObject._streetNamePredictionsIndex = 0;
+                        ExtendableObject._streetNamePredictionsIndex = ExtendableObject._streetFullPredictionsIndexDefault;
                         ExtendableObject.util.removeStreetNamePredictionsDropdown();
                     }
                 } catch (error) {
@@ -481,7 +484,7 @@ const StreetNameExtension = {
             });
 
             // Reset the predictions index to clear the selection
-            ExtendableObject._streetNamePredictionsIndex = -1;
+            ExtendableObject._streetNamePredictionsIndex = ExtendableObject._streetFullPredictionsIndexDefault;
         };
 
         /**
