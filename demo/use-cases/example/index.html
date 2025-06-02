@@ -1141,18 +1141,21 @@
 ></script>
 
 <script>
-	function setFields(e) {
-		var country = document.querySelector('#country');
-		country.closest('form').querySelectorAll('.region').forEach( function(selectDOM) {
-			if (parseInt(country.value) === parseInt(selectDOM.getAttribute('data-country-id'))) {
-				selectDOM.disabled = false;
-			} else {
-				selectDOM.disabled = true;
-			}
-		})
-	}
-	setFields();
-	document.querySelector('#country').addEventListener('change', setFields);
+	document.addEventListener('DOMContentLoaded', function() {
+		function setFields(e) {
+			var country = document.querySelector('#country');
+			country.closest('form').querySelectorAll('.region').forEach(function(selectDOM) {
+				const countryId = parseInt(window.EnderecoIntegrator.countryReverseMapping[country.value]);
+				if (countryId === parseInt(selectDOM.getAttribute('data-country-id'))) {
+					selectDOM.disabled = false;
+				} else {
+					selectDOM.disabled = true;
+				}
+			})
+		}
+		setFields();
+		document.querySelector('#country').addEventListener('change', setFields);
+	});
 </script>
 </body>
 </html>
