@@ -253,41 +253,56 @@ const PostalCodeExtension = {
                     e.stopPropagation();
                     if (ExtendableObject._postalCodePredictionsIndex > -1) {
                         ExtendableObject._postalCodePredictionsIndex = ExtendableObject._postalCodePredictionsIndex - 1;
-                        ExtendableObject.util.renderPostalCodePredictionsDropdown();
+                    } else if (ExtendableObject._postalCodePredictionsIndex === -1) {
+                        // Set index to the last item if ArrowUp is pressed after reaching nothing selected
+                        ExtendableObject._postalCodePredictionsIndex = ExtendableObject._postalCodePredictions.length - 1;
                     }
+                    ExtendableObject.util.renderPostalCodePredictionsDropdown();
                 } else if (e.key === 'ArrowDown' || e.key === 'Down') {
                     e.preventDefault();
                     e.stopPropagation();
                     if (ExtendableObject._postalCodePredictionsIndex < (ExtendableObject._postalCodePredictions.length - 1)) {
                         ExtendableObject._postalCodePredictionsIndex = ExtendableObject._postalCodePredictionsIndex + 1;
-                        ExtendableObject.util.renderPostalCodePredictionsDropdown();
+                    } else {
+                        // Set index to -1 (nothing selected) if ArrowDown is pressed at the end of the list
+                        ExtendableObject._postalCodePredictionsIndex = -1;
                     }
-                } else if (e.key === 'Tab') {
-                    if (ExtendableObject._postalCodePredictions.length > 0 && ExtendableObject._postalCodePredictionsIndex >= 0) {
-                        ExtendableObject.cb.applyPostalCodePredictionSelection(
-                            ExtendableObject._postalCodePredictionsIndex,
-                            ExtendableObject._postalCodePredictions
-                        );
+                    ExtendableObject.util.renderPostalCodePredictionsDropdown();                  } else if ((e.key === 'Tab' && e.shiftKey)) {
+                    if (ExtendableObject._postalCodePredictions.length > 0) {
+                        if (ExtendableObject._postalCodePredictionsIndex >= 0) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            ExtendableObject.cb.applyPostalCodePredictionSelection(
+                                ExtendableObject._postalCodePredictionsIndex,
+                                ExtendableObject._postalCodePredictions
+                            );
+                        }
                         ExtendableObject.postalCodePredictions = [];
                         ExtendableObject.util.removePostalCodePredictionsDropdown();
                     }
-                    // Fokus ins nächste Feld setzen
-                    const nextElement = e.target.nextElementSibling;
-                    if (nextElement && typeof nextElement.focus === 'function') {
-                        nextElement.focus();
+                } else if (e.key === 'Tab') {
+                    if (ExtendableObject._postalCodePredictions.length > 0) {
+                        if (ExtendableObject._postalCodePredictionsIndex >= 0) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            ExtendableObject.cb.applyPostalCodePredictionSelection(
+                                ExtendableObject._postalCodePredictionsIndex,
+                                ExtendableObject._postalCodePredictions
+                            );
+                        }
+                        ExtendableObject.postalCodePredictions = [];
+                        ExtendableObject.util.removePostalCodePredictionsDropdown();
                     }
                 } else if (e.key === 'Enter') {
                     if (ExtendableObject._postalCodePredictions.length > 0 && ExtendableObject._postalCodePredictionsIndex >= 0) {
                         e.preventDefault();
                         e.stopImmediatePropagation();
-
                         ExtendableObject.cb.applyPostalCodePredictionSelection(
                             ExtendableObject._postalCodePredictionsIndex,
                             ExtendableObject._postalCodePredictions
                         );
                         ExtendableObject.postalCodePredictions = [];
                     }
-
                     ExtendableObject.util.removePostalCodePredictionsDropdown();
                 } else if (e.key === 'Backspace') {
                     ExtendableObject.config.ux.smartFill = false;

@@ -238,7 +238,10 @@ const StreetFullExtension = {
                     e.preventDefault();
                     e.stopPropagation();
                     if (ExtendableObject._streetFullPredictionsIndex > -1) {
-                        ExtendableObject._streetFullPredictionsIndex = ExtendableObject._streetFullPredictionsIndex - 1;  
+                        ExtendableObject._streetFullPredictionsIndex = ExtendableObject._streetFullPredictionsIndex - 1;
+                    } else if (ExtendableObject._streetFullPredictionsIndex === -1) {
+                        // Set index to the last item if ArrowUp is pressed after reaching nothing selected
+                        ExtendableObject._streetFullPredictionsIndex = ExtendableObject._streetFullPredictions.length - 1;
                     }
                     ExtendableObject.util.renderStreetFullPredictionsDropdown(
                         ExtendableObject.streetFullPredictions
@@ -249,37 +252,47 @@ const StreetFullExtension = {
                     if (ExtendableObject._streetFullPredictionsIndex < (ExtendableObject._streetFullPredictions.length - 1)) {
                         ExtendableObject._streetFullPredictionsIndex = ExtendableObject._streetFullPredictionsIndex + 1;
                     } else {
+                        // Set index to -1 (nothing selected) if ArrowDown is pressed at the end of the list
                         ExtendableObject._streetFullPredictionsIndex = -1;
                     }
                     ExtendableObject.util.renderStreetFullPredictionsDropdown(
                         ExtendableObject.streetFullPredictions
-                    );
-                } else if (e.key === 'Tab') {
-                    if (ExtendableObject._streetFullPredictions.length > 0 && ExtendableObject._streetFullPredictionsIndex >= 0) {
-                        ExtendableObject.cb.applyStreetFullPredictionSelection(
-                            ExtendableObject._streetFullPredictionsIndex,
-                            ExtendableObject._streetFullPredictions
-                        );
+                    );                  } else if ((e.key === 'Tab' && e.shiftKey)) {
+                    if (ExtendableObject._streetFullPredictions.length > 0) {
+                        if (ExtendableObject._streetFullPredictionsIndex >= 0) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            ExtendableObject.cb.applyStreetFullPredictionSelection(
+                                ExtendableObject._streetFullPredictionsIndex,
+                                ExtendableObject._streetFullPredictions
+                            );
+                        }
                         ExtendableObject.streetFullPredictions = [];
                         ExtendableObject.util.removeStreetFullPredictionsDropdown();
                     }
-                    // Fokus ins nächste Feld setzen
-                    const nextElement = e.target.nextElementSibling;
-                    if (nextElement && typeof nextElement.focus === 'function') {
-                        nextElement.focus();
+                } else if (e.key === 'Tab') {
+                    if (ExtendableObject._streetFullPredictions.length > 0) {
+                        if (ExtendableObject._streetFullPredictionsIndex >= 0) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            ExtendableObject.cb.applyStreetFullPredictionSelection(
+                                ExtendableObject._streetFullPredictionsIndex,
+                                ExtendableObject._streetFullPredictions
+                            );
+                        }
+                        ExtendableObject.streetFullPredictions = [];
+                        ExtendableObject.util.removeStreetFullPredictionsDropdown();
                     }
                 } else if (e.key === 'Enter') {
                     if (ExtendableObject._streetFullPredictions.length > 0) {
                         e.preventDefault();
                         e.stopImmediatePropagation();
-
                         ExtendableObject.cb.applyStreetFullPredictionSelection(
                             ExtendableObject._streetFullPredictionsIndex,
                             ExtendableObject._streetFullPredictions
                         );
                         ExtendableObject.streetFullPredictions = [];
                     }
-
                     ExtendableObject.util.removeStreetFullPredictionsDropdown();
                 } else if (e.key === 'Backspace') {
                     ExtendableObject.config.ux.smartFill = false;
@@ -585,8 +598,7 @@ const StreetFullExtension = {
                 $self.config.templates.streetFull.getTemplate(streetData.countryCode),
                 streetData
             ).replace(/  +/g, ' ').replace(/(\r\n|\n|\r)/gm, '').trim();
-        };
-    },
+        };    },
 
     /**
      * Place for registering API communication functions.

@@ -227,19 +227,24 @@ function EnderecoBase() {
 
         api: {
 
-        },
-
-        getEnderecoAPI: function() {
+        },        getEnderecoAPI: function() {
             var $self = this;
             return {
-                sendRequestToAPI: async function(body, headers) {
+                sendRequestToAPI: async function(body, headers, signal = null) {
+                    const requestConfig = {
+                        timeout: $self.config.ux.requestTimeout,
+                        headers
+                    };
+                    
+                    // Add signal for request cancellation if provided
+                    if (signal) {
+                        requestConfig.signal = signal;
+                    }
+                    
                     return $self.util.axios.post(
                         $self.config.apiUrl,
                         body,
-                        {
-                            timeout: $self.config.ux.requestTimeout,
-                            headers
-                        }
+                        requestConfig
                     );
                 }
             };

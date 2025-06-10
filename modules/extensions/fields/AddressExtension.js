@@ -625,11 +625,11 @@ const AddressExtension = {
         ExtendableObject._checkedAddress = {};
         ExtendableObject.addressCheckCache = {
             cachedResults: {}
-        };
-
-        // Flags
+        };        // Flags
         ExtendableObject._addressIsBeingChecked = false;
         ExtendableObject._isIntegrityOperationSynchronous = false;
+        ExtendableObject._previousActiveElement = null;
+        ExtendableObject._currentAddressCheckAbortController = null;
 
         // Timeout and sequence
         ExtendableObject._addressCheckRequestIndex = 0;
@@ -1256,8 +1256,10 @@ const AddressExtension = {
                         mainAddress: mainAddressHtml,
                         button: ExtendableObject.config.templates.button,
                         title: ExtendableObject.config.texts.popupHeadlines[ExtendableObject.addressType]
-                    }
-                );
+                    }                );
+
+                // Store the currently active element before opening the modal
+                ExtendableObject._previousActiveElement = document.activeElement;
 
                 document.querySelector('body').insertAdjacentHTML('beforeend', modalHTML);
                 document.querySelector('body').classList.add('endereco-no-scroll');
@@ -1297,13 +1299,15 @@ const AddressExtension = {
                             firstEl.focus();
                         }
                     }
-                }
-                modalElement.addEventListener('keydown', trapFocus);
+                }                modalElement.addEventListener('keydown', trapFocus);
                 function escClose(e) {
                     if (e.key === 'Escape') {
-                        e.preventDefault();
-                        if (typeof ExtendableObject.util.removePopup === 'function') {
-                            ExtendableObject.util.removePopup();
+                        // Only allow ESC to close modal if closing is allowed
+                        if (ExtendableObject.config.ux.allowCloseModal) {
+                            e.preventDefault();
+                            if (typeof ExtendableObject.util.removePopup === 'function') {
+                                ExtendableObject.util.removePopup();
+                            }
                         }
                     }
                 }
@@ -1433,8 +1437,10 @@ const AddressExtension = {
 
                         return '';
                     }
-                }
-            );
+                }            );
+
+            // Store the currently active element before opening the modal
+            ExtendableObject._previousActiveElement = document.activeElement;
 
             document.querySelector('body').insertAdjacentHTML('beforeend', predictionsWrapperHtml);
             document.querySelector('body').classList.add('endereco-no-scroll');
@@ -1475,13 +1481,15 @@ const AddressExtension = {
                         firstEl.focus();
                     }
                 }
-            }
-            modalElement.addEventListener('keydown', trapFocus);
+            }            modalElement.addEventListener('keydown', trapFocus);
             function escClose(e) {
                 if (e.key === 'Escape') {
-                    e.preventDefault();
-                    if (typeof ExtendableObject.util.removePopup === 'function') {
-                        ExtendableObject.util.removePopup();
+                    // Only allow ESC to close modal if closing is allowed
+                    if (ExtendableObject.config.ux.allowCloseModal) {
+                        e.preventDefault();
+                        if (typeof ExtendableObject.util.removePopup === 'function') {
+                            ExtendableObject.util.removePopup();
+                        }
                     }
                 }
             }
@@ -1983,18 +1991,43 @@ const AddressExtension = {
             ).replace(/  +/g, ' ');
 
             return formattedAddress;
-        };
-
-        /**
+        };        /**
          * Removes the current popup from the DOM and resets related states.
+         * Also restores focus to the element that was active before the modal opened.
+         * Cancels any running address check process if in progress.
          */
         ExtendableObject.util.removePopup = () => {
+            // Cancel any running address check process
+            if (ExtendableObject._currentAddressCheckAbortController) {
+                try {
+                    ExtendableObject._currentAddressCheckAbortController.abort();
+                    console.log('Address check process cancelled due to modal closure');
+                } catch (err) {
+                    console.warn('Failed to abort address check process:', err);
+                }
+                ExtendableObject._currentAddressCheckAbortController = null;
+            }
+
             if (document.querySelector('[endereco-popup]')) {
                 document.querySelector('[endereco-popup]').parentNode.removeChild(document.querySelector('[endereco-popup]'));
                 document.querySelector('body').classList.remove('endereco-no-scroll');
                 ExtendableObject.addressPredictionsIndex = 0;
                 window.EnderecoIntegrator.popupQueue--;
                 window.EnderecoIntegrator.enderecoPopupQueue--;
+
+                // Restore focus to the element that was active before the modal opened
+                if (ExtendableObject._previousActiveElement && 
+                    typeof ExtendableObject._previousActiveElement.focus === 'function' &&
+                    ExtendableObject._previousActiveElement.isConnected) {
+                    try {
+                        ExtendableObject._previousActiveElement.focus();
+                    } catch (err) {
+                        console.warn('Failed to restore focus to previous element:', err);
+                    }
+                }
+                
+                // Clear the reference
+                ExtendableObject._previousActiveElement = null;
 
                 if (ExtendableObject.modalClosed) {
                     ExtendableObject.modalClosed();
@@ -2119,7 +2152,16 @@ const AddressExtension = {
                         return checkResult;
                     }
 
-                    const result = await EnderecoAPI.sendRequestToAPI(message, headers);
+                    // Create an abort controller for this request
+                    const abortController = new AbortController();
+                    ExtendableObject._currentAddressCheckAbortController = abortController;
+
+                    const result = await EnderecoAPI.sendRequestToAPI(message, headers, abortController.signal);
+
+                    // Clear the abort controller after successful completion
+                    if (ExtendableObject._currentAddressCheckAbortController === abortController) {
+                        ExtendableObject._currentAddressCheckAbortController = null;
+                    }
 
                     if (result?.data?.error?.code === ERROR_EXPIRED_SESSION) {
                         ExtendableObject.util.updateSessionId?.();
@@ -2145,32 +2187,36 @@ const AddressExtension = {
                             normalizedPrediction.countryCode = addressPrediction.country.toUpperCase();
                         }
 
+                        // If the original address has subdivisionCode, map from prediction's state
                         if (Object.prototype.hasOwnProperty.call(addressToCheck, 'subdivisionCode')) {
-                            normalizedPrediction.subdivisionCode = addressPrediction.subdivisionCode;
+                            normalizedPrediction.subdivisionCode = addressPrediction.state;
                         }
 
+                        // If the original address has postalCode, map from prediction's postCode
                         if (Object.prototype.hasOwnProperty.call(addressToCheck, 'postalCode')) {
                             normalizedPrediction.postalCode = addressPrediction.postCode;
                         }
 
+                        // If the original address has locality, map from prediction's cityName
                         if (Object.prototype.hasOwnProperty.call(addressToCheck, 'locality')) {
                             normalizedPrediction.locality = addressPrediction.cityName;
                         }
 
+                        // If the original address has streetName, map from prediction's street
                         if (Object.prototype.hasOwnProperty.call(addressToCheck, 'streetName')) {
                             normalizedPrediction.streetName = addressPrediction.street;
                         }
 
+                        // If the original address has buildingNumber, map from prediction's houseNumber
                         if (Object.prototype.hasOwnProperty.call(addressToCheck, 'buildingNumber')) {
                             normalizedPrediction.buildingNumber = addressPrediction.houseNumber;
                         }
 
+                        // If the original address has streetFull field
                         if (Object.prototype.hasOwnProperty.call(addressToCheck, 'streetFull')) {
-                            // If prediction has streetFull, use it directly
-                            if (Object.prototype.hasOwnProperty.call(addressPrediction, 'streetFull')) {
+                            if (addressPrediction.streetFull !== undefined) {
                                 normalizedPrediction.streetFull = addressPrediction.streetFull;
                             } else {
-                                // Otherwise, format it from other fields
                                 normalizedPrediction.streetFull = ExtendableObject.util.formatStreetFull(
                                     {
                                         countryCode: addressPrediction.country,
@@ -2194,6 +2240,16 @@ const AddressExtension = {
                     checkResult.requestStatus = 'success';
                     ExtendableObject.addressCheckCache.cachedResults[cacheKey] = checkResult;
                 } catch (e) {
+                    // Clear the abort controller on error
+                    ExtendableObject._currentAddressCheckAbortController = null;
+                    
+                    // Check if the error is due to request cancellation
+                    if (e.name === 'AbortError' || e.name === 'CanceledError') {
+                        console.log('Address check request was cancelled');
+                        checkResult.requestStatus = 'cancelled';
+                        return checkResult;
+                    }
+                    
                     console.warn('AddressCheck against Endereco API failed', e, message);
                     checkResult.requestStatus = 'failed';
 

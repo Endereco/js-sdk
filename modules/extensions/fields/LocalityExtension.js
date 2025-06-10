@@ -251,28 +251,45 @@ const LocalityExtension = {
                     e.stopPropagation();
                     if (ExtendableObject._localityPredictionsIndex > -1) {
                         ExtendableObject._localityPredictionsIndex = ExtendableObject._localityPredictionsIndex - 1;
-                        ExtendableObject.util.renderLocalityPredictionsDropdown();
+                    } else if (ExtendableObject._localityPredictionsIndex === -1) {
+                        // Set index to the last item if ArrowUp is pressed after reaching nothing selected
+                        ExtendableObject._localityPredictionsIndex = ExtendableObject._localityPredictions.length - 1;
                     }
+                    ExtendableObject.util.renderLocalityPredictionsDropdown();
                 } else if (e.key === 'ArrowDown' || e.key === 'Down') {
                     e.preventDefault();
                     e.stopPropagation();
                     if (ExtendableObject._localityPredictionsIndex < (ExtendableObject._localityPredictions.length - 1)) {
                         ExtendableObject._localityPredictionsIndex = ExtendableObject._localityPredictionsIndex + 1;
-                        ExtendableObject.util.renderLocalityPredictionsDropdown();
+                    } else {
+                        // Set index to -1 (nothing selected) if ArrowDown is pressed at the end of the list
+                        ExtendableObject._localityPredictionsIndex = -1;
                     }
-                } else if (e.key === 'Tab') {
-                    if (ExtendableObject._localityPredictions.length > 0 && ExtendableObject._localityPredictionsIndex >= 0) {
-                        ExtendableObject.cb.applyLocalityPredictionSelection(
-                            ExtendableObject._localityPredictionsIndex,
-                            ExtendableObject._localityPredictions
-                        );
+                    ExtendableObject.util.renderLocalityPredictionsDropdown();                } else if ((e.key === 'Tab' && e.shiftKey)) {
+                    if (ExtendableObject._localityPredictions.length > 0) {
+                        if (ExtendableObject._localityPredictionsIndex >= 0) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            ExtendableObject.cb.applyLocalityPredictionSelection(
+                                ExtendableObject._localityPredictionsIndex,
+                                ExtendableObject._localityPredictions
+                            );
+                        }
                         ExtendableObject.localityPredictions = [];
                         ExtendableObject.util.removeLocalityPredictionsDropdown();
                     }
-                    // Fokus ins nächste Feld setzen
-                    const nextElement = e.target.nextElementSibling;
-                    if (nextElement && typeof nextElement.focus === 'function') {
-                        nextElement.focus();
+                } else if (e.key === 'Tab') {
+                    if (ExtendableObject._localityPredictions.length > 0) {
+                        if (ExtendableObject._localityPredictionsIndex >= 0) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            ExtendableObject.cb.applyLocalityPredictionSelection(
+                                ExtendableObject._localityPredictionsIndex,
+                                ExtendableObject._localityPredictions
+                            );
+                        }
+                        ExtendableObject.localityPredictions = [];
+                        ExtendableObject.util.removeLocalityPredictionsDropdown();
                     }
                 } else if (e.key === 'Enter') {
                     if (ExtendableObject._localityPredictions.length > 0 && ExtendableObject._localityPredictionsIndex >= 0) {
@@ -285,7 +302,6 @@ const LocalityExtension = {
                         );
                         ExtendableObject.localityPredictions = [];
                     }
-
                     ExtendableObject.util.removeLocalityPredictionsDropdown();
                 } else if (e.key === 'Backspace') {
                     ExtendableObject.config.ux.smartFill = false;
