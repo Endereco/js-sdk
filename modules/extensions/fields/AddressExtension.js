@@ -24,6 +24,92 @@ const sleep = (ms) => {
 };
 
 /**
+ * Sets up accessibility features for modals including focus management and keyboard navigation.
+ * @param {Object} ExtendableObject - The address object instance.
+ * @param {HTMLElement} modalElement - The modal element.
+ */
+const setupModalAccessibility = (ExtendableObject, modalElement) => {
+    // Set initial focus on modal
+    setTimeout(() => {
+        if (modalElement) {
+            modalElement.querySelector('.endereco-modal').focus();
+        }
+    }, 0);
+
+    // Define focusable element selectors
+    const focusableSelectors = [
+        'a[href]', 'button', 'input', 'select', 'textarea', '[tabindex]:not([tabindex="-1"])'
+    ];
+
+    // Function to get focusable elements with proper radio button handling
+    const getFocusableElements = () => {
+        const elements = Array.from(
+            modalElement.querySelectorAll(focusableSelectors.join(','))
+        );
+        
+        // Filter for truly focusable elements with proper radio button handling
+        return elements.filter(el => {
+            // Skip disabled elements
+            if (el.disabled) return false;
+            
+            // For radio buttons, only include those with tabindex="0" (first in group)
+            if (el.type === 'radio') {
+                return el.hasAttribute('tabindex') && el.getAttribute('tabindex') === '0';
+            }
+            
+            // For other elements, check normal visibility
+            if (el.offsetParent === null) return false;
+            
+            // Include visible elements
+            return true;
+        });
+    };
+
+    // Focus trap function
+    const trapFocus = (e) => {
+        if (e.key !== 'Tab') return;
+        const focusableEls = getFocusableElements();
+        if (focusableEls.length === 0) return;
+        const firstEl = focusableEls[0];
+        const lastEl = focusableEls[focusableEls.length - 1];
+        if (e.shiftKey) {
+            if (document.activeElement === firstEl) {
+                e.preventDefault();
+                lastEl.focus();
+            }
+        } else {
+            if (document.activeElement === lastEl) {
+                e.preventDefault();
+                firstEl.focus();
+            }
+        }
+    };
+
+    // Escape key handler
+    const escClose = (e) => {
+        if (e.key === 'Escape') {
+            // Only allow ESC to close modal if closing is allowed
+            if (ExtendableObject.config.ux.allowCloseModal) {
+                e.preventDefault();
+                if (typeof ExtendableObject.util.removePopup === 'function') {
+                    ExtendableObject.util.removePopup();
+                }
+            }
+        }
+    };
+
+    // Add event listeners
+    modalElement.addEventListener('keydown', trapFocus);
+    modalElement.addEventListener('keydown', escClose);
+
+    // Return cleanup function
+    return () => {
+        modalElement.removeEventListener('keydown', trapFocus);
+        modalElement.removeEventListener('keydown', escClose);
+    };
+};
+
+/**
  * Executes callbacks before persisting address check results
  * @param {Object} ExtendableObject - The address object instance
  * @param {Object} finalResult - The result data that will be persisted
@@ -304,16 +390,66 @@ const attachPredictionsRadioHandlers = (ExtendableObject, modalElement) => {
                 { syncValue: true }
             )
         );
-    });
+    });    // Add keyboard navigation for radio button group
+    predictionInputs.forEach((input, index) => {
+        input.addEventListener('keydown', (e) => {
+            const allRadios = Array.from(predictionInputs);
+            let currentIndex = allRadios.findIndex(radio => radio === e.target);
+            let nextIndex;
 
+            // Function to update tabindex values
+            const updateTabIndex = (focusedIndex) => {
+                allRadios.forEach((radio, idx) => {
+                    radio.setAttribute('tabindex', idx === focusedIndex ? '0' : '-1');
+                });
+            };
+
+            switch (e.key) {
+                case 'ArrowDown':
+                case 'ArrowRight':
+                    e.preventDefault();
+                    nextIndex = (currentIndex + 1) % allRadios.length;
+                    updateTabIndex(nextIndex);
+                    allRadios[nextIndex].focus();
+                    allRadios[nextIndex].checked = true;
+                    allRadios[nextIndex].dispatchEvent(new Event('change', { bubbles: true }));
+                    break;
+
+                case 'ArrowUp':
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    nextIndex = currentIndex === 0 ? allRadios.length - 1 : currentIndex - 1;
+                    updateTabIndex(nextIndex);
+                    allRadios[nextIndex].focus();
+                    allRadios[nextIndex].checked = true;
+                    allRadios[nextIndex].dispatchEvent(new Event('change', { bubbles: true }));
+                    break;
+
+                case ' ':
+                case 'Space':
+                    e.preventDefault();
+                    e.target.checked = true;
+                    e.target.dispatchEvent(new Event('change', { bubbles: true }));
+                    break;
+            }
+        });
+    });    
+    
     // Add change event handlers
-    predictionInputs.forEach(input => {
+    predictionInputs.forEach((input, index) => {
         input.addEventListener('change', (e) => {
             e.preventDefault();
             e.stopPropagation();
 
             const modal = e.target.closest('.endereco-modal');
             const selectedValue = parseInt(e.target.value);
+
+            // Update tabindex for radio button group - the selected one gets tabindex="0"
+            const allRadios = Array.from(predictionInputs);
+            const selectedIndex = allRadios.findIndex(radio => radio === e.target);
+            allRadios.forEach((radio, idx) => {
+                radio.setAttribute('tabindex', idx === selectedIndex ? '0' : '-1');
+            });
 
             // Handle origin display toggle
             const originElements = modal.querySelectorAll('[endereco-show-if-origin]');
@@ -1259,60 +1395,15 @@ const AddressExtension = {
                     }                );
 
                 // Store the currently active element before opening the modal
-                ExtendableObject._previousActiveElement = document.activeElement;
-
-                document.querySelector('body').insertAdjacentHTML('beforeend', modalHTML);
+                ExtendableObject._previousActiveElement = document.activeElement;                document.querySelector('body').insertAdjacentHTML('beforeend', modalHTML);
                 document.querySelector('body').classList.add('endereco-no-scroll');
 
                 ExtendableObject.onAfterModalRendered.forEach(function (cb) {
                     cb(ExtendableObject);
                 });
 
-                const modalElement = document.querySelector('[endereco-popup]');
-
-                // Accessibility: Set focus on the modal and trap focus within it
-                setTimeout(() => {
-                    if (modalElement) {
-                        modalElement.querySelector('.endereco-modal').focus();
-                    }
-                }, 0);
-                const focusableSelectors = [
-                    'a[href]', 'button', 'input', 'select', 'textarea', '[tabindex]:not([tabindex="-1"])'
-                ];
-                const getFocusableElements = () => Array.from(
-                    modalElement.querySelectorAll(focusableSelectors.join(','))
-                ).filter(el => !el.disabled && el.offsetParent !== null);
-                function trapFocus(e) {
-                    if (e.key !== 'Tab') return;
-                    const focusableEls = getFocusableElements();
-                    if (focusableEls.length === 0) return;
-                    const firstEl = focusableEls[0];
-                    const lastEl = focusableEls[focusableEls.length - 1];
-                    if (e.shiftKey) {
-                        if (document.activeElement === firstEl) {
-                            e.preventDefault();
-                            lastEl.focus();
-                        }
-                    } else {
-                        if (document.activeElement === lastEl) {
-                            e.preventDefault();
-                            firstEl.focus();
-                        }
-                    }
-                }                modalElement.addEventListener('keydown', trapFocus);
-                function escClose(e) {
-                    if (e.key === 'Escape') {
-                        // Only allow ESC to close modal if closing is allowed
-                        if (ExtendableObject.config.ux.allowCloseModal) {
-                            e.preventDefault();
-                            if (typeof ExtendableObject.util.removePopup === 'function') {
-                                ExtendableObject.util.removePopup();
-                            }
-                        }
-                    }
-                }
-                modalElement.addEventListener('keydown', escClose);
-                // End Accessibility
+                const modalElement = document.querySelector('[endereco-popup]');                // Set up accessibility features (focus management and keyboard navigation)
+                setupModalAccessibility(ExtendableObject, modalElement);
 
                 return new Promise((resolve) => {
                     attachModalCloseHandlers(ExtendableObject, modalElement, () => {
@@ -1392,12 +1483,10 @@ const AddressExtension = {
                     : part.removed ? 'endereco-span--remove' : 'endereco-span--neutral';
 
                 mainAddressDiffHtml += `<span class="${markClass}">${part.value}</span>`;
-            });
-
-            // Prepare predictions.
+            });            // Prepare predictions.
             const processedPredictions = [];
 
-            predictions.forEach((addressPrediction) => {
+            predictions.forEach((addressPrediction, index) => {
                 const addressFormatted = ExtendableObject.util.formatAddress(addressPrediction, statuscodes);
                 let addressDiff = '';
                 const diff = diffWords(mainAddressHtml, addressFormatted, { ignoreCase: false });
@@ -1411,7 +1500,8 @@ const AddressExtension = {
                 });
 
                 processedPredictions.push({
-                    addressDiff
+                    addressDiff,
+                    isFirst: index === 0  // First prediction gets tabindex="0"
                 });
             });
 
@@ -1429,6 +1519,7 @@ const AddressExtension = {
                     showConfirCheckbox: ExtendableObject.config.ux.confirmWithCheckbox,
                     button: ExtendableObject.config.templates.button,
                     title: ExtendableObject.config.texts.popupHeadlines[ExtendableObject.addressType],
+                    noPredictions: processedPredictions.length === 0,  // Original address gets tabindex="0" if no predictions
                     index: function () {
                         return indexCounter;
                     },
@@ -1437,64 +1528,18 @@ const AddressExtension = {
 
                         return '';
                     }
-                }            );
+                });
 
             // Store the currently active element before opening the modal
-            ExtendableObject._previousActiveElement = document.activeElement;
-
-            document.querySelector('body').insertAdjacentHTML('beforeend', predictionsWrapperHtml);
+            ExtendableObject._previousActiveElement = document.activeElement;            document.querySelector('body').insertAdjacentHTML('beforeend', predictionsWrapperHtml);
             document.querySelector('body').classList.add('endereco-no-scroll');
 
             ExtendableObject.onAfterModalRendered.forEach(function (cb) {
                 cb(ExtendableObject);
             });
 
-            const modalElement = document.querySelector('[endereco-popup]');
-
-            // --- Barrierefreiheit: Fokusmanagement und Fokusfalle ---
-            // 1. Fokus auf das Modal setzen
-            setTimeout(() => {
-                if (modalElement) {
-                    modalElement.querySelector('.endereco-modal').focus();
-                }
-            }, 0);
-            const focusableSelectors = [
-                'a[href]', 'button', 'input', 'select', 'textarea', '[tabindex]:not([tabindex="-1"])'
-            ];
-            const getFocusableElements = () => Array.from(
-                modalElement.querySelectorAll(focusableSelectors.join(','))
-            ).filter(el => !el.disabled && el.offsetParent !== null);
-            function trapFocus(e) {
-                if (e.key !== 'Tab') return;
-                const focusableEls = getFocusableElements();
-                if (focusableEls.length === 0) return;
-                const firstEl = focusableEls[0];
-                const lastEl = focusableEls[focusableEls.length - 1];
-                if (e.shiftKey) {
-                    if (document.activeElement === firstEl) {
-                        e.preventDefault();
-                        lastEl.focus();
-                    }
-                } else {
-                    if (document.activeElement === lastEl) {
-                        e.preventDefault();
-                        firstEl.focus();
-                    }
-                }
-            }            modalElement.addEventListener('keydown', trapFocus);
-            function escClose(e) {
-                if (e.key === 'Escape') {
-                    // Only allow ESC to close modal if closing is allowed
-                    if (ExtendableObject.config.ux.allowCloseModal) {
-                        e.preventDefault();
-                        if (typeof ExtendableObject.util.removePopup === 'function') {
-                            ExtendableObject.util.removePopup();
-                        }
-                    }
-                }
-            }
-            modalElement.addEventListener('keydown', escClose);
-            // --- Ende Barrierefreiheit ---
+            const modalElement = document.querySelector('[endereco-popup]');            // Set up accessibility features (focus management and keyboard navigation)
+            setupModalAccessibility(ExtendableObject, modalElement);
 
             return new Promise((resolve) => {
                 attachModalCloseHandlers(ExtendableObject, modalElement, () => {
