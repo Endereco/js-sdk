@@ -27,8 +27,9 @@ const sleep = (ms) => {
  * Sets up accessibility features for modals including focus management and keyboard navigation.
  * @param {Object} ExtendableObject - The address object instance.
  * @param {HTMLElement} modalElement - The modal element.
+ * @param {Function} onEscClose - Optional callback to execute when ESC is pressed to close modal.
  */
-const setupModalAccessibility = (ExtendableObject, modalElement) => {
+const setupModalAccessibility = (ExtendableObject, modalElement, onEscClose = null) => {
     // Set initial focus on modal
     setTimeout(() => {
         if (modalElement) {
@@ -83,14 +84,40 @@ const setupModalAccessibility = (ExtendableObject, modalElement) => {
                 firstEl.focus();
             }
         }
-    };
-
-    // Escape key handler
-    const escClose = (e) => {
+    };    // Escape key handler
+    const escClose = async (e) => {
         if (e.key === 'Escape') {
             // Only allow ESC to close modal if closing is allowed
             if (ExtendableObject.config.ux.allowCloseModal) {
                 e.preventDefault();
+                
+                // Execute the same cleanup logic as the normal close handler
+                try {
+                    // Execute onCloseModal callbacks if they exist
+                    if (Array.isArray(ExtendableObject.onCloseModal)) {
+                        const promises = ExtendableObject.onCloseModal.map(cb => {
+                            const result = cb(ExtendableObject);
+                            return result instanceof Promise ? result : Promise.resolve(result);
+                        });
+                        await Promise.all(promises);
+                    }
+                } catch (err) {
+                    console.warn('Error in ESC modal close action custom callbacks:', {
+                        error: err
+                    });                }
+                
+                // Execute the onEscClose callback if provided
+                try {
+                    if (typeof onEscClose === 'function') {
+                        onEscClose();
+                    }
+                } catch (err) {
+                    console.warn('Error in ESC close callback:', {
+                        error: err
+                    });
+                }
+                
+                // Call removePopup which includes abort controller cancellation
                 if (typeof ExtendableObject.util.removePopup === 'function') {
                     ExtendableObject.util.removePopup();
                 }
@@ -390,7 +417,9 @@ const attachPredictionsRadioHandlers = (ExtendableObject, modalElement) => {
                 { syncValue: true }
             )
         );
-    });    // Add keyboard navigation for radio button group
+    });    
+    
+    // Add keyboard navigation for radio button group
     predictionInputs.forEach((input, index) => {
         input.addEventListener('keydown', (e) => {
             const allRadios = Array.from(predictionInputs);
@@ -761,7 +790,9 @@ const AddressExtension = {
         ExtendableObject._checkedAddress = {};
         ExtendableObject.addressCheckCache = {
             cachedResults: {}
-        };        // Flags
+        };        
+        
+        // Flags
         ExtendableObject._addressIsBeingChecked = false;
         ExtendableObject._isIntegrityOperationSynchronous = false;
         ExtendableObject._previousActiveElement = null;
@@ -1400,19 +1431,21 @@ const AddressExtension = {
 
                 ExtendableObject.onAfterModalRendered.forEach(function (cb) {
                     cb(ExtendableObject);
-                });
-
-                const modalElement = document.querySelector('[endereco-popup]');                // Set up accessibility features (focus management and keyboard navigation)
-                setupModalAccessibility(ExtendableObject, modalElement);
-
+                });                const modalElement = document.querySelector('[endereco-popup]');
+                
                 return new Promise((resolve) => {
-                    attachModalCloseHandlers(ExtendableObject, modalElement, () => {
+                    const onCloseCallback = () => {
                         resolve({
                             userHasEditingIntent: true,
                             userConfirmedSelection: false,
                             selectedAddress: originalAddress
                         });
-                    });
+                    };
+                    
+                    // Set up accessibility features (focus management and keyboard navigation)
+                    setupModalAccessibility(ExtendableObject, modalElement, onCloseCallback);
+
+                    attachModalCloseHandlers(ExtendableObject, modalElement, onCloseCallback);
                     attachEditAddressHandlers(ExtendableObject, modalElement, () => {
                         resolve({
                             userHasEditingIntent: true,
@@ -1536,19 +1569,21 @@ const AddressExtension = {
 
             ExtendableObject.onAfterModalRendered.forEach(function (cb) {
                 cb(ExtendableObject);
-            });
-
-            const modalElement = document.querySelector('[endereco-popup]');            // Set up accessibility features (focus management and keyboard navigation)
-            setupModalAccessibility(ExtendableObject, modalElement);
-
+            });            const modalElement = document.querySelector('[endereco-popup]');
+            
             return new Promise((resolve) => {
-                attachModalCloseHandlers(ExtendableObject, modalElement, () => {
+                const onCloseCallback = () => {
                     resolve({
                         userHasEditingIntent: true,
                         userConfirmedSelection: false,
                         selectedAddress: originalAddress
                     });
-                });
+                };
+                
+                // Set up accessibility features (focus management and keyboard navigation)
+                setupModalAccessibility(ExtendableObject, modalElement, onCloseCallback);
+
+                attachModalCloseHandlers(ExtendableObject, modalElement, onCloseCallback);
 
                 attachEditAddressHandlers(ExtendableObject, modalElement, () => {
                     resolve({
@@ -2036,7 +2071,9 @@ const AddressExtension = {
             ).replace(/  +/g, ' ');
 
             return formattedAddress;
-        };        /**
+        };        
+        
+        /**
          * Removes the current popup from the DOM and resets related states.
          * Also restores focus to the element that was active before the modal opened.
          * Cancels any running address check process if in progress.
