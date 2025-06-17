@@ -471,11 +471,18 @@
 			margin-bottom: 0 !important;
 		}
 	}
-
 	&__radio {
-		display: none;
+		// Visually hide radio buttons but keep them accessible for screen readers and keyboard navigation
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border: 0;
 	}
-
 	&__label {
 		padding: 20px 20px 20px 65px;
 		box-sizing: border-box;
@@ -483,13 +490,14 @@
 		font-weight: 400;
 		line-height: 22px;
 		cursor: pointer;
-		border: 1px solid #ccc;
+		border: 2px solid #ccc;
 		border-radius: 4px;
 		box-shadow: 2px 2px 5px rgba(0,0,0,0.125);
 		display: block;
 		font-family: serif;
 		position: relative;
 		overflow: hidden;
+		transition: all 0.2s ease-in-out;
 
 		&::after {
 			content: " ";
@@ -504,7 +512,6 @@
 			border-radius: 50%;
 			box-sizing: border-box;
 		}
-
 		&::before {
 			position: absolute;
 			top: calc(50% - 26px / 2);
@@ -515,7 +522,18 @@
 			background-color: transparent;
 			border: 2px solid gray;
 			border-radius: 50%;
-			box-sizing: border-box;
+			box-sizing: border-box;		}		// Hover effect for better visibility
+		&:hover {
+			background-color: transparent !important; // No green background for better contrast
+			border-color: #4caf50 !important; // Same border as focus
+			transform: translateY(-1px);
+			box-shadow: 2px 4px 8px rgba(0,0,0,0.2);
+		}// Focus support for screen readers and keyboard navigation
+		&:focus-within {
+			background-color: transparent !important; // Overrides other backgrounds
+			border-color: #4caf50 !important;
+			box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.3), 2px 2px 5px rgba(0,0,0,0.125);
+			// No green background for better contrast
 		}
 	}
 
@@ -552,8 +570,10 @@
 }
 
 .endereco-address-predictions__radio:checked ~ .endereco-address-predictions__label,
-.endereco-address-predictions__item.active .endereco-address-predictions__label {
-	border-color: #4caf50;
+.endereco-address-predictions__item.active .endereco-address-predictions__label {	border-color: #4caf50;
+	background-color: transparent !important; // No green background for better contrast
+	font-weight: 500;
+	box-shadow: 0 0 0 1px #4caf50, 2px 2px 5px rgba(0,0,0,0.125);
 }
 
 .endereco-address-predictions__radio:checked ~ .endereco-address-predictions__label::after,
@@ -563,5 +583,19 @@
 .endereco-address-predictions__radio:checked ~ .endereco-address-predictions__label::before,
 .endereco-address-predictions__item.active .endereco-address-predictions__label::before {
 	border-color: #4caf50;
+}
+
+// Focus styling for radio buttons - Native browser focus for screen readers
+.endereco-address-predictions__radio:focus ~ .endereco-address-predictions__label {
+	background-color: transparent !important; // Overrides other backgrounds
+	border-color: #4caf50 !important;
+	box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.3), 2px 2px 5px rgba(0,0,0,0.125);
+	// Native browser focus ring is not overridden
+	// No green background for better contrast
+}
+
+.endereco-address-predictions__radio:focus ~ .endereco-address-predictions__label::before {
+	border-color: #005fcc;
+	border-width: 3px;
 }
 

@@ -4,6 +4,12 @@ import flagButtonHTML from '../templates/flagButton.html';
 import phoneDropdownHTML from '../templates/phoneDropdownHTML.html';
 import Mustache from "mustache";
 
+/**
+ * Maximum number of flags displayed before adding scroll functionality
+ * @type {number}
+ */
+const MAX_FLAGS_BEFORE_SCROLL = 6;
+
 // Flags
 import notFoundFlag from '../templates/icons/not_found.svg';
 import afFlag from '../templates/flags/af.svg';
@@ -1534,25 +1540,48 @@ function EnderecoPhone(customConfig={}) {
         return returnHtml;
     }
 
-    base.currePrefix = false;
-
-    base.setPrefix = function(input, prefix) {
+    base.currePrefix = false;    base.setPrefix = function(input, prefix) {
         if (base.currePrefix !== prefix) {
             var inputValue = input.value;
-            if ("" !== base.currePrefix) {
+            if ("" !== base.currePrefix && base.currePrefix !== false) {
                 inputValue = inputValue.substring(base.currePrefix.length);
             }
 
+            // Set the new value with prefix
             input.value = prefix + inputValue;
-
-            if (!!window.jQuery && !!window.jQuery.trigger) {
-                window.jQuery(input).trigger('change').trigger('blur');
-            } else if (!!window.$ && !!window.$.trigger) {
-                window.$(input).trigger('change').trigger('blue');
-            } else {
-                input.dispatchEvent(new Event('change'));
-                input.dispatchEvent(new Event('blur'));
+            
+            // Update current prefix immediately
+            base.currePrefix = prefix;
+            
+            // Set cursor position after the prefix for better UX
+            const cursorPosition = prefix.length;
+            
+            // Focus the input first to ensure it's active
+            input.focus();
+            
+            // Set cursor position after the prefix (not selecting all text)
+            if (input.setSelectionRange) {
+                input.setSelectionRange(cursorPosition, cursorPosition);
+            } else if (input.createTextRange) {
+                // IE fallback
+                const range = input.createTextRange();
+                range.collapse(true);
+                range.moveEnd('character', cursorPosition);
+                range.moveStart('character', cursorPosition);
+                range.select();
             }
+
+            // Trigger events after cursor positioning to avoid text selection
+            setTimeout(() => {
+                if (!!window.jQuery && !!window.jQuery.trigger) {
+                    window.jQuery(input).trigger('change').trigger('input');
+                } else if (!!window.$ && !!window.$.trigger) {
+                    window.$(input).trigger('change').trigger('input');
+                } else {
+                    input.dispatchEvent(new Event('change', { bubbles: true }));
+                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+            }, 10);
         }
     }
 
@@ -1564,12 +1593,11 @@ function EnderecoPhone(customConfig={}) {
         ) {
             base._subscribers.phone.forEach( function(subscriber) {
                 var DOMElement = subscriber.object;
-                var flagsHTML = flagButtonHTML;
-
-                var dropdownHTML = Mustache.render(
+                var flagsHTML = flagButtonHTML;                var dropdownHTML = Mustache.render(
                     phoneDropdownHTML,
                     {
-                        "countries": base.mapping
+                        "countries": base.mapping,
+                        "longList": (base.mapping.length > MAX_FLAGS_BEFORE_SCROLL)
                     }
                 );
 
@@ -1641,23 +1669,24 @@ function EnderecoPhone(customConfig={}) {
                     DOMElement.insertAdjacentHTML('afterend',
                         dropdownHTML);
                     dropdownElement = DOMElement.parentElement.querySelector('.endereco-flag-dropdown');
-                    dropdownElement.style.top = `${dropdownTopOffset}px`;
-                    document.querySelector('body').addEventListener('click', function(e) {
-                        if (!dropdownElement.contains(e.target)) {
+                    dropdownElement.style.top = `${dropdownTopOffset}px`;                    document.querySelector('body').addEventListener('click', function(e) {
+                        if (!dropdownElement.contains(e.target) && !flagElement.contains(e.target)) {
                             dropdownElement.classList.add("endereco-hidden");
+                            flagElement.setAttribute('aria-expanded', 'false');
                         }
-                    });
-
-                    // Add click listener to big flag.
+                    });// Add click listener to big flag.
                     flagElement.addEventListener('click', function(e) {
                         e.preventDefault();
                         e.stopPropagation();
                         var dropdownDOM = this.parentElement.querySelector('.endereco-flag-dropdown');
                         dropdownDOM.classList.toggle("endereco-hidden");
+                        
+                        // Update aria-expanded for accessibility
+                        const isExpanded = !dropdownDOM.classList.contains("endereco-hidden");
+                        this.setAttribute('aria-expanded', isExpanded);
+                        
                         return false;
-                    });
-
-                    // Add click listener to dropdown elements.
+                    });// Add click listener to dropdown elements.
                     dropdownElement.querySelectorAll('.endereco-flag-dropdown-element').forEach(function(element) {
                         element.addEventListener('click', function(e) {
                             base.setPrefix(DOMElement, this.getAttribute("data-code"));
@@ -1665,8 +1694,18 @@ function EnderecoPhone(customConfig={}) {
                                 DOMElement.value.substring(0, 10)
                             );
                             dropdownElement.classList.add("endereco-hidden");
+                            
+                            // Update aria-expanded for accessibility
+                            flagElement.setAttribute('aria-expanded', 'false');
                         })
                     });
+
+                    // Setup keyboard accessibility for the created flag and dropdown
+                    setTimeout(() => {
+                        if (base.util && base.util.setupPhoneFlagAccessibility) {
+                            base.util.setupPhoneFlagAccessibility();
+                        }
+                    }, 50);
 
                     // Add height listener.
                     setInterval( function() {

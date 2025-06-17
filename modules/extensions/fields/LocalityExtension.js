@@ -24,13 +24,16 @@ const LocalityExtension = {
         ExtendableObject._locality = '';
         ExtendableObject._subscribers.locality = [];
 
+        // Default values
+        ExtendableObject._localityPredictionsIndexDefault = -1;
+
         // Add fields.
         ExtendableObject._localityAutocompleteRequestIndex = 1;
         ExtendableObject._localityChunk = '';
         ExtendableObject._localityPredictions = [];
         ExtendableObject._localityPredictionsIndex = 0;
         ExtendableObject._localityTimeout = null;
-        ExtendableObject._localityPredictionsIndex = 0;
+        ExtendableObject._localityPredictionsIndex = ExtendableObject._localityPredictionsIndexDefault;
 
         ExtendableObject._allowToNotifyLocalitySubscribers = true;
         ExtendableObject._allowFetchLocalityAutocomplete = false;
@@ -223,7 +226,7 @@ const LocalityExtension = {
                 if (!isAnyActive) {
                     // Reset values and remove dropdown
                     ExtendableObject.localityPredictions = [];
-                    ExtendableObject._localityPredictionsIndex = 0;
+                    ExtendableObject._localityPredictionsIndex = ExtendableObject._localityPredictionsIndexDefault;
                     ExtendableObject.util.removeLocalityPredictionsDropdown();
                 }
 
@@ -248,18 +251,48 @@ const LocalityExtension = {
                     e.stopPropagation();
                     if (ExtendableObject._localityPredictionsIndex > -1) {
                         ExtendableObject._localityPredictionsIndex = ExtendableObject._localityPredictionsIndex - 1;
-                        ExtendableObject.util.renderLocalityPredictionsDropdown();
+                    } else if (ExtendableObject._localityPredictionsIndex === -1) {
+                        // Set index to the last item if ArrowUp is pressed after reaching nothing selected
+                        ExtendableObject._localityPredictionsIndex = ExtendableObject._localityPredictions.length - 1;
                     }
+                    ExtendableObject.util.renderLocalityPredictionsDropdown();
                 } else if (e.key === 'ArrowDown' || e.key === 'Down') {
                     e.preventDefault();
                     e.stopPropagation();
                     if (ExtendableObject._localityPredictionsIndex < (ExtendableObject._localityPredictions.length - 1)) {
                         ExtendableObject._localityPredictionsIndex = ExtendableObject._localityPredictionsIndex + 1;
-                        ExtendableObject.util.renderLocalityPredictionsDropdown();
+                    } else {
+                        // Set index to -1 (nothing selected) if ArrowDown is pressed at the end of the list
+                        ExtendableObject._localityPredictionsIndex = -1;
                     }
-                } else if (e.key === 'Tab' || e.key === 'Tab') {
-                    // TODO: configurable activate in future releases.
-                } else if (e.key === 'Enter' || e.key === 'Enter') {
+                    ExtendableObject.util.renderLocalityPredictionsDropdown();
+                } else if ((e.key === 'Tab' && e.shiftKey)) {
+                    if (ExtendableObject._localityPredictions.length > 0) {
+                        if (ExtendableObject._localityPredictionsIndex >= 0) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            ExtendableObject.cb.applyLocalityPredictionSelection(
+                                ExtendableObject._localityPredictionsIndex,
+                                ExtendableObject._localityPredictions
+                            );
+                        }
+                        ExtendableObject.localityPredictions = [];
+                        ExtendableObject.util.removeLocalityPredictionsDropdown();
+                    }
+                } else if (e.key === 'Tab') {
+                    if (ExtendableObject._localityPredictions.length > 0) {
+                        if (ExtendableObject._localityPredictionsIndex >= 0) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            ExtendableObject.cb.applyLocalityPredictionSelection(
+                                ExtendableObject._localityPredictionsIndex,
+                                ExtendableObject._localityPredictions
+                            );
+                        }
+                        ExtendableObject.localityPredictions = [];
+                        ExtendableObject.util.removeLocalityPredictionsDropdown();
+                    }
+                } else if (e.key === 'Enter') {
                     if (ExtendableObject._localityPredictions.length > 0 && ExtendableObject._localityPredictionsIndex >= 0) {
                         e.preventDefault();
                         e.stopImmediatePropagation();
@@ -270,10 +303,21 @@ const LocalityExtension = {
                         );
                         ExtendableObject.localityPredictions = [];
                     }
-
                     ExtendableObject.util.removeLocalityPredictionsDropdown();
-                } else if (e.key === 'Backspace' || e.key === 'Backspace') {
+                } else if (e.key === 'Backspace') {
                     ExtendableObject.config.ux.smartFill = false;
+                } else if (e.key === 'Escape') {
+                    ExtendableObject.util.removeLocalityPredictionsDropdown();
+                } else if (e.key === 'Home') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    ExtendableObject._localityPredictionsIndex = 0;
+                    ExtendableObject.util.renderLocalityPredictionsDropdown();
+                } else if (e.key === 'End') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    ExtendableObject._localityPredictionsIndex = ExtendableObject._localityPredictions.length - 1;
+                    ExtendableObject.util.renderLocalityPredictionsDropdown();
                 }
             };
         };
@@ -322,6 +366,7 @@ const LocalityExtension = {
                 try {
                     const autocompleteResult = await ExtendableObject.util.getLocalityPredictions(locality);
                     const currentLocality = ExtendableObject.getLocality();
+
                     if (autocompleteResult.originalLocality !== currentLocality) {
                         return;
                     }
@@ -348,6 +393,9 @@ const LocalityExtension = {
                     dropdown.parentNode.removeChild(dropdown);
                 }
             });
+
+            // Reset the predictions index to clear the selection
+            ExtendableObject._localityPredictionsIndex = ExtendableObject._localityPredictionsIndexDefault;
         };
 
         /**
@@ -440,8 +488,41 @@ const LocalityExtension = {
                         }
                     });
 
+                    // Helper function to scroll the active item into view
+                    const scrollActiveItemIntoView = () => {
+                        const dropdown = document.querySelector('[endereco-locality-predictions]');
+                        const activeItem = dropdown?.querySelector('.endereco-predictions__item.active');
+
+                        if (dropdown && activeItem) {
+                            const dropdownScrollContainer = dropdown.querySelector('.endereco-predictions');
+
+                            if (!dropdownScrollContainer) return;
+
+                            const containerRect = dropdownScrollContainer.getBoundingClientRect();
+                            const activeRect = activeItem.getBoundingClientRect();
+
+                            // Calculate relative positions
+                            const itemTop = activeRect.top - containerRect.top + dropdownScrollContainer.scrollTop;
+                            const itemBottom = activeRect.bottom - containerRect.top + dropdownScrollContainer.scrollTop;
+                            const containerHeight = dropdownScrollContainer.clientHeight;
+                            const currentScrollTop = dropdownScrollContainer.scrollTop;
+
+                            // Check if the active item is above the visible area
+                            if (itemTop < currentScrollTop) {
+                                dropdownScrollContainer.scrollTop = itemTop;
+                            } else if (itemBottom > currentScrollTop + containerHeight) {
+                                // Check if the active item is below the visible area
+                                dropdownScrollContainer.scrollTop = itemBottom - containerHeight;
+                            }
+                        }
+                    };
+
                     // Attach it to HTML.
                     subscriber.object.insertAdjacentHTML('afterend', predictionsHtml);
+
+                    // Scroll active item into view after DOM insertion
+                    setTimeout(scrollActiveItemIntoView, 0);
+
                     document.querySelectorAll(`[data-id="${ExtendableObject.id}"] [endereco-locality-prediction]`).forEach((DOMElement) => {
                         DOMElement.addEventListener('mousedown', (e) => {
                             const index = parseInt(DOMElement.getAttribute('data-prediction-index'));
@@ -569,11 +650,11 @@ const LocalityExtension = {
                         locality: cityName
                     };
 
-                        if ((subdivisionCode !== undefined) &&
+                    if ((subdivisionCode !== undefined) &&
                             ExtendableObject.util.hasSubscribedField('subdivisionCode')
-                        ) {
-                            tempLocalityContainer.subdivisionCode = subdivisionCode;
-                        }
+                    ) {
+                        tempLocalityContainer.subdivisionCode = subdivisionCode;
+                    }
 
                     localityPredictionsTemp.push(tempLocalityContainer);
                 });

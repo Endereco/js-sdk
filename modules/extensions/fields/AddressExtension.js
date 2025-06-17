@@ -24,6 +24,124 @@ const sleep = (ms) => {
 };
 
 /**
+ * Sets up accessibility features for modals including focus management and keyboard navigation.
+ * @param {Object} ExtendableObject - The address object instance.
+ * @param {HTMLElement} modalElement - The modal element.
+ * @param {Function} onEscClose - Optional callback to execute when ESC is pressed to close modal.
+ */
+const setupModalAccessibility = (ExtendableObject, modalElement, onEscClose = null) => {
+    // Set initial focus on modal
+    setTimeout(() => {
+        if (modalElement) {
+            modalElement.querySelector('.endereco-modal').focus();
+        }
+    }, 0);
+
+    // Define focusable element selectors
+    const focusableSelectors = [
+        'a[href]', 'button', 'input', 'select', 'textarea', '[tabindex]:not([tabindex="-1"])'
+    ];
+
+    // Function to get focusable elements with proper radio button handling
+    const getFocusableElements = () => {
+        const elements = Array.from(
+            modalElement.querySelectorAll(focusableSelectors.join(','))
+        );
+
+        // Filter for truly focusable elements with proper radio button handling
+        return elements.filter(el => {
+            // Skip disabled elements
+            if (el.disabled) return false;
+
+            // For radio buttons, only include those with tabindex="0" (first in group)
+            if (el.type === 'radio') {
+                return el.hasAttribute('tabindex') && el.getAttribute('tabindex') === '0';
+            }
+
+            // For other elements, check normal visibility
+            if (el.offsetParent === null) return false;
+
+            // Include visible elements
+            return true;
+        });
+    };
+
+    // Focus trap function
+    const trapFocus = (e) => {
+        if (e.key !== 'Tab') return;
+        const focusableEls = getFocusableElements();
+
+        if (focusableEls.length === 0) return;
+        const firstEl = focusableEls[0];
+        const lastEl = focusableEls[focusableEls.length - 1];
+
+        if (e.shiftKey) {
+            if (document.activeElement === firstEl) {
+                e.preventDefault();
+                lastEl.focus();
+            }
+        } else {
+            if (document.activeElement === lastEl) {
+                e.preventDefault();
+                firstEl.focus();
+            }
+        }
+    }; // Escape key handler
+    const escClose = async (e) => {
+        if (e.key === 'Escape') {
+            // Only allow ESC to close modal if closing is allowed
+            if (ExtendableObject.config.ux.allowCloseModal) {
+                e.preventDefault();
+
+                // Execute the same cleanup logic as the normal close handler
+                try {
+                    // Execute onCloseModal callbacks if they exist
+                    if (Array.isArray(ExtendableObject.onCloseModal)) {
+                        const promises = ExtendableObject.onCloseModal.map(cb => {
+                            const result = cb(ExtendableObject);
+
+                            return result instanceof Promise ? result : Promise.resolve(result);
+                        });
+
+                        await Promise.all(promises);
+                    }
+                } catch (err) {
+                    console.warn('Error in ESC modal close action custom callbacks:', {
+                        error: err
+                    });
+                }
+
+                // Execute the onEscClose callback if provided
+                try {
+                    if (typeof onEscClose === 'function') {
+                        onEscClose();
+                    }
+                } catch (err) {
+                    console.warn('Error in ESC close callback:', {
+                        error: err
+                    });
+                }
+
+                // Call removePopup which includes abort controller cancellation
+                if (typeof ExtendableObject.util.removePopup === 'function') {
+                    ExtendableObject.util.removePopup();
+                }
+            }
+        }
+    };
+
+    // Add event listeners
+    modalElement.addEventListener('keydown', trapFocus);
+    modalElement.addEventListener('keydown', escClose);
+
+    // Return cleanup function
+    return () => {
+        modalElement.removeEventListener('keydown', trapFocus);
+        modalElement.removeEventListener('keydown', escClose);
+    };
+};
+
+/**
  * Executes callbacks before persisting address check results
  * @param {Object} ExtendableObject - The address object instance
  * @param {Object} finalResult - The result data that will be persisted
@@ -152,38 +270,49 @@ const generateAddressCacheKey = (address) => {
  * @param {Function} onClose - The callback function to execute when the modal is closed.
  */
 const attachModalCloseHandlers = (ExtendableObject, modalElement, onClose) => {
+    // Handler function for the close action
+    const handleCloseAction = async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        try {
+            // Collect all promises returned from callbacks
+            const promises = ExtendableObject.onCloseModal.map(cb => {
+                const result = cb(ExtendableObject);
+
+                // Check if the result is a promise
+                return result instanceof Promise ? result : Promise.resolve(result);
+            });
+
+            // Wait for all promises to resolve
+            await Promise.all(promises);
+        } catch (err) {
+            console.warn('Error in modal close action custom callbacks:', {
+                error: err
+            });
+        }
+
+        try {
+            onClose();
+        } catch (err) {
+            console.warn('Error in model close handler handler:', {
+                error: err,
+                dataObject: ExtendableObject
+            });
+        }
+
+        ExtendableObject.util.removePopup();
+    };
+
     modalElement.querySelectorAll('[endereco-modal-close]').forEach(element => {
-        element.addEventListener('click', async (e) => {
-            e.preventDefault();
-            e.stopPropagation();
+        // Add click event handler
+        element.addEventListener('click', handleCloseAction);
 
-            try {
-                // Collect all promises returned from callbacks
-                const promises = ExtendableObject.onCloseModal.map(cb => {
-                    const result = cb(ExtendableObject);
-
-                    // Check if the result is a promise
-                    return result instanceof Promise ? result : Promise.resolve(result);
-                });
-
-                // Wait for all promises to resolve
-                await Promise.all(promises);
-            } catch (err) {
-                console.warn('Error in modal close action custom callbacks:', {
-                    error: err
-                });
+        // Add keyboard event handler for accessibility
+        element.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                handleCloseAction(e);
             }
-
-            try {
-                onClose();
-            } catch (err) {
-                console.warn('Error in model close handler handler:', {
-                    error: err,
-                    dataObject: ExtendableObject
-                });
-            }
-
-            ExtendableObject.util.removePopup();
         });
     });
 };
@@ -195,44 +324,55 @@ const attachModalCloseHandlers = (ExtendableObject, modalElement, onClose) => {
  * @param {Function} onEdit - The callback function to execute when the address is edited.
  */
 const attachEditAddressHandlers = (ExtendableObject, modalElement, onEdit) => {
+    // Handler function for the edit action
+    const handleEditAction = async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Disable the element to prevent double-clicking
+        e.target.disabled = true;
+
+        try {
+            // Collect all promises returned from callbacks
+            const promises = ExtendableObject.onEditAddress.map(cb => {
+                const result = cb(ExtendableObject);
+
+                // Check if the result is a promise
+                return result instanceof Promise ? result : Promise.resolve(result);
+            });
+
+            // Wait for all promises to resolve
+            await Promise.all(promises);
+        } catch (err) {
+            console.warn('Error in model edit action custom callbacks:', {
+                error: err
+            });
+        }
+
+        try {
+            onEdit();
+        } catch (err) {
+            console.warn('Error in model edit action handler:', {
+                error: err,
+                dataObject: ExtendableObject
+            });
+        }
+
+        // Re-enable the element if there's an error in the second try-catch block
+        e.target.disabled = false;
+        // Only remove popup after all callbacks have completed
+        ExtendableObject.util.removePopup();
+    };
+
     modalElement.querySelectorAll('[endereco-edit-address]').forEach(element => {
-        element.addEventListener('click', async (e) => {
-            e.preventDefault();
-            e.stopPropagation();
+        // Add click event handler
+        element.addEventListener('click', handleEditAction);
 
-            // Disable the element to prevent double-clicking
-            element.disabled = true;
-
-            try {
-                // Collect all promises returned from callbacks
-                const promises = ExtendableObject.onEditAddress.map(cb => {
-                    const result = cb(ExtendableObject);
-
-                    // Check if the result is a promise
-                    return result instanceof Promise ? result : Promise.resolve(result);
-                });
-
-                // Wait for all promises to resolve
-                await Promise.all(promises);
-            } catch (err) {
-                console.warn('Error in model edit action custom callbacks:', {
-                    error: err
-                });
+        // Add keyboard event handler for accessibility
+        element.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                handleEditAction(e);
             }
-
-            try {
-                onEdit();
-            } catch (err) {
-                console.warn('Error in model edit action handler:', {
-                    error: err,
-                    dataObject: ExtendableObject
-                });
-            }
-
-            // Re-enable the element if there's an error in the second try-catch block
-            element.disabled = false;
-            // Only remove popup after all callbacks have completed
-            ExtendableObject.util.removePopup();
         });
     });
 };
@@ -244,45 +384,56 @@ const attachEditAddressHandlers = (ExtendableObject, modalElement, onEdit) => {
  * @param {Function} onSelect - The callback function to execute when an address prediction is selected.
  */
 const attachSelectionHandlers = (ExtendableObject, modalElement, onSelect) => {
+    // Handler function for the selection action
+    const handleSelectionAction = async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Disable the element to prevent double-clicking
+        e.target.disabled = true;
+
+        try {
+            // Collect all promises returned from callbacks
+            const promises = ExtendableObject.onAfterAddressCheckSelected.map(cb => {
+                const result = cb(ExtendableObject);
+
+                // Check if the result is a promise
+                return result instanceof Promise ? result : Promise.resolve(result);
+            });
+
+            // Wait for all promises to resolve
+            await Promise.all(promises);
+        } catch (err) {
+            console.warn('Error in model select action custom callbacks:', {
+                error: err
+            });
+        }
+
+        try {
+            onSelect(
+                parseInt(modalElement.querySelector("[name='endereco-address-predictions']:checked").value)
+            );
+        } catch (err) {
+            console.warn('Error in modal select correction handler:', {
+                error: err,
+                dataObject: ExtendableObject
+            });
+        }
+
+        // Re-enable the element if there's an error in the second try-catch block
+        e.target.disabled = false;
+        ExtendableObject.util.removePopup();
+    };
+
     modalElement.querySelectorAll('[endereco-use-selection]').forEach(element => {
-        element.addEventListener('click', async (e) => {
-            e.preventDefault();
-            e.stopPropagation();
+        // Add click event handler
+        element.addEventListener('click', handleSelectionAction);
 
-            // Disable the element to prevent double-clicking
-            element.disabled = true;
-
-            try {
-                // Collect all promises returned from callbacks
-                const promises = ExtendableObject.onAfterAddressCheckSelected.map(cb => {
-                    const result = cb(ExtendableObject);
-
-                    // Check if the result is a promise
-                    return result instanceof Promise ? result : Promise.resolve(result);
-                });
-
-                // Wait for all promises to resolve
-                await Promise.all(promises);
-            } catch (err) {
-                console.warn('Error in model select action custom callbacks:', {
-                    error: err
-                });
+        // Add keyboard event handler for accessibility
+        element.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                handleSelectionAction(e);
             }
-
-            try {
-                onSelect(
-                    parseInt(modalElement.querySelector("[name='endereco-address-predictions']:checked").value)
-                );
-            } catch (err) {
-                console.warn('Error in modal select correction handler:', {
-                    error: err,
-                    dataObject: ExtendableObject
-                });
-            }
-
-            // Re-enable the element if there's an error in the second try-catch block
-            element.disabled = false;
-            ExtendableObject.util.removePopup();
         });
     });
 };
@@ -306,14 +457,67 @@ const attachPredictionsRadioHandlers = (ExtendableObject, modalElement) => {
         );
     });
 
+    // Add keyboard navigation for radio button group
+    predictionInputs.forEach((input, index) => {
+        input.addEventListener('keydown', (e) => {
+            const allRadios = Array.from(predictionInputs);
+            const currentIndex = allRadios.findIndex(radio => radio === e.target);
+            let nextIndex;
+
+            // Function to update tabindex values
+            const updateTabIndex = (focusedIndex) => {
+                allRadios.forEach((radio, idx) => {
+                    radio.setAttribute('tabindex', idx === focusedIndex ? '0' : '-1');
+                });
+            };
+
+            switch (e.key) {
+            case 'ArrowDown':
+            case 'ArrowRight':
+                e.preventDefault();
+                nextIndex = (currentIndex + 1) % allRadios.length;
+                updateTabIndex(nextIndex);
+                allRadios[nextIndex].focus();
+                allRadios[nextIndex].checked = true;
+                allRadios[nextIndex].dispatchEvent(new Event('change', { bubbles: true }));
+                break;
+
+            case 'ArrowUp':
+            case 'ArrowLeft':
+                e.preventDefault();
+                nextIndex = currentIndex === 0 ? allRadios.length - 1 : currentIndex - 1;
+                updateTabIndex(nextIndex);
+                allRadios[nextIndex].focus();
+                allRadios[nextIndex].checked = true;
+                allRadios[nextIndex].dispatchEvent(new Event('change', { bubbles: true }));
+                break;
+
+            case ' ':
+            case 'Space':
+                e.preventDefault();
+                e.target.checked = true;
+                e.target.dispatchEvent(new Event('change', { bubbles: true }));
+                break;
+            }
+        });
+    });
+
     // Add change event handlers
-    predictionInputs.forEach(input => {
+    predictionInputs.forEach((input, index) => {
         input.addEventListener('change', (e) => {
             e.preventDefault();
             e.stopPropagation();
 
             const modal = e.target.closest('.endereco-modal');
             const selectedValue = parseInt(e.target.value);
+
+            // Update tabindex for radio button group - the selected one gets tabindex="0"
+            const allRadios = Array.from(predictionInputs);
+            const selectedIndex = allRadios.findIndex(radio => radio === e.target);
+
+            allRadios.forEach((radio, idx) => {
+                radio.setAttribute('tabindex', idx === selectedIndex ? '0' : '-1');
+            });
 
             // Handle origin display toggle
             const originElements = modal.querySelectorAll('[endereco-show-if-origin]');
@@ -351,43 +555,54 @@ const attachPredictionsRadioHandlers = (ExtendableObject, modalElement) => {
  * @param {Function} onConfirm - The callback function to execute when the address is confirmed.
  */
 const attachConfirmAddressHandlers = (ExtendableObject, modalElement, onConfirm) => {
+    // Handler function for the confirm action
+    const handleConfirmAction = async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Disable the element to prevent double-clicking
+        e.target.disabled = true;
+
+        try {
+            // Collect all promises returned from callbacks
+            const promises = ExtendableObject.onConfirmAddress.map(cb => {
+                const result = cb(ExtendableObject);
+
+                // Check if the result is a promise
+                return result instanceof Promise ? result : Promise.resolve(result);
+            });
+
+            // Wait for all promises to resolve
+            await Promise.all(promises);
+        } catch (err) {
+            console.warn('Error in model confirm action custom callbacks:', {
+                error: err
+            });
+        }
+
+        try {
+            await onConfirm();
+        } catch (err) {
+            console.warn('Error in modal confirm address handler:', {
+                error: err,
+                dataObject: ExtendableObject
+            });
+        }
+
+        // Re-enable the element if there's an error in the second try-catch block
+        e.target.disabled = false;
+        ExtendableObject.util.removePopup();
+    };
+
     modalElement.querySelectorAll('[endereco-confirm-address]').forEach(element => {
-        element.addEventListener('click', async (e) => {
-            e.preventDefault();
-            e.stopPropagation();
+        // Add click event handler
+        element.addEventListener('click', handleConfirmAction);
 
-            // Disable the element to prevent double-clicking
-            element.disabled = true;
-
-            try {
-                // Collect all promises returned from callbacks
-                const promises = ExtendableObject.onConfirmAddress.map(cb => {
-                    const result = cb(ExtendableObject);
-
-                    // Check if the result is a promise
-                    return result instanceof Promise ? result : Promise.resolve(result);
-                });
-
-                // Wait for all promises to resolve
-                await Promise.all(promises);
-            } catch (err) {
-                console.warn('Error in model confirm action custom callbacks:', {
-                    error: err
-                });
+        // Add keyboard event handler for accessibility
+        element.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                handleConfirmAction(e);
             }
-
-            try {
-                await onConfirm();
-            } catch (err) {
-                console.warn('Error in modal confirm address handler:', {
-                    error: err,
-                    dataObject: ExtendableObject
-                });
-            }
-
-            // Re-enable the element if there's an error in the second try-catch block
-            element.disabled = false;
-            ExtendableObject.util.removePopup();
         });
     });
 };
@@ -630,6 +845,8 @@ const AddressExtension = {
         // Flags
         ExtendableObject._addressIsBeingChecked = false;
         ExtendableObject._isIntegrityOperationSynchronous = false;
+        ExtendableObject._previousActiveElement = null;
+        ExtendableObject._currentAddressCheckAbortController = null;
 
         // Timeout and sequence
         ExtendableObject._addressCheckRequestIndex = 0;
@@ -1256,26 +1473,29 @@ const AddressExtension = {
                         mainAddress: mainAddressHtml,
                         button: ExtendableObject.config.templates.button,
                         title: ExtendableObject.config.texts.popupHeadlines[ExtendableObject.addressType]
-                    }
-                );
+                    });
 
-                document.querySelector('body').insertAdjacentHTML('beforeend', modalHTML);
+                // Store the currently active element before opening the modal
+                ExtendableObject._previousActiveElement = document.activeElement; document.querySelector('body').insertAdjacentHTML('beforeend', modalHTML);
                 document.querySelector('body').classList.add('endereco-no-scroll');
 
                 ExtendableObject.onAfterModalRendered.forEach(function (cb) {
                     cb(ExtendableObject);
-                });
-
-                const modalElement = document.querySelector('[endereco-popup]');
+                }); const modalElement = document.querySelector('[endereco-popup]');
 
                 return new Promise((resolve) => {
-                    attachModalCloseHandlers(ExtendableObject, modalElement, () => {
+                    const onCloseCallback = () => {
                         resolve({
                             userHasEditingIntent: true,
                             userConfirmedSelection: false,
                             selectedAddress: originalAddress
                         });
-                    });
+                    };
+
+                    // Set up accessibility features (focus management and keyboard navigation)
+                    setupModalAccessibility(ExtendableObject, modalElement, onCloseCallback);
+
+                    attachModalCloseHandlers(ExtendableObject, modalElement, onCloseCallback);
                     attachEditAddressHandlers(ExtendableObject, modalElement, () => {
                         resolve({
                             userHasEditingIntent: true,
@@ -1346,12 +1566,10 @@ const AddressExtension = {
                     : part.removed ? 'endereco-span--remove' : 'endereco-span--neutral';
 
                 mainAddressDiffHtml += `<span class="${markClass}">${part.value}</span>`;
-            });
-
-            // Prepare predictions.
+            }); // Prepare predictions.
             const processedPredictions = [];
 
-            predictions.forEach((addressPrediction) => {
+            predictions.forEach((addressPrediction, index) => {
                 const addressFormatted = ExtendableObject.util.formatAddress(addressPrediction, statuscodes);
                 let addressDiff = '';
                 const diff = diffWords(mainAddressHtml, addressFormatted, { ignoreCase: false });
@@ -1365,7 +1583,8 @@ const AddressExtension = {
                 });
 
                 processedPredictions.push({
-                    addressDiff
+                    addressDiff,
+                    isFirst: index === 0 // First prediction gets tabindex="0"
                 });
             });
 
@@ -1383,6 +1602,7 @@ const AddressExtension = {
                     showConfirCheckbox: ExtendableObject.config.ux.confirmWithCheckbox,
                     button: ExtendableObject.config.templates.button,
                     title: ExtendableObject.config.texts.popupHeadlines[ExtendableObject.addressType],
+                    noPredictions: processedPredictions.length === 0, // Original address gets tabindex="0" if no predictions
                     index: function () {
                         return indexCounter;
                     },
@@ -1391,26 +1611,29 @@ const AddressExtension = {
 
                         return '';
                     }
-                }
-            );
+                });
 
-            document.querySelector('body').insertAdjacentHTML('beforeend', predictionsWrapperHtml);
+            // Store the currently active element before opening the modal
+            ExtendableObject._previousActiveElement = document.activeElement; document.querySelector('body').insertAdjacentHTML('beforeend', predictionsWrapperHtml);
             document.querySelector('body').classList.add('endereco-no-scroll');
 
             ExtendableObject.onAfterModalRendered.forEach(function (cb) {
                 cb(ExtendableObject);
-            });
-
-            const modalElement = document.querySelector('[endereco-popup]');
+            }); const modalElement = document.querySelector('[endereco-popup]');
 
             return new Promise((resolve) => {
-                attachModalCloseHandlers(ExtendableObject, modalElement, () => {
+                const onCloseCallback = () => {
                     resolve({
                         userHasEditingIntent: true,
                         userConfirmedSelection: false,
                         selectedAddress: originalAddress
                     });
-                });
+                };
+
+                // Set up accessibility features (focus management and keyboard navigation)
+                setupModalAccessibility(ExtendableObject, modalElement, onCloseCallback);
+
+                attachModalCloseHandlers(ExtendableObject, modalElement, onCloseCallback);
 
                 attachEditAddressHandlers(ExtendableObject, modalElement, () => {
                     resolve({
@@ -1902,14 +2125,41 @@ const AddressExtension = {
 
         /**
          * Removes the current popup from the DOM and resets related states.
+         * Also restores focus to the element that was active before the modal opened.
+         * Cancels any running address check process if in progress.
          */
         ExtendableObject.util.removePopup = () => {
+            // Cancel any running address check process
+            if (ExtendableObject._currentAddressCheckAbortController) {
+                try {
+                    ExtendableObject._currentAddressCheckAbortController.abort();
+                    console.log('Address check process cancelled due to modal closure');
+                } catch (err) {
+                    console.warn('Failed to abort address check process:', err);
+                }
+                ExtendableObject._currentAddressCheckAbortController = null;
+            }
+
             if (document.querySelector('[endereco-popup]')) {
                 document.querySelector('[endereco-popup]').parentNode.removeChild(document.querySelector('[endereco-popup]'));
                 document.querySelector('body').classList.remove('endereco-no-scroll');
                 ExtendableObject.addressPredictionsIndex = 0;
                 window.EnderecoIntegrator.popupQueue--;
                 window.EnderecoIntegrator.enderecoPopupQueue--;
+
+                // Restore focus to the element that was active before the modal opened
+                if (ExtendableObject._previousActiveElement &&
+                    typeof ExtendableObject._previousActiveElement.focus === 'function' &&
+                    ExtendableObject._previousActiveElement.isConnected) {
+                    try {
+                        ExtendableObject._previousActiveElement.focus();
+                    } catch (err) {
+                        console.warn('Failed to restore focus to previous element:', err);
+                    }
+                }
+
+                // Clear the reference
+                ExtendableObject._previousActiveElement = null;
 
                 if (ExtendableObject.modalClosed) {
                     ExtendableObject.modalClosed();
@@ -2034,7 +2284,17 @@ const AddressExtension = {
                         return checkResult;
                     }
 
-                    const result = await EnderecoAPI.sendRequestToAPI(message, headers);
+                    // Create an abort controller for this request
+                    const abortController = new AbortController();
+
+                    ExtendableObject._currentAddressCheckAbortController = abortController;
+
+                    const result = await EnderecoAPI.sendRequestToAPI(message, headers, abortController.signal);
+
+                    // Clear the abort controller after successful completion
+                    if (ExtendableObject._currentAddressCheckAbortController === abortController) {
+                        ExtendableObject._currentAddressCheckAbortController = null;
+                    }
 
                     if (result?.data?.error?.code === ERROR_EXPIRED_SESSION) {
                         ExtendableObject.util.updateSessionId?.();
@@ -2060,32 +2320,36 @@ const AddressExtension = {
                             normalizedPrediction.countryCode = addressPrediction.country.toUpperCase();
                         }
 
+                        // If the original address has subdivisionCode, map from prediction's state
                         if (Object.prototype.hasOwnProperty.call(addressToCheck, 'subdivisionCode')) {
-                            normalizedPrediction.subdivisionCode = addressPrediction.subdivisionCode;
+                            normalizedPrediction.subdivisionCode = addressPrediction.state;
                         }
 
+                        // If the original address has postalCode, map from prediction's postCode
                         if (Object.prototype.hasOwnProperty.call(addressToCheck, 'postalCode')) {
                             normalizedPrediction.postalCode = addressPrediction.postCode;
                         }
 
+                        // If the original address has locality, map from prediction's cityName
                         if (Object.prototype.hasOwnProperty.call(addressToCheck, 'locality')) {
                             normalizedPrediction.locality = addressPrediction.cityName;
                         }
 
+                        // If the original address has streetName, map from prediction's street
                         if (Object.prototype.hasOwnProperty.call(addressToCheck, 'streetName')) {
                             normalizedPrediction.streetName = addressPrediction.street;
                         }
 
+                        // If the original address has buildingNumber, map from prediction's houseNumber
                         if (Object.prototype.hasOwnProperty.call(addressToCheck, 'buildingNumber')) {
                             normalizedPrediction.buildingNumber = addressPrediction.houseNumber;
                         }
 
+                        // If the original address has streetFull field
                         if (Object.prototype.hasOwnProperty.call(addressToCheck, 'streetFull')) {
-                            // If prediction has streetFull, use it directly
-                            if (Object.prototype.hasOwnProperty.call(addressPrediction, 'streetFull')) {
+                            if (addressPrediction.streetFull !== undefined) {
                                 normalizedPrediction.streetFull = addressPrediction.streetFull;
                             } else {
-                                // Otherwise, format it from other fields
                                 normalizedPrediction.streetFull = ExtendableObject.util.formatStreetFull(
                                     {
                                         countryCode: addressPrediction.country,
@@ -2109,6 +2373,17 @@ const AddressExtension = {
                     checkResult.requestStatus = 'success';
                     ExtendableObject.addressCheckCache.cachedResults[cacheKey] = checkResult;
                 } catch (e) {
+                    // Clear the abort controller on error
+                    ExtendableObject._currentAddressCheckAbortController = null;
+
+                    // Check if the error is due to request cancellation
+                    if (e.name === 'AbortError' || e.name === 'CanceledError') {
+                        console.log('Address check request was cancelled');
+                        checkResult.requestStatus = 'cancelled';
+
+                        return checkResult;
+                    }
+
                     console.warn('AddressCheck against Endereco API failed', e, message);
                     checkResult.requestStatus = 'failed';
 
@@ -2140,18 +2415,16 @@ const AddressExtension = {
         ExtendableObject.config.templates.addressFull = addressFullTemplates;
         ExtendableObject.config.templates.addressPredictionsPopupWrapper = addressPredictionsPopupWrapper;
         ExtendableObject.config.templates.addressNotFoundPopupWrapper = addressNotFoundPopupWrapper;
-        ExtendableObject.config.templates.addressNoPredictionWrapper = addressNoPredictionWrapper;
-
-        if (!ExtendableObject.config.templates.button) {
-            ExtendableObject.config.templates.button = '<button class="{{{buttonClasses}}}" endereco-use-selection endereco-disabled-until-confirmed>{{{EnderecoAddressObject.config.texts.useSelected}}}</button>';
+        ExtendableObject.config.templates.addressNoPredictionWrapper = addressNoPredictionWrapper; if (!ExtendableObject.config.templates.button) {
+            ExtendableObject.config.templates.button = '<button class="{{{buttonClasses}}}" endereco-use-selection endereco-disabled-until-confirmed tabindex="0">{{{EnderecoAddressObject.config.texts.useSelected}}}</button>';
         }
 
         if (!ExtendableObject.config.templates.buttonEditAddress) {
-            ExtendableObject.config.templates.buttonEditAddress = '<button class="{{{buttonClasses}}}" endereco-edit-address>{{{EnderecoAddressObject.config.texts.editAddress}}}</button>';
+            ExtendableObject.config.templates.buttonEditAddress = '<button class="{{{buttonClasses}}}" endereco-edit-address tabindex="0">{{{EnderecoAddressObject.config.texts.editAddress}}}</button>';
         }
 
         if (!ExtendableObject.config.templates.buttonConfirmAddress) {
-            ExtendableObject.config.templates.buttonConfirmAddress = '<button class="{{{buttonClasses}}}" endereco-confirm-address endereco-disabled-until-confirmed>{{{EnderecoAddressObject.config.texts.confirmAddress}}}</button>';
+            ExtendableObject.config.templates.buttonConfirmAddress = '<button class="{{{buttonClasses}}}" endereco-confirm-address endereco-disabled-until-confirmed tabindex="0">{{{EnderecoAddressObject.config.texts.confirmAddress}}}</button>';
         }
     },
     extend: async (ExtendableObject) => {

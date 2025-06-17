@@ -19,6 +19,15 @@
   z-index: 1;
   cursor: pointer;
   align-items: center;
+
+  // Keyboard accessibility
+  &:focus,
+  &:focus-visible {
+    outline: 2px solid #4caf50 !important;
+    outline-offset: 2px;
+    border-radius: 4px;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.3) !important;
+  }
 }
 
 .endereco-flag {
@@ -61,6 +70,12 @@
   top: 100%;
   left: 0;
   z-index: 2;
+  
+  &--longlist {
+    .endereco-flag-dropdown-inner {
+      overflow-y: scroll;
+    }
+  }
 }
 
 .endereco-flag-dropdown-inner {
@@ -73,7 +88,6 @@
   box-shadow: 1px 1px 4px rgba(0,0,0,0.25), 0 0 12px rgba(0,0,0,0.125);
   width: auto;
   max-height: 280px;
-  overflow-y: auto;
 
   .endereco-flag-dropdown-element {
     display: flex;
@@ -83,25 +97,36 @@
     margin: 0;
     box-sizing: border-box;
     cursor: pointer;
-    border: 0 none;
+    border: 2px solid transparent;
     background-color: inherit;
     position: relative;
     overflow: hidden;
     padding: 8px;
     color: #333;
     width: 100%;
+    border-radius: 4px;
+    transition: all 0.2s ease-in-out;
 
     * {
       pointer-events: none;
     }
 
     &:last-child {
-      margin-bottom: 0;
+      margin-bottom: 0;    }    &:hover {
+      background-color: transparent !important; // No green background for better contrast
+      border-color: #4caf50 !important; // Same border as focus
+      font-weight: 600;
+      transform: translateY(-1px);
     }
-
-    &:hover,
-    &.active {
-      background-color: rgba(76, 175, 80, 0.1);
+    
+    &:focus,
+    &:focus-visible {
+      background-color: transparent !important; // Overrides other backgrounds
+      border-color: #4caf50 !important;
+      font-weight: 600;
+      box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.3), 2px 2px 5px rgba(0,0,0,0.125);
+      // Native browser focus ring is preserved
+      // No green background for better contrast
     }
   }
 }
