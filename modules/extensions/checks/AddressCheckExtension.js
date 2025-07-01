@@ -154,6 +154,16 @@ var AddressCheckExtension = {
                         address = JSON.parse(JSON.stringify(address));
                     }
 
+                    // Sanitize all string fields in the address object by HTML-escaping them
+                    var fieldsToSanitize = ['postalCode', 'locality', 'streetName', 'streetFull', 'buildingNumber', 'additionalInfo'];
+                    fieldsToSanitize.forEach(function(fieldName) {
+                        if (address[fieldName] && typeof address[fieldName] === 'string') {
+                            textArea = document.createElement('textarea');
+                            textArea.textContent = address[fieldName];
+                            address[fieldName] = textArea.innerHTML;
+                        }
+                    });
+
                     // Format current address.
                     if (undefined !== $self.config.templates.addressFull[$self.countryCode.toLowerCase()]) {
                         useTemplate = $self.countryCode.toLowerCase();
