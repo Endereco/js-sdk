@@ -1589,6 +1589,7 @@ const AddressExtension = {
                 }
 
                 finalResult.addressStatus = [...statuses, 'address_selected_by_customer'];
+                finalResult.addressPredictions = predictions;
                 finalResult.sourceOfAddress = 'confirmed_user_selection';
                 finalResult.processStatus = 'finished';
             }

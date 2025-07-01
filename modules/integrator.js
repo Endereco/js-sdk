@@ -451,6 +451,10 @@ const EnderecoIntegrator = {
             intent: 'edit'
         }
     ) => {
+        if (!window.EnderecoIntegrator.activeServices.ams) {
+            return;
+        }
+        
         const integrator = window.EnderecoIntegrator;
         // Create the object
         const addressObject = await new EnderecoAddressObject(integrator.config);
