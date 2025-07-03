@@ -1,11 +1,11 @@
 import merge from 'lodash.merge';
-import EnderecoBase from './components/base.js'
+import EnderecoBase from './components/base.js';
 
 // Extensions.
 import CountryCodeExtension from './extensions/fields/CountryCodeExtension.js';
 import CountryCodeCheckExtension from './extensions/checks/CountryCodeCheckExtension.js';
-import SubdivisionCodeExtension from "./extensions/fields/SubdivisionCodeExtension";
-import SubdivisionCodeCheckExtension from "./extensions/checks/SubdivisionCodeCheckExtension";
+import SubdivisionCodeExtension from './extensions/fields/SubdivisionCodeExtension';
+import SubdivisionCodeCheckExtension from './extensions/checks/SubdivisionCodeCheckExtension';
 import PostalCodeExtension from './extensions/fields/PostalCodeExtension.js';
 import PostalCodeCheckExtension from './extensions/checks/PostalCodeCheckExtension.js';
 import LocalityExtension from './extensions/fields/LocalityExtension.js';
@@ -21,10 +21,10 @@ import AdditionalInfoCheckExtension from './extensions/checks/AdditionalInfoChec
 import AddressExtension from './extensions/fields/AddressExtension.js';
 import SessionExtension from './extensions/session/SessionExtension.js';
 
-async function EnderecoAddress(customConfig={}) {
-
+async function EnderecoAddress (customConfig = {}) {
     // Get base object, that will be extended.
-    var base = new EnderecoBase();
+    const base = new EnderecoBase();
+
     base.type = 'address';
     base.name = 'ams';
     base.addressType = 'general_address';
@@ -54,21 +54,22 @@ async function EnderecoAddress(customConfig={}) {
         AdditionalInfoCheckExtension,
         AddressExtension,
         SessionExtension
-    ]
+    ];
 
     // Load extesions.
     await base.loadExtensions();
 
     base.onSubmitUnblock = [];
-    base.submitUnblocked = function() {
-        var $self = this;
-        this.onSubmitUnblock.forEach( function(cb) {
+    base.submitUnblocked = function () {
+        const $self = this;
+
+        this.onSubmitUnblock.forEach(function (cb) {
             cb($self);
-        })
+        });
     };
 
     base.onBlurTimeout = null;
-    base.cb.handleFormBlur = async () => {
+    base.cb.handleFormBlur = () => {
         // Clear existing timeout if any
         if (base.onBlurTimeout) {
             clearTimeout(base.onBlurTimeout);
@@ -82,55 +83,73 @@ async function EnderecoAddress(customConfig={}) {
                 base.util.shouldBeChecked();
 
             if (shouldCheckAddress) {
+                // Check if address has changed since last blur check
+                const currentAddressKey = base.util.generateAddressCacheKey
+                    ? base.util.generateAddressCacheKey(base.address)
+                    : JSON.stringify(base.address);
+                const lastBlurCheckedKey = base.util.generateAddressCacheKey
+                    ? base.util.generateAddressCacheKey(base._lastBlurCheckedAddress)
+                    : JSON.stringify(base._lastBlurCheckedAddress);
+
+                if (currentAddressKey === lastBlurCheckedKey) {
+                    // Address hasn't changed since last blur check, skip
+                    return;
+                }
+
                 clearTimeout(base.onBlurTimeout);
                 base.onBlurTimeout = null;
                 try {
                     await base.util.checkAddress();
+                    // Update blur cache after checking to capture any automatic corrections
+                    base._lastBlurCheckedAddress = { ...base.address };
                 } catch (error) {
                     console.warn('Error checking address:', error);
                 }
             }
         }, base.config.ux.delay.onBlur);
-    }
+    };
 
     base.cb.handleFormSubmit = async () => {
-        let processState = 'unknown'
+        let processState = 'unknown';
+
         try {
             const result = await base.util.checkAddress();
+
             switch (result.sourceOfAddress) {
-                case 'unverified_user_input': {
-                    processState = 'edit_intention'
-                    break;
-                }
-                case 'automatic_copy_from_correction': {
-                    processState = 'finished'
-                    break;
-                }
-                case 'confirmed_user_selection': {
-                    processState = 'finished'
-                    break;
-                }
+            case 'unverified_user_input': {
+                processState = 'edit_intention';
+                break;
+            }
+            case 'automatic_copy_from_correction': {
+                processState = 'finished';
+                break;
+            }
+            case 'confirmed_user_selection': {
+                processState = 'finished';
+                break;
+            }
             }
 
             // It's not clear if checkAddress should be able to raise an exception. At the moment it doesn't, so
             // if there is an error with network connection, we return as "finished" to allow submit resumption
             if (['network_error', 'invalid_result'].includes(result.processStatus)) {
-                processState = 'finished'
+                processState = 'finished';
             }
 
             return {
                 processState
-            }
+            };
         } catch (err) {
-            console.warn("Error handling submit", {
+            console.warn('Error handling submit', {
                 error: err,
                 dataObject: base
             });
+
             return {
                 processState: 'error'
-            }
+            };
         }
-    }
+    };
 
     // Call "onCreate" callbacks.
     base.created();
@@ -138,4 +157,4 @@ async function EnderecoAddress(customConfig={}) {
     return base;
 }
 
-export default EnderecoAddress
+export default EnderecoAddress;

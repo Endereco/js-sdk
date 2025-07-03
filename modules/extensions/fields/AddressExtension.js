@@ -623,6 +623,7 @@ const AddressExtension = {
 
         // Cache
         ExtendableObject._checkedAddress = {};
+        ExtendableObject._lastBlurCheckedAddress = {};
         ExtendableObject.addressCheckCache = {
             cachedResults: {}
         };
@@ -1632,6 +1633,9 @@ const AddressExtension = {
          * Preheats the address check cache with current address data if status exists.
          */
         ExtendableObject.util.preheatCache = () => {
+            // Initialize blur cache with current address to prevent unnecessary blur checks on page load
+            ExtendableObject._lastBlurCheckedAddress = { ...ExtendableObject.address };
+
             if (ExtendableObject.addressStatus.length === 0) {
                 return;
             }
