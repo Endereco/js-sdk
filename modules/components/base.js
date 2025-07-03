@@ -222,6 +222,55 @@ function EnderecoBase() {
             CustomEvent: CustomEvent,
             generateId: function() {
                 return uuidv4();
+            },
+            /**
+             * Escapes HTML entities in a string to prevent XSS
+             * @param {string} unsafe - The potentially unsafe string
+             * @returns {string} - The escaped string
+             */
+            escapeHTML: function (unsafe) {
+                if (typeof unsafe !== 'string') {
+                    return unsafe;
+                }
+
+                return unsafe
+                    .replaceAll(/&/g, '&amp;')
+                    .replaceAll(/</g, '&lt;')
+                    .replaceAll(/>/g, '&gt;')
+                    .replaceAll(/"/g, '&quot;')
+                    .replaceAll(/'/g, '&#039;');
+            },
+            /**
+             * Sanitizes HTML content while preserving safe elements
+             * @param {string} html - The HTML to sanitize
+             * @returns {string} - The sanitized HTML
+             */
+            sanitizeHTML: function (html) {
+                if (typeof html !== 'string') {
+                    return html;
+                }
+
+                // Basic sanitization - remove script tags and event handlers
+                return html
+                    .replaceAll(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+                    .replaceAll(/on\w+\s*=\s*"[^"]*"/gi, '')
+                    .replaceAll(/on\w+\s*=\s*'[^']*'/gi, '')
+                    .replaceAll(/javascript:/gi, '');
+            },
+            /**
+             * Safely sets innerHTML using textContent for non-HTML content
+             * @param {HTMLElement} element - The element to update
+             * @param {string} content - The content to set
+             * @param {boolean} allowHTML - Whether to allow HTML content
+             */
+            safeSetContent: function (element, content, allowHTML = false) {
+                if (!element) return;
+
+                if (allowHTML) {
+                    element.innerHTML = this.sanitizeHTML(content);
+                } else {
+                    element.textContent = content;
+                }
             }
         },
 

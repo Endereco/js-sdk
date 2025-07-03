@@ -1566,6 +1566,7 @@ function EnderecoPhone(customConfig={}) {
                 var DOMElement = subscriber.object;
                 var flagsHTML = flagButtonHTML;
 
+                // No escaping required because the template data contains no user input or server response.
                 var dropdownHTML = Mustache.render(
                     phoneDropdownHTML,
                     {
@@ -1638,6 +1639,7 @@ function EnderecoPhone(customConfig={}) {
                     );
 
                     // Add autocomplete für diverse codes.
+                    // No escaping required because the template data contains no user input or server response.
                     DOMElement.insertAdjacentHTML('afterend',
                         dropdownHTML);
                     dropdownElement = DOMElement.parentElement.querySelector('.endereco-flag-dropdown');

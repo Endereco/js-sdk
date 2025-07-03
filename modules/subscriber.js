@@ -434,8 +434,16 @@ function EnderecoSubscriber(propertyName, observableObject, options = {}) {
                 $DOMElement.classList.add('endereco-s--' + value);
             }
         },
-        setInnerHTML: function(value) {
-            this.object.innerHTML = value;
+        setInnerHTML: function (value) {
+            // Security fix: Use textContent by default to prevent XSS
+            // If HTML content is truly needed, it should be explicitly sanitized
+            if (this._subject && this._subject.util && this._subject.util.safeSetContent) {
+                // Use the safe content setter from the base utility
+                this._subject.util.safeSetContent(this.object, value, false);
+            } else {
+                // Fallback to textContent for safety
+                this.object.textContent = value;
+            }
         },
         get: function(valueType) {
             if (this.object instanceof HTMLElement) {

@@ -390,7 +390,10 @@ const LocalityExtension = {
                                 ? 'endereco-span--add'
                                 : part.removed ? 'endereco-span--remove' : 'endereco-span--neutral';
 
-                            localityHtml += `<span class="${markClass}">${part.value.replace(/[ ]/g, '&nbsp;')}</span>`;
+                            // Security fix: Escape HTML entities before building HTML string
+                            const escapedValue = ExtendableObject.util.escapeHTML(part.value);
+
+                            localityHtml += `<span class="${markClass}">${escapedValue}</span>`;
                         });
 
                         const tempData = {
