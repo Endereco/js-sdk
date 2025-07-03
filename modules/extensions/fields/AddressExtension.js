@@ -1235,7 +1235,9 @@ const AddressExtension = {
 
                 // Prepare main address.
                 // TODO: replace button then replace button classes.
-                const mainAddressHtml = ExtendableObject.util.formatAddress(originalAddress, statuscodes, true, true);
+                // Security: Create escaped copy of original address
+                const escapedOriginalAddress = ExtendableObject.util.escapeAddress(originalAddress);
+                const mainAddressHtml = ExtendableObject.util.formatAddress(escapedOriginalAddress, statuscodes, true, true);
                 const editButtonHTML = ExtendableObject.config.templates.buttonEditAddress.replace('{{{buttonClasses}}}', ExtendableObject.config.templates.primaryButtonClasses);
                 const confirmButtonHTML = ExtendableObject.config.templates.buttonConfirmAddress.replace('{{{buttonClasses}}}', ExtendableObject.config.templates.secondaryButtonClasses);
 
@@ -1334,8 +1336,13 @@ const AddressExtension = {
             }
 
             // Popup needed.
-            const mainAddressHtml = ExtendableObject.util.formatAddress(originalAddress, statuscodes);
-            const firstPrediction = ExtendableObject.util.formatAddress(predictions[0], statuscodes);
+            // Security: Create escaped copy of original address
+            const escapedOriginalAddress = ExtendableObject.util.escapeAddress(originalAddress);
+            const mainAddressHtml = ExtendableObject.util.formatAddress(escapedOriginalAddress, statuscodes);
+
+            // Escape first prediction
+            const escapedFirstPrediction = ExtendableObject.util.escapeAddress(predictions[0]);
+            const firstPrediction = ExtendableObject.util.formatAddress(escapedFirstPrediction, statuscodes);
             let mainAddressDiffHtml = '';
 
             // Calculate main address diff.
@@ -1346,6 +1353,8 @@ const AddressExtension = {
                     ? 'endereco-span--add'
                     : part.removed ? 'endereco-span--remove' : 'endereco-span--neutral';
 
+                // Escaping part.value is not necessary here because the original address and the predictions were already escaped.
+
                 mainAddressDiffHtml += `<span class="${markClass}">${part.value}</span>`;
             });
 
@@ -1353,7 +1362,9 @@ const AddressExtension = {
             const processedPredictions = [];
 
             predictions.forEach((addressPrediction) => {
-                const addressFormatted = ExtendableObject.util.formatAddress(addressPrediction, statuscodes);
+                // Security: Create escaped copy of prediction for safe display
+                const escapedPrediction = ExtendableObject.util.escapeAddress(addressPrediction);
+                const addressFormatted = ExtendableObject.util.formatAddress(escapedPrediction, statuscodes);
                 let addressDiff = '';
                 const diff = diffWords(mainAddressHtml, addressFormatted, { ignoreCase: false });
 
@@ -1361,6 +1372,8 @@ const AddressExtension = {
                     const markClass = part.added
                         ? 'endereco-span--add'
                         : part.removed ? 'endereco-span--remove' : 'endereco-span--neutral';
+
+                    // Escaping part.value is not necessary here because the original address and the predictions were already escaped.
 
                     addressDiff += `<span class="${markClass}">${part.value}</span>`;
                 });
@@ -1853,17 +1866,17 @@ const AddressExtension = {
                     if (address.subdivisionCode.toUpperCase()) {
                         preparedData.subdivisionName = address.subdivisionCode.toUpperCase().split('-')[1];
                     } else {
-                        preparedData.subdivisionName = '&nbsp;';
+                        preparedData.subdivisionName = '';
                     }
                 }
             }
 
             if (!address.buildingNumber || !(address.buildingNumber.trim())) {
-                preparedData.buildingNumber = '&nbsp;';
+                preparedData.buildingNumber = '';
             }
 
             if (statuscodes.includes('additional_info_is_missing')) {
-                preparedData.additionalInfo = '&nbsp;';
+                preparedData.additionalInfo = '';
             }
 
             // Workaround to display missing house number
@@ -1876,7 +1889,7 @@ const AddressExtension = {
 
             const isSubdivisionVisible = ExtendableObject.util.hasSubscribedField('subdivisionCode');
 
-            preparedData.showSubdisivion = (preparedData.subdivisionName !== '&nbsp;') &&
+            preparedData.showSubdisivion = (preparedData.subdivisionName !== '') &&
                 Object.prototype.hasOwnProperty.call(address, 'subdivisionCode') &&
                 (
                     statuscodes.includes('subdivision_code_needs_correction') ||
@@ -1960,6 +1973,25 @@ const AddressExtension = {
 
             // If we reach here, most likely the address is complete.
             return false;
+        };
+
+        /**
+         * Escapes an address object to prevent XSS. The fields that should be escaped can be overwritten. Not all given fields have to exist in the passed address object.
+         *
+         * @param {Object} address - The (possibly) unescaped address object.
+         * @param {string[]} fieldsToEscape The fields that should be escaped. The default fields are "additionalInfo", "streetFull", "streetName", "buildingNumber", "postalCode", "locality", "countryCode" and "subdivisionCode".
+         * @returns {Object} - Returns the escaped address object.
+         */
+        ExtendableObject.util.escapeAddress = (address, fieldsToEscape = ['additionalInfo', 'streetFull', 'streetName', 'buildingNumber', 'postalCode', 'locality', 'countryCode', 'subdivisionCode']) => {
+            const escapedAddress = { ...address };
+
+            fieldsToEscape.forEach(field => {
+                if (escapedAddress[field] && ExtendableObject.util.escapeHTML) {
+                    escapedAddress[field] = ExtendableObject.util.escapeHTML(escapedAddress[field]);
+                }
+            });
+
+            return escapedAddress;
         };
     },
 

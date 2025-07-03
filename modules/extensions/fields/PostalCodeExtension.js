@@ -391,7 +391,10 @@ const PostalCodeExtension = {
                                 ? 'endereco-span--add'
                                 : part.removed ? 'endereco-span--remove' : 'endereco-span--neutral';
 
-                            postalCodeHtml += `<span class="${markClass}">${part.value.replace(/[ ]/g, '&nbsp;')}</span>`;
+                            // Security fix: Escape HTML entities before building HTML string
+                            const escapedValue = ExtendableObject.util.escapeHTML(part.value);
+
+                            postalCodeHtml += `<span class="${markClass}">${escapedValue}</span>`;
                         });
 
                         const tempData = {
@@ -413,7 +416,7 @@ const PostalCodeExtension = {
                                 if (prediction.subdivisionCode.toUpperCase()) {
                                     tempData.subdivisionName = prediction.subdivisionCode.split('-')[1];
                                 } else {
-                                    tempData.subdivisionName = '&nbsp;';
+                                    tempData.subdivisionName = '';
                                 }
                             }
                         }
