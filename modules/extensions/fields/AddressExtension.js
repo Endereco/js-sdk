@@ -1709,47 +1709,76 @@ const AddressExtension = {
 
             // Country code
             const countryCodeCorrect = statuses.includes('address_correct') || statuses.includes('country_code_correct');
+            const countryCodeFaulty = statuses.includes('country_code_not_found') || statuses.includes('country_code_needs_correction');
             const countryCodeStatus = countryCodeCorrect ? ['field_correct'] : ['field_not_correct'];
 
             // Subdivision code
             const subdivisionCodeCorrect = statuses.includes('address_correct') || statuses.includes('subdivision_code_correct');
+            const subdivisionCodeFaulty = statuses.includes('subdivision_code_not_found') || statuses.includes('subdivision_code_needs_correction');
             const subdivisionCodeStatus = subdivisionCodeCorrect ? ['field_correct'] : ['field_not_correct'];
 
             // Postal code
             const postalCodeCorrect = statuses.includes('address_correct') || statuses.includes('postal_code_correct');
+            const postalCodeFaulty = statuses.includes('postal_code_not_found') || statuses.includes('postal_code_needs_correction');
             const postalCodeStatus = postalCodeCorrect ? ['field_correct'] : ['field_not_correct'];
 
             // Locality (cityName)
             const localityCorrect = statuses.includes('address_correct') || statuses.includes('locality_correct');
+            const localityFaulty = statuses.includes('locality_not_found') || statuses.includes('locality_needs_correction');
             const localityStatus = localityCorrect ? ['field_correct'] : ['field_not_correct'];
 
             // Street name
             const streetNameCorrect = statuses.includes('address_correct') || statuses.includes('street_name_correct');
+            const streetNameFaulty = statuses.includes('street_name_not_found') || statuses.includes('street_name_needs_correction');
             const streetNameStatus = streetNameCorrect ? ['field_correct'] : ['field_not_correct'];
 
             // Building number
             const buildingNumberCorrect = statuses.includes('address_correct') || statuses.includes('building_number_correct');
+            const buildingNumberFaulty = statuses.includes('building_number_not_found') || statuses.includes('building_number_is_missing');
             const buildingNumberStatus = buildingNumberCorrect ? ['field_correct'] : ['field_not_correct'];
 
             // Additional info
             const additionalInfoCorrect = statuses.includes('address_correct') || statuses.includes('additional_info_correct');
+            const additionalInfoFaulty = statuses.includes('additional_info_not_found') || statuses.includes('additional_info_needs_correction') || statuses.includes('additional_info_is_missing');
             const additionalInfoStatus = additionalInfoCorrect ? ['field_correct'] : ['field_not_correct'];
 
             // Street full - Special case
             const streetFullCorrect = statuses.includes('address_correct') ||
                 statuses.includes('street_full_correct') ||
                 (statuses.includes('street_name_correct') && statuses.includes('building_number_correct'));
+            const streetFullFaulty = statuses.includes('street_full_not_found') ||
+                statuses.includes('street_name_not_found') ||
+                statuses.includes('building_number_not_found') ||
+                statuses.includes('street_full_needs_correction') ||
+                statuses.includes('street_name_needs_correction') ||
+                statuses.includes('building_number_needs_correction');
             const streetFullStatus = streetFullCorrect ? ['field_correct'] : ['field_not_correct'];
 
-            // Set the status for each field, only if the field has a value
-            ExtendableObject.countryCodeStatus = ExtendableObject.countryCode ? countryCodeStatus : [];
-            ExtendableObject.subdivisionCodeStatus = ExtendableObject.subdivisionCode ? subdivisionCodeStatus : [];
-            ExtendableObject.postalCodeStatus = ExtendableObject.postalCode ? postalCodeStatus : [];
-            ExtendableObject.localityStatus = ExtendableObject.locality ? localityStatus : [];
-            ExtendableObject.streetFullStatus = ExtendableObject.streetFull ? streetFullStatus : [];
-            ExtendableObject.streetNameStatus = ExtendableObject.streetName ? streetNameStatus : [];
-            ExtendableObject.buildingNumberStatus = ExtendableObject.buildingNumber ? buildingNumberStatus : [];
-            ExtendableObject.additionalInfoStatus = ExtendableObject.additionalInfo ? additionalInfoStatus : [];
+            // Set the status for each field, show error status even when field is empty if there's an error
+            ExtendableObject.countryCodeStatus = ExtendableObject.countryCode
+                ? countryCodeStatus
+                : (countryCodeFaulty ? ['field_not_correct'] : []);
+            ExtendableObject.subdivisionCodeStatus = ExtendableObject.subdivisionCode
+                ? subdivisionCodeStatus
+                : (subdivisionCodeFaulty ? ['field_not_correct'] : []);
+            ExtendableObject.postalCodeStatus = ExtendableObject.postalCode
+                ? postalCodeStatus
+                : (postalCodeFaulty ? ['field_not_correct'] : []);
+            ExtendableObject.localityStatus = ExtendableObject.locality
+                ? localityStatus
+                : (localityFaulty ? ['field_not_correct'] : []);
+            ExtendableObject.streetFullStatus = ExtendableObject.streetFull
+                ? streetFullStatus
+                : (streetFullFaulty ? ['field_not_correct'] : []);
+            ExtendableObject.streetNameStatus = ExtendableObject.streetName
+                ? streetNameStatus
+                : (streetNameFaulty ? ['field_not_correct'] : []);
+            ExtendableObject.buildingNumberStatus = ExtendableObject.buildingNumber
+                ? buildingNumberStatus
+                : (buildingNumberFaulty ? ['field_not_correct'] : []);
+            ExtendableObject.additionalInfoStatus = ExtendableObject.additionalInfo
+                ? additionalInfoStatus
+                : (additionalInfoFaulty ? ['field_not_correct'] : []);
         };
 
         /**
