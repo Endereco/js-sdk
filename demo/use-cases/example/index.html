@@ -1154,25 +1154,36 @@
 				: null;
 
 			form.querySelectorAll('.region').forEach(function(regionSelect) {
+				// Enable only the region select that matches the selected country
 				if (regionSelect.getAttribute('data-country-id') === String(countryId)) {
 					regionSelect.disabled = false;
-					// If the field was disabled before, clear the value
-					if (regionSelect.dataset.lastEnabled !== 'true') {
-						regionSelect.selectedIndex = 0;
-					}
-					regionSelect.dataset.lastEnabled = 'true';
 				} else {
 					regionSelect.disabled = true;
-					regionSelect.dataset.lastEnabled = 'false';
-					regionSelect.selectedIndex = 0;
+					regionSelect.selectedIndex = 0; // Optionally reset value
 				}
 			});
 		});
 	}
-	setFields();
-	document.querySelectorAll('.country, #country').forEach(function(select) {
-		select.addEventListener('change', setFields);
-	});
+	if (window.EnderecoIntegrator && typeof window.EnderecoIntegrator.waitUntilReady === 'function') {
+		window.EnderecoIntegrator.waitUntilReady().then(function() {
+			setFields();
+			document.querySelectorAll('.country, #country').forEach(function(select) {
+				select.addEventListener('change', setFields);
+			});
+		});
+	} else {
+		// fallback: try again after a short delay
+		setTimeout(function() {
+			if (window.EnderecoIntegrator && typeof window.EnderecoIntegrator.waitUntilReady === 'function') {
+				window.EnderecoIntegrator.waitUntilReady().then(function() {
+					setFields();
+					document.querySelectorAll('.country, #country').forEach(function(select) {
+						select.addEventListener('change', setFields);
+					});
+				});
+			}
+		}, 200);
+	}
 </script>
 </body>
 </html>

@@ -811,17 +811,44 @@
 
 <script>
 	function setFields(e) {
-		var country = document.querySelector('#country');
-		country.closest('form').querySelectorAll('.region').forEach( function(selectDOM) {
-			if (parseInt(country.value) === parseInt(selectDOM.getAttribute('data-country-id'))) {
-				selectDOM.disabled = false;
-			} else {
-				selectDOM.disabled = true;
-			}
-		})
+		// For each form on the page
+		document.querySelectorAll('form').forEach(function(form) {
+			var countrySelect = form.querySelector('.country, #country');
+			if (!countrySelect) return;
+
+			// Get the country value and map to data-country-id
+			var countryValue = countrySelect.value;
+			var countryId = window.EnderecoIntegrator && window.EnderecoIntegrator.countryReverseMapping
+				? window.EnderecoIntegrator.countryReverseMapping[countryValue]
+				: null;
+
+			form.querySelectorAll('.region').forEach(function(regionSelect) {
+				// Enable only the region select that matches the selected country
+				if (regionSelect.getAttribute('data-country-id') === String(countryId)) {
+					regionSelect.disabled = false;
+				} else {
+					regionSelect.disabled = true;
+					regionSelect.selectedIndex = 0; // Optionally reset value
+				}
+			});
+		});
 	}
-	setFields();
-	document.querySelector('#country').addEventListener('change', setFields);
+	if (window.EnderecoIntegrator && typeof window.EnderecoIntegrator.waitUntilReady === 'function') {
+		window.EnderecoIntegrator.waitUntilReady().then(function() {
+			setFields();
+			document.querySelector('#country').addEventListener('change', setFields);
+		});
+	} else {
+		// fallback: try again after a short delay
+		setTimeout(function() {
+			if (window.EnderecoIntegrator && typeof window.EnderecoIntegrator.waitUntilReady === 'function') {
+				window.EnderecoIntegrator.waitUntilReady().then(function() {
+					setFields();
+					document.querySelector('#country').addEventListener('change', setFields);
+				});
+			}
+		}, 200);
+	}
 </script>
 </body>
 </html>
