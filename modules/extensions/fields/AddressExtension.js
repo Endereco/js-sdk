@@ -1895,17 +1895,17 @@ const AddressExtension = {
                     if (address.subdivisionCode.toUpperCase()) {
                         preparedData.subdivisionName = address.subdivisionCode.toUpperCase().split('-')[1];
                     } else {
-                        preparedData.subdivisionName = '';
+                        preparedData.subdivisionName = '&nbsp;';
                     }
                 }
             }
 
             if (!address.buildingNumber || !(address.buildingNumber.trim())) {
-                preparedData.buildingNumber = '';
+                preparedData.buildingNumber = '&nbsp;';
             }
 
             if (statuscodes.includes('additional_info_is_missing')) {
-                preparedData.additionalInfo = '';
+                preparedData.additionalInfo = '&nbsp;';
             }
 
             // Workaround to display missing house number
@@ -1918,7 +1918,7 @@ const AddressExtension = {
 
             const isSubdivisionVisible = ExtendableObject.util.hasSubscribedField('subdivisionCode');
 
-            preparedData.showSubdisivion = (preparedData.subdivisionName !== '') &&
+            preparedData.showSubdisivion = (preparedData.subdivisionName !== '&nbsp;') &&
                 Object.prototype.hasOwnProperty.call(address, 'subdivisionCode') &&
                 (
                     statuscodes.includes('subdivision_code_needs_correction') ||
