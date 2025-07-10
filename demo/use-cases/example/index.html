@@ -674,7 +674,7 @@
 						<option value="FR-66">Pyrénées-Orientales</option>
 						<option value="FR-81">Tarn</option>
 						<option value="FR-82">Tarn-et-Garonne</option>
-						<option value="FR-PAC">Provence-Alpes-Côte-d’Azur</option>
+						<option value="FR-PAC">Provence-Alpes-Côte-d'Azur</option>
 						<option value="FR-04">Alpes-de-Haute-Provence</option>
 						<option value="FR-05">Hautes-Alpes</option>
 						<option value="FR-06">Alpes-Maritimes</option>
@@ -1142,17 +1142,48 @@
 
 <script>
 	function setFields(e) {
-		var country = document.querySelector('#country');
-		country.closest('form').querySelectorAll('.region').forEach( function(selectDOM) {
-			if (parseInt(country.value) === parseInt(selectDOM.getAttribute('data-country-id'))) {
-				selectDOM.disabled = false;
-			} else {
-				selectDOM.disabled = true;
-			}
-		})
+		// For each form on the page
+		document.querySelectorAll('form').forEach(function(form) {
+			var countrySelect = form.querySelector('.country, #country');
+			if (!countrySelect) return;
+
+			// Get the country value and map to data-country-id
+			var countryValue = countrySelect.value;
+			var countryId = window.EnderecoIntegrator && window.EnderecoIntegrator.countryReverseMapping
+				? window.EnderecoIntegrator.countryReverseMapping[countryValue]
+				: null;
+
+			form.querySelectorAll('.region').forEach(function(regionSelect) {
+				// Enable only the region select that matches the selected country
+				if (regionSelect.getAttribute('data-country-id') === String(countryId)) {
+					regionSelect.disabled = false;
+				} else {
+					regionSelect.disabled = true;
+					regionSelect.selectedIndex = 0; // Optionally reset value
+				}
+			});
+		});
 	}
-	setFields();
-	document.querySelector('#country').addEventListener('change', setFields);
+	if (window.EnderecoIntegrator && typeof window.EnderecoIntegrator.waitUntilReady === 'function') {
+		window.EnderecoIntegrator.waitUntilReady().then(function() {
+			setFields();
+			document.querySelectorAll('.country, #country').forEach(function(select) {
+				select.addEventListener('change', setFields);
+			});
+		});
+	} else {
+		// fallback: try again after a short delay
+		setTimeout(function() {
+			if (window.EnderecoIntegrator && typeof window.EnderecoIntegrator.waitUntilReady === 'function') {
+				window.EnderecoIntegrator.waitUntilReady().then(function() {
+					setFields();
+					document.querySelectorAll('.country, #country').forEach(function(select) {
+						select.addEventListener('change', setFields);
+					});
+				});
+			}
+		}, 200);
+	}
 </script>
 </body>
 </html>
