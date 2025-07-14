@@ -5,6 +5,8 @@
   "scripts": {
     "build": "npm run build-styles && cross-env NODE_ENV=production webpack --progress && npm run copy",
     "build-styles": "cross-env NODE_ENV=production webpack --config webpack-styles.config.js && rimraf dist/style.js && npm run copy-styles",
+    "build-dev": "npm run build-dev-styles && cross-env NODE_ENV=development webpack --progress && npm run copy",
+    "build-dev-styles": "cross-env NODE_ENV=development webpack --config webpack-styles.config.js && rimraf dist/style.js && npm run copy-styles",
     "copy": "copyfiles -u 1 ./dist/endereco.min.js ./demo/assets",
     "copy-styles": "copyfiles -u 1 ./dist/endereco.min.css ./demo/assets",
     "demo": "nodemon -e js,mjs,cjs,json,html demo/app.js & browser-sync start --proxy 'localhost:8888' --files 'demo/**/*.js, demo/**/*.css, demo/**/*.html' --open"

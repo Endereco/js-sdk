@@ -1,40 +1,39 @@
 <div endereco-popup class="endereco-popup-container endereco-popup-container--direction-{{direction}}">
-	<div class="endereco-modal">
+	<div class="endereco-modal" role="dialog" aria-modal="true" tabindex="-1" aria-labelledby="endereco-modal-title" aria-describedby="endereco-modal-desc">
 		<div class="endereco-modal__header">
-			<p class="endereco-modal__header-main">{{{title}}}</p>
-			<p class="endereco-modal__header-sub">{{{EnderecoAddressObject.config.texts.popUpSubline}}}</p>
+			<p id="endereco-modal-title" class="endereco-modal__header-main">{{{title}}}</p>
+			<p id="endereco-modal-desc" class="endereco-modal__header-sub">{{{EnderecoAddressObject.config.texts.popUpSubline}}}</p>
 
-			{{#showClose}}<span class="endereco-modal__close" endereco-modal-close></span>{{/showClose}}
+			{{#showClose}}<span class="endereco-modal__close" endereco-modal-close tabindex="0" aria-label="Schließen"></span>{{/showClose}}
 		</div>
-		<div class="endereco-modal__body">
+		<div class="endereco-modal__body">			<div role="radiogroup" aria-labelledby="endereco-modal-title">
 			<div class="endereco-modal__divider">
 				<span class="endereco-modal__divider-innertext">{{{EnderecoAddressObject.config.texts.ourSuggestions}}}</span>
 			</div>
-			<ul class="endereco-address-predictions endereco-address-predictions--suggestions">
-				{{#predictions}}
-					<li class="endereco-address-predictions__item">
-						<input class="endereco-address-predictions__radio" type="radio" name="endereco-address-predictions" value="{{ index }}" id="endereco-address-predictions__item_{{ index }}">
-						<label class="endereco-address-predictions__label" for="endereco-address-predictions__item_{{ index }}">{{{ addressDiff }}}</label>
-					</li>
+			<ul class="endereco-address-predictions endereco-address-predictions--suggestions">					{{#predictions}}
+				<li class="endereco-address-predictions__item">
+					<input class="endereco-address-predictions__radio" type="radio" name="endereco-address-predictions" value="{{ index }}" id="endereco-address-predictions__item_{{ index }}" tabindex="{{#isFirst}}0{{/isFirst}}{{^isFirst}}-1{{/isFirst}}">
+					<label class="endereco-address-predictions__label" for="endereco-address-predictions__item_{{ index }}">{{{ addressDiff }}}</label>
+				</li>
 				{{loopUp}}
 				{{/predictions}}
 			</ul>
 			<div class="endereco-modal__divider">
-				<span class="endereco-modal__divider-innertext">{{{EnderecoAddressObject.config.texts.yourInput}}} <small><a href="javascript:void(0)" endereco-edit-address>{{{EnderecoAddressObject.config.texts.editYourInput}}}</a></small></span>
-			</div>
-			<ul class="endereco-address-predictions endereco-address-predictions--original">
-				<li class="endereco-address-predictions__item">
-					<input class="endereco-address-predictions__radio" type="radio" name="endereco-address-predictions" value="-1" id="endereco-address-predictions__item_original">
-					<label class="endereco-address-predictions__label" for="endereco-address-predictions__item_original">{{{ mainAddress }}}</label>
-				</li>
-			</ul>
+				<span class="endereco-modal__divider-innertext">{{{EnderecoAddressObject.config.texts.yourInput}}} <small><a href="javascript:void(0)" endereco-edit-address tabindex="0">{{{EnderecoAddressObject.config.texts.editYourInput}}}</a></small></span>
+			</div>				<ul class="endereco-address-predictions endereco-address-predictions--original">
+			<li class="endereco-address-predictions__item">
+				<input class="endereco-address-predictions__radio" type="radio" name="endereco-address-predictions" value="-1" id="endereco-address-predictions__item_original" tabindex="{{#noPredictions}}0{{/noPredictions}}{{^noPredictions}}-1{{/noPredictions}}">
+				<label class="endereco-address-predictions__label" for="endereco-address-predictions__item_original">{{{ mainAddress }}}</label>
+			</li>
+		</ul>
+		</div>
 			<div class="endereco-modal__warning" endereco-show-if-origin>
 				{{{EnderecoAddressObject.config.texts.warningText}}}
 			</div>
 			{{#showConfirCheckbox}}
 			<div class="endereco-modal__address-confirmation" endereco-show-if-origin>
 				<label>
-					<input type="checkbox" value="1" endereco-confirm-address-checkbox> {{{EnderecoAddressObject.config.texts.confirmMyAddressCheckbox}}}
+					<input type="checkbox" value="1" endereco-confirm-address-checkbox tabindex="0"> {{{EnderecoAddressObject.config.texts.confirmMyAddressCheckbox}}}
 				</label>
 			</div>
 			{{/showConfirCheckbox}}
