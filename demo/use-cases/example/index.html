@@ -75,6 +75,11 @@
 			text-decoration: none;
 			cursor: pointer;
 		}
+
+		.region--inactive {
+			opacity: 0.5;
+			pointer-events: none;
+		}
 	</style>
 	<script>
 		// Konfiguration und spezifische Anpassungen.
@@ -1141,18 +1146,28 @@
 ></script>
 
 <script>
-	function setFields(e) {
-		var country = document.querySelector('#country');
-		country.closest('form').querySelectorAll('.region').forEach( function(selectDOM) {
-			if (parseInt(country.value) === parseInt(selectDOM.getAttribute('data-country-id'))) {
-				selectDOM.disabled = false;
+	function updateRegionSelect() {
+		var countrySelect = document.getElementById('country');
+		var selectedCountry = countrySelect ? countrySelect.value : '';
+		var countryId = (window.EnderecoIntegrator && window.EnderecoIntegrator.countryReverseMapping && selectedCountry)
+			? window.EnderecoIntegrator.countryReverseMapping[selectedCountry]
+			: undefined;
+
+		// For each region select, enable only the one corresponding to the selected country
+		document.querySelectorAll('.region').forEach(function(region, idx) {
+			var regionCountryId = (idx + 1).toString(); // region_1, region_2, region_3
+			if (countryId && countryId.toString() === regionCountryId) {
+				region.disabled = false;
+				region.classList.remove('region--inactive');
 			} else {
-				selectDOM.disabled = true;
+				region.disabled = true;
+				region.classList.add('region--inactive');
 			}
-		})
+		});
 	}
-	setFields();
-	document.querySelector('#country').addEventListener('change', setFields);
+
+	document.getElementById('country').addEventListener('change', updateRegionSelect);
+	updateRegionSelect();
 </script>
 </body>
 </html>
