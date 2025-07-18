@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<style>
+		.form-container {
+			width: 500px;
+			margin: 100px auto;
+			padding: 16px;
+			border-color: #e8e8e8;
+			background-color: #f3f3f3;
+			box-sizing: border-box;
+		}
+
+		.row {
+			display: flex;
+			margin: 8px 0;
+			justify-content: space-between;
+		}
+
+		.is--insivisble {
+			display: none !important;
+		}
+
+		.form-container .label {
+			display: inline-block;
+			font-size: 0.75em;
+			width: 100%;
+			cursor: pointer;
+		}
+
+		.form-container select,
+		.form-container input {
+			width: 100%;
+			box-sizing: border-box;
+		}
+
+		.form-container input[type=checkbox] {
+			width: auto;
+			box-sizing: border-box;
+		}
+
+		.row > div:first-child {
+			margin-right: 20px;
+		}
+
+		.is--hidden {
+			display: none !important;
+		}
+
+		.btn.btn-primary {
+			background-color: #0069ff;
+			border: 0;
+			border-radius: 3px;
+			color: #fff;
+			display: inline-block;
+			font-size: 16px;
+			font-weight: 400;
+			padding: 6px 18px;
+			text-align: center;
+			text-decoration: none;
+			cursor: pointer;
+		}
+
+		.btn.btn-secondary {
+			background-color: #999999;
+			border: 0;
+			border-radius: 3px;
+			color: #fff;
+			display: inline-block;
+			font-size: 16px;
+			font-weight: 400;
+			padding: 6px 18px;
+			text-align: center;
+			text-decoration: none;
+			cursor: pointer;
+		}
+	</style>
+	<script>
+		// Konfiguration und spezifische Anpassungen.
+		if (undefined === window.EnderecoIntegrator) {
+			window.EnderecoIntegrator = {};
+		}
+		if (!window.EnderecoIntegrator.onLoad) {
+			window.EnderecoIntegrator.onLoad = [];
+		}
+
+		// Hilfsfunktion. Damit lässt sich initAMS aufrufen, auch wenn die funktion noch nicht initiert ist.
+		// Bessere Art und Weise wäre ein Proxy Objekt.
+		async function enderecoInitAMS(selectors, config) {
+			if (window.EnderecoIntegrator.ready) {
+				window.EnderecoIntegrator.initAMS(selectors, config);
+			} else {
+				window.EnderecoIntegrator.onLoad.push(async () => {
+					window.EnderecoIntegrator.initAMS(selectors, config);
+				});
+			}
+		}
+
+		function enderecoInitPhoneServices(prefix, config) {
+			if (undefined !== window.EnderecoIntegrator.initPhoneServices) {
+				window.EnderecoIntegrator.initPhoneServices(prefix, config);
+			} else {
+				window.EnderecoIntegrator.onLoad.push(function () {
+					window.EnderecoIntegrator.initPhoneServices(prefix, config);
+				});
+			}
+		}
+
+		function enderecoInitPersonServices(prefix, config) {
+			if (undefined !== window.EnderecoIntegrator.initPersonServices) {
+				window.EnderecoIntegrator.initPersonServices(prefix, config);
+			} else {
+				window.EnderecoIntegrator.onLoad.push(function () {
+					window.EnderecoIntegrator.initPersonServices(prefix, config);
+				});
+			}
+		}
+
+		function enderecoInitEmailServices(prefix, config) {
+			if (undefined !== window.EnderecoIntegrator.initEmailServices) {
+				window.EnderecoIntegrator.initEmailServices(prefix, config);
+			} else {
+				window.EnderecoIntegrator.onLoad.push(function () {
+					window.EnderecoIntegrator.initEmailServices(prefix, config);
+				});
+			}
+		}
+
+		function enderecoLoadAMSConfig() {
+			window.EnderecoIntegrator.defaultCountry = 'DE';
+			window.EnderecoIntegrator.themeName = 'my-theme';
+			window.EnderecoIntegrator.defaultCountrySelect = true; // Feature "Preselect country"
+			window.EnderecoIntegrator.config.apiUrl = 'http://localhost:8888/proxyfile';
+			window.EnderecoIntegrator.config.apiKey = ''; // Hier kommt Dein API Key.
+			window.EnderecoIntegrator.config.showDebugInfo = false;
+			window.EnderecoIntegrator.config.remoteApiUrl = 'http://endereco-service.de/rpc/v1';
+			window.EnderecoIntegrator.config.trigger.onblur = false; // Has to be false for proper testing
+			window.EnderecoIntegrator.config.trigger.onsubmit = true;
+			window.EnderecoIntegrator.config.ux.smartFill = true;
+			window.EnderecoIntegrator.config.ux.checkExisting = true;
+			window.EnderecoIntegrator.config.ux.resumeSubmit = true;
+			window.EnderecoIntegrator.config.ux.useStandardCss = true;
+			window.EnderecoIntegrator.config.ux.cssFilePath = '/assets/endereco.min.css';
+			window.EnderecoIntegrator.config.ux.showEmailStatus = true;
+			window.EnderecoIntegrator.config.ux.allowCloseModal = true;
+			window.EnderecoIntegrator.config.ux.confirmWithCheckbox = true;
+			window.EnderecoIntegrator.config.ux.changeFieldsOrder = true;
+			window.EnderecoIntegrator.config.ux.showPhoneErrors = true;
+			window.EnderecoIntegrator.config.phoneFormat = "E164";
+			window.EnderecoIntegrator.config.ux.showPhoneFlag = true;
+			window.EnderecoIntegrator.countryMappingUrl = '';
+			window.EnderecoIntegrator.config.useAutocomplete = true;
+			window.EnderecoIntegrator.config.templates.primaryButtonClasses = 'btn btn-primary btn-lg';
+			window.EnderecoIntegrator.config.templates.secondaryButtonClasses = 'btn btn-secondary btn-lg';
+			window.EnderecoIntegrator.config.texts = {
+				popUpHeadline: 'Adresse prüfen',
+				popUpSubline: 'Die von Ihnen eingegebene Adresse scheint nicht korrekt oder unvollständig zu sein. Bitte wählen Sie die korrekte Adresse aus.',
+				mistakeNoPredictionSubline: 'Ihre Adresse konnte nicht verifiziert werden. Bitte prüfen Sie Ihre Eingabe und ändern oder bestätigen sie.',
+				notFoundSubline: 'Ihre Adresse konnte nicht verifiziert werden. Bitte prüfen Sie Ihre Eingabe und ändern oder bestätigen sie.',
+				confirmMyAddressCheckbox: 'Ich bestätige, dass meine Adresse korrekt und zustellbar ist.',
+				yourInput: 'Ihre Eingabe:',
+				editYourInput: '(bearbeiten)',
+				ourSuggestions: 'Unsere Vorschläge:',
+				useSelected: 'Auswahl übernehmen',
+				confirmAddress: 'Adresse bestätigen',
+				editAddress: 'Adresse bearbeiten',
+				warningText: 'Falsche Adressen können zu Problemen in der Zustellung führen und weitere Kosten verursachen.',
+				popupHeadlines: {
+					general_address: 'Adresse prüfen',
+					billing_address: 'Rechnungsadresse prüfen',
+					shipping_address: 'Lieferadresse prüfen',
+				},
+				errorMessages: {
+					address_has_missing_building_number_content: 'Die Hausnummer fehlt in der Eingabe.',
+					address_has_unresolvable_building_number_content: 'Mit der eingegebenen Hausnummer konnte die Adresse nicht verifiziert werden.',
+					packstation_has_unresolvable_address: 'Die Packstation-Adresse konnte nicht gefunden werden.',
+					postoffice_has_unresolvable_address: 'Die Postfilialen-Adresse konnte nicht gefunden werden.',
+					packstation_has_unresolvable_postnummer: 'Die Postnummer ist ungültig.'
+				},
+				statuses: {
+					email_not_correct: 'Die E-Mail Adresse scheint nicht korrekt zu sein.',
+					email_cant_receive: 'Das E-Mail Postfach ist nicht erreichbar.',
+					email_syntax_error: 'Prüfen Sie die Schreibweise.',
+					email_no_mx: 'Die E-Mail Adresse existiert nicht. Prüfen Sie die Schreibweise.',
+					building_number_is_missing: 'Keine Hausnummer enthalten.',
+					building_number_not_found: 'Diese Hausnummer wurde nicht gefunden.',
+					street_name_needs_correction: 'Die Schreibweise der Straße ist fehlerhaft.',
+					locality_needs_correction: 'Die Schreibweise des Ortes ist fehlerhaft.',
+					postal_code_needs_correction: 'Die PLZ ist ungültig.',
+					country_code_needs_correction: 'Die eingegebene Adresse wurde in einem anderen Land gefunden.',
+					phone_invalid: "Die Rufnummer existiert nicht oder ist nicht erreichbar.",
+					phone_format_needs_correction: "Die Rufnummer ist falsch geschrieben.",
+					phone_should_be_fixed: "Es wird eine Festnetznummer erwartet",
+					phone_should_be_mobile: "Es wird eine Mobilfunknummer erwartet"
+				},
+				"requiredFormat": {
+					"E164": "Format E.164 wird erwartet",
+					"INTERNATIONAL": "Internationaler format wird erwartet",
+					"NATIONAL": "Nationaler Format wird erwartet",
+				}
+			};
+			window.EnderecoIntegrator.activeServices = {
+				ams: true,
+				emailService: false,
+				personService: false,
+				phs: false
+			}
+			window.EnderecoIntegrator.countryMapping = {
+				'1': 'DE',
+				'2': 'FR',
+				'3': 'US'
+			};
+			window.EnderecoIntegrator.countryReverseMapping = {
+				'DE': 1,
+				'FR': 2,
+				'US': 3
+			};
+
+			window.EnderecoIntegrator.subdivisionMapping = {
+				// Germany (DE)
+				'DE-BW': 'DE-BW', 'DE-BY': 'DE-BY', 'DE-BE': 'DE-BE', 'DE-BB': 'DE-BB',
+				'DE-HB': 'DE-HB', 'DE-HH': 'DE-HH', 'DE-HE': 'DE-HE', 'DE-MV': 'DE-MV',
+				'DE-NI': 'DE-NI', 'DE-NW': 'DE-NW', 'DE-RP': 'DE-RP', 'DE-SL': 'DE-SL',
+				'DE-SN': 'DE-SN', 'DE-ST': 'DE-ST', 'DE-SH': 'DE-SH', 'DE-TH': 'DE-TH',
+
+				// France (FR) - Add all codes from your HTML select list here
+				'FR-ARA': 'FR-ARA', 'FR-01': 'FR-01', 'FR-03': 'FR-03', 'FR-07': 'FR-07',
+				'FR-15': 'FR-15', 'FR-26': 'FR-26', 'FR-38': 'FR-38', 'FR-42': 'FR-42',
+				'FR-43': 'FR-43', 'FR-63': 'FR-63', 'FR-69': 'FR-69', 'FR-73': 'FR-73',
+				'FR-74': 'FR-74', 'FR-69M': 'FR-69M', 'FR-BFC': 'FR-BFC', 'FR-21': 'FR-21',
+				'FR-25': 'FR-25', 'FR-39': 'FR-39', 'FR-58': 'FR-58', 'FR-70': 'FR-70',
+				'FR-71': 'FR-71', 'FR-89': 'FR-89', 'FR-90': 'FR-90', 'FR-BRE': 'FR-BRE',
+				'FR-22': 'FR-22', 'FR-29': 'FR-29', 'FR-35': 'FR-35', 'FR-56': 'FR-56',
+				'FR-CVL': 'FR-CVL', 'FR-18': 'FR-18', 'FR-28': 'FR-28', 'FR-36': 'FR-36',
+				'FR-37': 'FR-37', 'FR-41': 'FR-41', 'FR-45': 'FR-45', 'FR-GES': 'FR-GES',
+				'FR-08': 'FR-08', 'FR-10': 'FR-10', 'FR-51': 'FR-51', 'FR-52': 'FR-52',
+				'FR-54': 'FR-54', 'FR-55': 'FR-55', 'FR-57': 'FR-57', 'FR-88': 'FR-88',
+				'FR-6AE': 'FR-6AE', 'FR-67': 'FR-67', 'FR-68': 'FR-68', 'FR-HDF': 'FR-HDF',
+				'FR-02': 'FR-02', 'FR-59': 'FR-59', 'FR-60': 'FR-60', 'FR-62': 'FR-62',
+				'FR-80': 'FR-80', 'FR-IDF': 'FR-IDF', 'FR-77': 'FR-77', 'FR-78': 'FR-78',
+				'FR-91': 'FR-91', 'FR-92': 'FR-92', 'FR-93': 'FR-93', 'FR-94': 'FR-94',
+				'FR-95': 'FR-95', 'FR-75C': 'FR-75C', 'FR-NAQ': 'FR-NAQ', 'FR-16': 'FR-16',
+				'FR-17': 'FR-17', 'FR-19': 'FR-19', 'FR-23': 'FR-23', 'FR-24': 'FR-24',
+				'FR-33': 'FR-33', 'FR-40': 'FR-40', 'FR-47': 'FR-47', 'FR-64': 'FR-64',
+				'FR-79': 'FR-79', 'FR-86': 'FR-86', 'FR-87': 'FR-87', 'FR-NOR': 'FR-NOR',
+				'FR-14': 'FR-14', 'FR-27': 'FR-27', 'FR-50': 'FR-50', 'FR-61': 'FR-61',
+				'FR-76': 'FR-76', 'FR-OCC': 'FR-OCC', 'FR-09': 'FR-09', 'FR-11': 'FR-11',
+				'FR-12': 'FR-12', 'FR-30': 'FR-30', 'FR-31': 'FR-31', 'FR-32': 'FR-32',
+				'FR-34': 'FR-34', 'FR-46': 'FR-46', 'FR-48': 'FR-48', 'FR-65': 'FR-65',
+				'FR-66': 'FR-66', 'FR-81': 'FR-81', 'FR-82': 'FR-82', 'FR-PAC': 'FR-PAC',
+				'FR-04': 'FR-04', 'FR-05': 'FR-05', 'FR-06': 'FR-06', 'FR-13': 'FR-13',
+				'FR-83': 'FR-83', 'FR-84': 'FR-84', 'FR-PDL': 'FR-PDL', 'FR-44': 'FR-44',
+				'FR-49': 'FR-49', 'FR-53': 'FR-53', 'FR-72': 'FR-72', 'FR-85': 'FR-85',
+				'FR-CP': 'FR-CP', 'FR-BL': 'FR-BL', 'FR-MF': 'FR-MF', 'FR-PF': 'FR-PF',
+				'FR-PM': 'FR-PM', 'FR-WF': 'FR-WF', 'FR-20R': 'FR-20R', 'FR-2A': 'FR-2A',
+				'FR-2B': 'FR-2B', 'FR-NC': 'FR-NC', 'FR-TF': 'FR-TF', 'FR-972': 'FR-972',
+				'FR-973': 'FR-973', 'FR-971': 'FR-971', 'FR-974': 'FR-974', 'FR-976': 'FR-976',
+
+				// USA (US)
+				'US-DC': 'US-DC', 'US-AS': 'US-AS', 'US-GU': 'US-GU', 'US-MP': 'US-MP',
+				'US-PR': 'US-PR', 'US-UM': 'US-UM', 'US-VI': 'US-VI', 'US-AK': 'US-AK',
+				'US-AL': 'US-AL', 'US-AR': 'US-AR', 'US-AZ': 'US-AZ', 'US-CA': 'US-CA',
+				'US-CO': 'US-CO', 'US-CT': 'US-CT', 'US-DE': 'US-DE', 'US-FL': 'US-FL',
+				'US-GA': 'US-GA', 'US-HI': 'US-HI', 'US-IA': 'US-IA', 'US-ID': 'US-ID',
+				'US-IL': 'US-IL', 'US-IN': 'US-IN', 'US-KS': 'US-KS', 'US-KY': 'US-KY',
+				'US-LA': 'US-LA', 'US-MA': 'US-MA', 'US-MD': 'US-MD', 'US-ME': 'US-ME',
+				'US-MI': 'US-MI', 'US-MN': 'US-MN', 'US-MO': 'US-MO', 'US-MS': 'US-MS',
+				'US-MT': 'US-MT', 'US-NC': 'US-NC', 'US-ND': 'US-ND', 'US-NE': 'US-NE',
+				'US-NH': 'US-NH', 'US-NJ': 'US-NJ', 'US-NM': 'US-NM', 'US-NV': 'US-NV',
+				'US-NY': 'US-NY', 'US-OH': 'US-OH', 'US-OK': 'US-OK', 'US-OR': 'US-OR',
+				'US-PA': 'US-PA', 'US-RI': 'US-RI', 'US-SC': 'US-SC', 'US-SD': 'US-SD',
+				'US-TN': 'US-TN', 'US-TX': 'US-TX', 'US-UT': 'US-UT', 'US-VA': 'US-VA',
+				'US-VT': 'US-VT', 'US-WA': 'US-WA', 'US-WI': 'US-WI', 'US-WV': 'US-WV',
+				'US-WY': 'US-WY'
+			};
+
+			window.EnderecoIntegrator.subdivisionMappingReverse = JSON.parse(JSON.stringify(window.EnderecoIntegrator.subdivisionMapping));
+
+			const originalMapping = window.EnderecoIntegrator.subdivisionMapping;
+			window.EnderecoIntegrator.subdivisionMappingReverse = Object.entries(originalMapping).reduce((reversedObj, [key, value]) => {
+				reversedObj[value] = key;
+				return reversedObj;
+			}, {});
+
+			window.EnderecoIntegrator.subdivisionCodeToNameMapping = {
+				"DE-BW": "Baden-Württemberg",
+				"DE-BY": "Bayern",
+				"DE-BE": "Berlin",
+				"DE-BB": "Brandenburg",
+				"DE-HB": "Bremen",
+				"DE-HH": "Hamburg",
+				"DE-HE": "Hessen",
+				"DE-MV": "Mecklenburg-Vorpommern",
+				"DE-NI": "Niedersachsen",
+				"DE-NW": "Nordrhein-Westfalen",
+				"DE-RP": "Rheinland-Pfalz",
+				"DE-SL": "Saarland",
+				"DE-SN": "Sachsen",
+				"DE-ST": "Sachsen-Anhalt",
+				"DE-SH": "Schleswig-Holstein",
+				"DE-TH": "Thüringen"
+			};
+
+			// Country matching functions.
+			EnderecoIntegrator.resolvers.countryCodeWrite = function(value) {
+				return new Promise(function(resolve, reject) {
+					resolve(value.toUpperCase());
+				});
+			}
+			EnderecoIntegrator.resolvers.countryCodeRead = function(value) {
+				return new Promise(function(resolve, reject) {
+					resolve(value.toUpperCase());
+				});
+			}
+
+			EnderecoIntegrator.resolvers.subdivisionCodeWrite = function(value) {
+				return new Promise(function(resolve, reject) {
+					const processedValue = value ? String(value) : value;
+					resolve(processedValue);
+				});
+			}
+
+			EnderecoIntegrator.resolvers.subdivisionCodeRead = function(value) {
+				return new Promise(function(resolve, reject) {
+					const processedValue = value ? String(value) : value;
+					resolve(processedValue);
+				});
+			}
+
+			// Execute all function that have been called throughout the page.
+			if (window.EnderecoIntegrator.onLoad && Array.isArray(window.EnderecoIntegrator.onLoad)) {
+				executeCallbacks(window.EnderecoIntegrator.onLoad).then(() => {
+					console.log('All EnderecoIntegrator callbacks executed successfully');
+					window.EnderecoIntegrator.ready = true;
+				}).catch(error => {
+					console.error('Error executing EnderecoIntegrator callbacks:', error);
+					window.EnderecoIntegrator.ready = true; // Set ready even if there were errors
+				});
+			}
+		}
+
+		async function executeCallbacks(callbacks) {
+			for (let i = 0; i < callbacks.length; i++) {
+				const callback = callbacks[i];
+				try {
+					const result = callback();
+					if (result instanceof Promise) {
+						await result;
+					}
+				} catch (error) {
+					console.error('Error executing callback:', error);
+				}
+			}
+		}
+	</script>
+</head>
+<body>
+
+<div class="form-container">
+	<form>
+		<div class="row">
+			<div style="width: 100%">
+				<label class="label">
+					API-Key
+					<input type="text" style="width: 100%" name="apiKey" id="apiKey">
+				</label>
+			</div>
+		</div>
+	</form>
+</div>
+
+<script>
+	document.addEventListener('DOMContentLoaded', function() {
+		const apiKeyInput = document.querySelector('#apiKey');
+
+		if (apiKeyInput) {
+			apiKeyInput.addEventListener('change', updateApiKey);
+
+			function updateApiKey() {
+				const apiKey = apiKeyInput.value.trim();
+				if (window.EnderecoIntegrator) {
+					window.EnderecoIntegrator.config.apiKey = apiKey;
+					Object.values(window.EnderecoIntegrator.integratedObjects).forEach(obj => {
+						obj.config.apiKey = apiKey;
+					});
+				}
+			}
+
+			function setApiKey() {
+				if (window.EnderecoIntegrator && window.EnderecoIntegrator.onLoad && !window.EnderecoIntegrator.ready) {
+					window.EnderecoIntegrator.onLoad.push(updateApiKey);
+				} else {
+					updateApiKey();
+				}
+			}
+
+			// Ensure apiKey is set if already present when page loads
+			if (apiKeyInput.value.trim()) {
+				setApiKey();
+			}
+		}
+	});
+</script>
+
+
+<div class="form-container">
+	<form method="POST" action="" id="first-form">
+		<div class="row">
+			<div>
+				<label class="label">
+					Straße
+					<input type="text" id="street">
+				</label>
+			</div>
+			<div>
+				<label class="label">
+					Hausnummer
+					<input type="text" id="street_n">
+				</label>
+			</div>
+		</div>
+		<div class="row">
+			<div>
+				<label class="label">
+					Straße (voll)
+					<input type="text" id="streetFull" value="Lindenstraße 2">
+				</label>
+			</div>
+		</div>
+		<div class="row">
+			<div>
+				<label class="label">
+					Postleitzahl
+					<input type="text" id="zip">
+				</label>
+			</div>
+			<div>
+				<label class="label">
+					Ort
+					<input type="text" id="loc" value="lasdkjflasjdf">
+				</label>
+			</div>
+		</div>
+		<div class="row">
+			<div>
+				<label class="label">
+					Zusatzinformationen (Appartment, Tür)
+					<input type="text" id="address_1">
+				</label>
+			</div>
+		</div>
+		<div class="row">
+			<div>
+				<label class="label">
+					Land
+					<select class="country" id="country">
+						<option value="" selected>-- Bitte Land auswählen --</option>
+						<option value="DE">Deutschland</option>
+						<option value="FR">Frankreich</option>
+						<option value="US">USA</option>
+					</select>
+				</label>
+			</div>
+		</div>
+		<div class="row">
+			<input type="hidden" name="asd">
+			<label>HIDDEN FIELD</label>
+		</div>
+		<div style="display: none">
+			<!-- unsichtbare felder, die ein modul hinzufügen soll -->
+			<input type="hidden" name="enderecoamsstatus" value="">
+			<input type="hidden" name="enderecoamsts" value="">
+			<input type="hidden" name="enderecoamsapredictions" value="">
+		</div>
+
+		<script>
+			enderecoInitAMS({
+				countryCode: '#country',
+				subdivisionCode: '.region',
+				postalCode: '#zip',
+				locality: '#loc',
+				streetFull: '#streetFull',
+				streetName: '#street',
+				buildingNumber: '#street_n',
+				additionalInfo: '#address_1',
+				addressStatus: '[name="enderecoamsstatus"]',
+				addressTimestamp: '[name="enderecoamsts"]',
+				addressPredictions: '[name="enderecoamsapredictions"]',
+			}, {
+				name: 'first_address',
+				addressType: 'general_address'
+			});
+		</script>
+	</form>
+	<div class="row">
+		<div style="margin-left: auto;">
+			<button class="btn btn-secondary" type="reset">Reset</button>
+			<button class="btn btn-primary" type="submit" form="first-form">Weiter</button>
+		</div>
+	</div>
+</div>
+
+
+<div class="form-container">
+	<form method="POST" action="" data-form-identifier="shipping-form">
+		<!-- Second form -->
+		<input type="hidden" name="shipping2_session_id" value="">
+		<input type="hidden" name="shipping2_session_counter" value="">
+
+		<div class="row">
+			<div>
+				<label class="label">
+					Straße (voll)
+					<input type="text" id="shipping2_streetFull" value="Lindenstraße 2">
+				</label>
+			</div>
+		</div>
+		<div class="row">
+			<div>
+				<label class="label">
+					Postleitzahl
+					<input type="text" id="shipping2_zip">
+				</label>
+			</div>
+			<div>
+				<label class="label">
+					Ort
+					<input type="text" id="shipping2_loc">
+				</label>
+			</div>
+		</div>
+		<div class="row">
+			<div>
+				<label class="label">
+					Zusatzinformationen (Appartment, Tür)
+					<input type="text" id="shipping2_address_1">
+				</label>
+			</div>
+		</div>
+		<div class="row">
+			<div>
+				<label class="label">
+					Land
+					<select class="country" id="shipping2_country">
+						<option value="" selected>-- Bitte Land auswählen --</option>
+						<option value="DE">Deutschland</option>
+						<option value="FR">Frankreich</option>
+						<option value="US">USA</option>
+					</select>
+				</label>
+			</div>
+		</div>
+		<div class="row">
+			<input type="hidden" name="asd">
+			<label>HIDDEN FIELD</label>
+		</div>
+		<div style="display: none">
+			<!-- unsichtbare felder, die ein modul hinzufügen soll -->
+			<input type="hidden" name="shipping2_enderecoamsstatus" value="">
+			<input type="hidden" name="shipping2_enderecoamsts" value="">
+			<input type="hidden" name="shipping2_enderecoamsapredictions" value="">
+		</div>
+		<!-- /Second form -->
+
+		<script>
+			enderecoInitAMS({
+				countryCode: '#shipping2_country',
+				subdivisionCode: '',
+				postalCode: '#shipping2_zip',
+				locality: '#shipping2_loc',
+				streetFull: '#shipping2_streetFull',
+				streetName: '#shipping2_street',
+				buildingNumber: '#shipping2_street_n',
+				additionalInfo: '#shipping2_address_1',
+				addressStatus: '[name="shipping2_enderecoamsstatus"]',
+				addressTimestamp: '[name="shipping2_enderecoamsts"]',
+				addressPredictions: '[name="shipping2_enderecoamsapredictions"]',
+			}, {
+				name: 'shipping2_address',
+				addressType: 'shipping_address'
+			});
+		</script>
+	</form>
+
+	<div class="row">
+		<div style="margin-left: auto;">
+			<button class="btn btn-secondary" type="reset">Reset</button>
+			<button class="btn btn-primary" type="submit" data-form-target="shipping-form">Weiter</button>
+		</div>
+	</div>
+</div>
+
+<script
+		defer
+		async
+		src="/assets/endereco.min.js"
+></script>
+</body>
+</html>

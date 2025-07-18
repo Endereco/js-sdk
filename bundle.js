@@ -129,6 +129,28 @@ window.EnderecoIntegrator.prepareDOMElement = (DOMElement) => {
     DOMElement._enderecoBlurListenerAttached = true;
 }
 
+// Custom submit button handler for data-form-target pattern
+window.EnderecoIntegrator.customSubmitButtonHandlers.push((form, triggerValidation) => {
+    // Handle buttons with data-form-target attribute pointing to this form's data-form-identifier
+    const formIdentifier = form.getAttribute('data-form-identifier');
+    if (formIdentifier) {
+        const customButtons = document.querySelectorAll(`[data-form-target="${formIdentifier}"]`);
+        customButtons.forEach(button => {
+            button.addEventListener('click', triggerValidation);
+        });
+    }
+});
+
+// Custom form reference resolver for data-form-target pattern
+window.EnderecoIntegrator.customFormReferenceResolvers.push((e, submitType) => {
+    // Handle buttons with data-form-target attribute
+    if (e.target && e.target.hasAttribute('data-form-target')) {
+        const formIdentifier = e.target.getAttribute('data-form-target');
+        return document.querySelector(`[data-form-identifier="${formIdentifier}"]`);
+    }
+    return null;
+});
+
 var $waitForConfig = setInterval( function() {
     if(typeof enderecoLoadAMSConfig === 'function'){
         enderecoLoadAMSConfig();
