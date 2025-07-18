@@ -11,6 +11,13 @@ export const attachSubmitListenersToForm = (form) => {
         button.addEventListener('click', triggerOnSubmitValidations);
     });
 
+    if (form.id) {
+        document.querySelectorAll(`button[form="${form.id}"], input[type="submit"][form="${form.id}"]`)
+            .forEach(button => {
+                button.addEventListener('click', triggerOnSubmitValidations);
+            });
+    }
+
     form.querySelectorAll('input').forEach(input => {
         input.addEventListener('keydown', triggerOnSubmitValidations);
     });
@@ -268,6 +275,11 @@ const findFormReference = (e, submitType) => {
         form = e.target;
     } else if (submitType === 'enter_keydown' || submitType === 'click') {
         form = e.target.closest('form');
+
+        if (!form && e.target.hasAttribute('form')) {
+            const formId = e.target.getAttribute('form');
+            form = document.getElementById(formId);
+        }
     }
 
     return form;
