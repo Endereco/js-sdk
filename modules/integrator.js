@@ -578,6 +578,8 @@ const EnderecoIntegrator = {
     },
     formSubmitListeners: new Map(),
     afterAMSActivation: [],
+    customSubmitButtonHandlers: [],
+    customFormReferenceResolvers: [],
     onAjaxFormHandler: [],
     initEmailServices: function(
         prefix,

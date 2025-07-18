@@ -18,6 +18,18 @@ export const attachSubmitListenersToForm = (form) => {
             });
     }
 
+    // Here custom integrations can define callbacks to add event listener to elements not covered by default
+    // logic of this function
+    if (window.EnderecoIntegrator?.customSubmitButtonHandlers) {
+        window.EnderecoIntegrator.customSubmitButtonHandlers.forEach(handler => {
+            try {
+                handler(form, triggerOnSubmitValidations);
+            } catch (error) {
+                console.warn('Error in custom submit button handler:', error);
+            }
+        });
+    }
+
     form.querySelectorAll('input').forEach(input => {
         input.addEventListener('keydown', triggerOnSubmitValidations);
     });
@@ -262,6 +274,29 @@ const unfocusFormElements = (form) => {
 };
 
 /**
+ * Attempts to find a form using custom form reference resolvers.
+ *
+ * @param {Event} e - The event that triggered the form submission
+ * @param {string} submitType - The type of submission
+ * @returns {HTMLFormElement|null} - The form element or null if not found
+ */
+const tryCustomFormReferenceResolvers = (e, submitType) => {
+    for (const resolver of window.EnderecoIntegrator.customFormReferenceResolvers) {
+        try {
+            const customForm = resolver(e, submitType);
+
+            if (customForm) {
+                return customForm;
+            }
+        } catch (error) {
+            console.warn('Error in custom form reference resolver:', error);
+        }
+    }
+
+    return null;
+};
+
+/**
  * Finds the form reference based on the event and submit type.
  *
  * @param {Event} e - The event that triggered the form submission
@@ -278,7 +313,13 @@ const findFormReference = (e, submitType) => {
 
         if (!form && e.target.hasAttribute('form')) {
             const formId = e.target.getAttribute('form');
+
             form = document.getElementById(formId);
+        }
+
+        // This part allows custom integrations to add their own logic to find the form reference
+        if (!form && window.EnderecoIntegrator?.customFormReferenceResolvers) {
+            form = tryCustomFormReferenceResolvers(e, submitType);
         }
     }
 
