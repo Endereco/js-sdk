@@ -14,7 +14,7 @@ export const attachSubmitListenersToForm = (form) => {
     form.querySelectorAll('input').forEach(input => {
         input.addEventListener('keydown', triggerOnSubmitValidations);
     });
-}
+};
 
 /**
  * Triggers submit trigger process on form submission, intercepts the submit event if validation is needed,
@@ -44,7 +44,7 @@ export const triggerOnSubmitValidations = async (e) => {
     }
 
     unfocusFormElements(form);
-    const submitListeners = getFormSubmitListeners(form)
+    const submitListeners = getFormSubmitListeners(form);
 
     if (submitListeners.length === 0) {
         return true;
@@ -67,14 +67,14 @@ export const triggerOnSubmitValidations = async (e) => {
             resumeFormSubmission(e, form);
         }
     } catch (error) {
-        console.warn("Error during form validation:", error);
+        console.warn('Error during form validation:', error);
         markFormAsClean(form);
 
         if (isAllowedToResumeSubmit()) {
             resumeFormSubmission(e, form);
         }
     }
-}
+};
 
 /**
  * Safely checks if form submission should be resumed after validation.
@@ -87,18 +87,21 @@ const isAllowedToResumeSubmit = () => {
         // Check if EnderecoIntegrator exists
         if (!window.EnderecoIntegrator) {
             console.warn('EnderecoIntegrator not found in window object');
+
             return true; // Default to true for safety
         }
 
         // Check if config exists
         if (!window.EnderecoIntegrator.config) {
             console.warn('EnderecoIntegrator.config not found');
+
             return true; // Default to true for safety
         }
 
         // Check if ux config exists
         if (!window.EnderecoIntegrator.config.ux) {
             console.warn('EnderecoIntegrator.config.ux not found');
+
             return true; // Default to true for safety
         }
 
@@ -108,9 +111,10 @@ const isAllowedToResumeSubmit = () => {
             : true;
     } catch (error) {
         console.warn('Error checking if allowed to resume submit:', error);
+
         return true; // Default to true in case of any error
     }
-}
+};
 
 /**
  * Safely unblocks a submit button on a form that was previously blocked by EnderecoIntegrator
@@ -123,30 +127,31 @@ const unblockSubmitButton = (form) => {
     // Check if form is valid
     if (!form || !(form instanceof HTMLFormElement)) {
         console.warn('Invalid form element provided to unblockSubmitButton');
+
         return;
     }
 
     // Check if EnderecoIntegrator exists in window
     if (!window.EnderecoIntegrator) {
         console.warn('EnderecoIntegrator not found in window object');
+
         return;
     }
 
     // Check if the unblockSubmitButton method exists
     if (typeof window.EnderecoIntegrator.unblockSubmitButton !== 'function') {
         console.warn('unblockSubmitButton method not found in EnderecoIntegrator');
+
         return;
     }
 
     // If all assumption checks pass, call the method
     try {
         window.EnderecoIntegrator.unblockSubmitButton(form);
-        return;
     } catch (err) {
         console.error('Error while unblocking submit button:', err);
-        return;
     }
-}
+};
 
 /**
  * Executes the handleFormSubmit method for each form submit listener.
@@ -159,16 +164,17 @@ const unblockSubmitButton = (form) => {
 const letListenersHandleSubmit = async (listeners) => {
     const results = [];
     const promises = listeners.map(listenerObject => {
-            if (!listenerObject.util.shouldBeChecked()) {
-                // Skip this listener and return a resolved promise
-                return Promise.resolve();
-            }
+        if (!listenerObject.util.shouldBeChecked()) {
+            // Skip this listener and return a resolved promise
+            return Promise.resolve();
+        }
 
-            return listenerObject.cb.handleFormSubmit()
-                .then(result => {
-                    results.push(result);
-                    return result;
-                })
+        return listenerObject.cb.handleFormSubmit()
+            .then(result => {
+                results.push(result);
+
+                return result;
+            });
     });
 
     if (promises.length > 0) {
@@ -176,7 +182,7 @@ const letListenersHandleSubmit = async (listeners) => {
     }
 
     return results;
-}
+};
 
 /**
  * Safely retrieves form submit listeners for a given form from EnderecoIntegrator.
@@ -187,9 +193,11 @@ const letListenersHandleSubmit = async (listeners) => {
 const getFormSubmitListeners = (form) => {
     try {
         const listeners = window.EnderecoIntegrator?.formSubmitListeners?.get(form);
+
         return Array.isArray(listeners) ? listeners : [];
     } catch (err) {
         console.warn('Error getting form submit listeners:', err);
+
         return [];
     }
 };
@@ -203,7 +211,7 @@ const getFormSubmitListeners = (form) => {
 const blockSubmit = (e) => {
     e.preventDefault();
     e.stopPropagation();
-}
+};
 
 /**
  * Checks if a form needs validation based on special endereco attribute.
@@ -212,15 +220,14 @@ const blockSubmit = (e) => {
  * @returns {boolean} - True if the form needs validation, false otherwise
  * @throws {Error} - If no form element is provided
  */
-const doesFormNeedValidation = (form) =>
-{
+const doesFormNeedValidation = (form) => {
     if (!form) {
-        throw new Error('You need to provide a DOM element of the form to this function')
+        throw new Error('You need to provide a DOM element of the form to this function');
     }
 
     return form.hasAttribute('endereco-form-needs-validation') &&
         form.getAttribute('endereco-form-needs-validation');
-}
+};
 
 /**
  * Unfocuses (blurs) all input elements in a form that might need validation.
@@ -231,6 +238,7 @@ const doesFormNeedValidation = (form) =>
 const unfocusFormElements = (form) => {
     if (!form || !(form instanceof HTMLFormElement)) {
         console.warn('Invalid form element provided to unfocusFormElements');
+
         return;
     }
 
@@ -244,7 +252,7 @@ const unfocusFormElements = (form) => {
             );
         }
     });
-}
+};
 
 /**
  * Finds the form reference based on the event and submit type.
@@ -255,13 +263,15 @@ const unfocusFormElements = (form) => {
  */
 const findFormReference = (e, submitType) => {
     let form = null;
-    if ('submit' === submitType) {
+
+    if (submitType === 'submit') {
         form = e.target;
-    } else if ('enter_keydown' === submitType || 'click' === submitType) {
+    } else if (submitType === 'enter_keydown' || submitType === 'click') {
         form = e.target.closest('form');
     }
+
     return form;
-}
+};
 
 /**
  * Determines the type of submit event based on the event properties.
@@ -269,18 +279,19 @@ const findFormReference = (e, submitType) => {
  * @param {Event} e - The event to analyze
  * @returns {string} - The submit type ('submit', 'click', 'enter_keydown', or 'unsupported')
  */
-const determineSubmitType = (e) =>
-{
-    let type = 'unsupported';
+const determineSubmitType = (e) => {
+    const type = 'unsupported';
+
     if (e.type === 'submit') {
         return 'submit';
     } else if (e.type === 'click') {
         return 'click';
     } else if (e.type === 'keydown' && e.key === 'Enter') {
-        return 'enter_keydown'
+        return 'enter_keydown';
     }
+
     return type;
-}
+};
 
 /**
  * Marks a form as clean by removing the validation attribute.
@@ -290,7 +301,7 @@ const determineSubmitType = (e) =>
  */
 const markFormAsClean = (form) => {
     form.removeAttribute('endereco-form-needs-validation');
-}
+};
 
 /**
  * Resumes form submission after validation by creating and dispatching a new event.
@@ -301,16 +312,19 @@ const markFormAsClean = (form) => {
  */
 const resumeFormSubmission = (originalEvent, form) => {
     let targetElement, newEvent;
+
     if (originalEvent.type === 'submit') {
         targetElement = form;
         newEvent = new Event('submit', { bubbles: true, cancelable: true });
     } else if (originalEvent.type === 'click') {
         const originalButton = originalEvent.target;
+
         if (!originalButton || originalButton.type !== 'submit') return;
         targetElement = originalButton;
         newEvent = new MouseEvent('click', { bubbles: true, cancelable: true, view: window });
     } else if (originalEvent.type === 'keydown' && originalEvent.key === 'Enter') {
         const originalElement = originalEvent.target;
+
         if (!originalElement) return;
         targetElement = originalElement;
         newEvent = new KeyboardEvent('keydown', {
@@ -326,9 +340,8 @@ const resumeFormSubmission = (originalEvent, form) => {
     }
 
     const wasNotCanceled = targetElement.dispatchEvent(newEvent);
+
     if (originalEvent.type === 'submit' && wasNotCanceled) {
         form.submit();
     }
-}
-
-
+};
