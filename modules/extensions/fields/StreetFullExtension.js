@@ -51,12 +51,15 @@ const StreetFullExtension = {
         ExtendableObject._allowStreetFullCompose = true;
         ExtendableObject._allowFetchStreetFullAutocomplete = false;
 
+        // Default values
+        ExtendableObject._streetFullPredictionsIndexDefault = -1; // none selected
+
         // Timeout and sequence
         ExtendableObject._streetFullAutocompleteTimeout = null;
         ExtendableObject._streetFullAutocompleteRequestIndex = 0;
         ExtendableObject._streetFullSplitTimeout = null;
         ExtendableObject._streetFullSplitRequestIndex = 0;
-        ExtendableObject._streetFullPredictionsIndex = 0;
+        ExtendableObject._streetFullPredictionsIndex = ExtendableObject._streetFullPredictionsIndexDefault;
     },
 
     /**
@@ -147,7 +150,7 @@ const StreetFullExtension = {
 
             if (ExtendableObject.streetFullPredictions !== resolvedValue) {
                 ExtendableObject._streetFullPredictions = resolvedValue;
-                ExtendableObject._streetFullPredictionsIndex = 0;
+                ExtendableObject._streetFullPredictionsIndex = ExtendableObject._streetFullPredictionsIndexDefault;
             }
         };
     },
@@ -212,7 +215,7 @@ const StreetFullExtension = {
 
                 if (!isAnyActive) {
                     ExtendableObject.streetFullPredictions = [];
-                    ExtendableObject._streetFullPredictionsIndex = 0;
+                    ExtendableObject._streetFullPredictionsIndex = ExtendableObject._streetFullPredictionsIndexDefault;
                     ExtendableObject.util.removeStreetFullPredictionsDropdown();
                 }
 
@@ -236,43 +239,121 @@ const StreetFullExtension = {
                     e.stopPropagation();
                     if (ExtendableObject._streetFullPredictionsIndex > -1) {
                         ExtendableObject._streetFullPredictionsIndex = ExtendableObject._streetFullPredictionsIndex - 1;
-                        ExtendableObject.util.renderStreetFullPredictionsDropdown(
-                            ExtendableObject.streetFullPredictions
-                        );
+                    } else if (ExtendableObject._streetFullPredictionsIndex === -1) {
+                        // Set index to the last item if ArrowUp is pressed after reaching nothing selected
+                        ExtendableObject._streetFullPredictionsIndex = ExtendableObject._streetFullPredictions.length - 1;
                     }
+                    ExtendableObject.util.renderStreetFullPredictionsDropdown(
+                        ExtendableObject.streetFullPredictions
+                    );
                 } else if (e.key === 'ArrowDown' || e.key === 'Down') {
                     e.preventDefault();
                     e.stopPropagation();
                     if (ExtendableObject._streetFullPredictionsIndex < (ExtendableObject._streetFullPredictions.length - 1)) {
                         ExtendableObject._streetFullPredictionsIndex = ExtendableObject._streetFullPredictionsIndex + 1;
-                        ExtendableObject.util.renderStreetFullPredictionsDropdown(
-                            ExtendableObject.streetFullPredictions
-                        );
+                    } else {
+                        // Set index to -1 (nothing selected) if ArrowDown is pressed at the end of the list
+                        ExtendableObject._streetFullPredictionsIndex = -1;
                     }
-                } else if (e.key === 'Tab' || e.key === 'Tab') {
-                    // TODO: configurable activate in future releases.
-                    /*
-                    if (0 < ExtendableObject._streetFullPredictions.length) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        ExtendableObject.cb.copyStreetFullFromPrediction();
-                    } */
-                } else if (e.key === 'Enter' || e.key === 'Enter') {
+                    ExtendableObject.util.renderStreetFullPredictionsDropdown(
+                        ExtendableObject.streetFullPredictions
+                    );
+                } else if ((e.key === 'Tab' && e.shiftKey)) {
+                    if (ExtendableObject._streetFullPredictions.length > 0) {
+                        if (ExtendableObject._streetFullPredictionsIndex >= 0) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            ExtendableObject.cb.applyStreetFullPredictionSelection(
+                                ExtendableObject._streetFullPredictionsIndex,
+                                ExtendableObject._streetFullPredictions
+                            );
+                        }
+                        ExtendableObject.streetFullPredictions = [];
+                        ExtendableObject.util.removeStreetFullPredictionsDropdown();
+                    }
+                } else if (e.key === 'Tab') {
+                    if (ExtendableObject._streetFullPredictions.length > 0) {
+                        if (ExtendableObject._streetFullPredictionsIndex >= 0) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            ExtendableObject.cb.applyStreetFullPredictionSelection(
+                                ExtendableObject._streetFullPredictionsIndex,
+                                ExtendableObject._streetFullPredictions
+                            );
+                        }
+                        ExtendableObject.streetFullPredictions = [];
+                        ExtendableObject.util.removeStreetFullPredictionsDropdown();
+                    }
+                } else if (e.key === 'Enter') {
                     if (ExtendableObject._streetFullPredictions.length > 0) {
                         e.preventDefault();
                         e.stopImmediatePropagation();
-
-                        ExtendableObject._allowFetchStreetFullAutocomplete = false;
-                        ExtendableObject.streetFull = ExtendableObject.streetFullPredictions[ExtendableObject._streetFullPredictionsIndex].streetFull;
+                        ExtendableObject.cb.applyStreetFullPredictionSelection(
+                            ExtendableObject._streetFullPredictionsIndex,
+                            ExtendableObject._streetFullPredictions
+                        );
                         ExtendableObject.streetFullPredictions = [];
-                        ExtendableObject._streetFullPredictionsIndex = 0;
-                        ExtendableObject._allowFetchStreetFullAutocomplete = true;
-                        ExtendableObject.util.removeStreetFullPredictionsDropdown();
                     }
-                } else if (e.key === 'Backspace' || e.key === 'Backspace') {
+                    ExtendableObject.util.removeStreetFullPredictionsDropdown();
+                } else if (e.key === 'Backspace') {
                     ExtendableObject.config.ux.smartFill = false;
+                } else if (e.key === 'Escape') {
+                    ExtendableObject.util.removeStreetFullPredictionsDropdown();
+                } else if (e.key === 'Home') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    ExtendableObject._streetFullPredictionsIndex = 0;
+                    ExtendableObject.util.renderStreetFullPredictionsDropdown(
+                        ExtendableObject.streetFullPredictions
+                    );
+                } else if (e.key === 'End') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    ExtendableObject._streetFullPredictionsIndex = ExtendableObject._streetFullPredictions.length - 1;
+                    ExtendableObject.util.renderStreetFullPredictionsDropdown(
+                        ExtendableObject.streetFullPredictions
+                    );
                 }
             };
+        };
+
+        /**
+         * Applies the selected prediction from the streetFull predictions dropdown.
+         *
+         * This method updates the `streetFull` field with the selected prediction
+         * and optionally updates related fields such as `streetName`, `buildingNumber`,
+         * and `additionalInfo` if they are present in the selected prediction.
+         *
+         * @param {number} index - The index of the selected prediction in the predictions array.
+         * @param {Array} predictions - An array of prediction objects containing streetFull data.
+         *
+         * Each prediction object can have the following properties:
+         * - streetFull: {string} The full street address.
+         * - streetName: {string} (Optional) The name of the street.
+         * - buildingNumber: {string} (Optional) The building number.
+         * - additionalInfo: {string} (Optional) Additional address information.
+         *
+         * If the index is valid, the method updates the `streetFull` field and any
+         * related fields with the corresponding values from the selected prediction.
+         */
+        ExtendableObject.cb.applyStreetFullPredictionSelection = (index, predictions) => {
+            if (index >= 0 && index < predictions.length) {
+                const selectedPrediction = predictions[index];
+
+                // Set the streetFull value to the selected prediction
+                ExtendableObject.streetFull = selectedPrediction.streetFull;
+
+                // Optionally, update other related fields if necessary
+                if (selectedPrediction.streetName) {
+                    ExtendableObject.streetName = selectedPrediction.streetName;
+                }
+                if (selectedPrediction.buildingNumber) {
+                    ExtendableObject.buildingNumber = selectedPrediction.buildingNumber;
+                }
+                if (selectedPrediction.additionalInfo) {
+                    ExtendableObject.additionalInfo = selectedPrediction.additionalInfo;
+                }
+            }
         };
     },
 
@@ -324,10 +405,12 @@ const StreetFullExtension = {
                 const dropdown = document.querySelector('[endereco-street-full-predictions]');
 
                 if (dropdown) {
-                    ExtendableObject._openDropdowns--;
                     dropdown.parentNode.removeChild(dropdown);
                 }
             });
+
+            // Reset the predictions index to clear the selection
+            ExtendableObject._streetFullPredictionsIndex = ExtendableObject._streetFullPredictionsIndexDefault;
         };
 
         /**
@@ -340,6 +423,36 @@ const StreetFullExtension = {
          */
         ExtendableObject.util.renderStreetFullPredictionsDropdown = function (predictions) {
             predictions = JSON.parse(JSON.stringify(predictions)); // Create a copy
+
+            // Helper function to scroll active item into view
+            const scrollActiveItemIntoView = () => {
+                const dropdown = document.querySelector('[endereco-street-full-predictions]');
+                const activeItem = dropdown?.querySelector('.endereco-predictions__item.active');
+
+                if (dropdown && activeItem) {
+                    const dropdownScrollContainer = dropdown.querySelector('.endereco-predictions');
+
+                    if (!dropdownScrollContainer) {
+                        return;
+                    }
+                    const containerRect = dropdownScrollContainer.getBoundingClientRect();
+                    const activeRect = activeItem.getBoundingClientRect();
+
+                    // Calculate relative positions
+                    const itemTop = activeRect.top - containerRect.top + dropdownScrollContainer.scrollTop;
+                    const itemBottom = activeRect.bottom - containerRect.top + dropdownScrollContainer.scrollTop;
+                    const containerHeight = dropdownScrollContainer.clientHeight;
+                    const currentScrollTop = dropdownScrollContainer.scrollTop;
+
+                    // Check if the active item is above the visible area
+                    if (itemTop < currentScrollTop) {
+                        dropdownScrollContainer.scrollTop = itemTop;
+                    } else if (itemBottom > currentScrollTop + containerHeight) {
+                        // Check if the active item is below the visible area
+                        dropdownScrollContainer.scrollTop = itemBottom - containerHeight;
+                    }
+                }
+            };
 
             // Render dropdown under the input element
             ExtendableObject._subscribers.streetFull.forEach(function (subscriber) {
@@ -402,6 +515,10 @@ const StreetFullExtension = {
                     // Attach it to HTML.
                     subscriber.object.insertAdjacentHTML('afterend', predictionsHtml);
                     ExtendableObject._openDropdowns++;
+
+                    // Auto-scroll to keep active item visible
+                    setTimeout(scrollActiveItemIntoView, 0);
+
                     document.querySelectorAll(`[data-id="${ExtendableObject.id}"] [endereco-street-full-prediction]`).forEach(function (DOMElement) {
                         DOMElement.addEventListener('mousedown', function (e) {
                             const index = parseInt(this.getAttribute('data-prediction-index'));
