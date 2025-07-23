@@ -319,10 +319,22 @@ const StreetFullExtension = {
          * Removes the predictions dropdown from the DOM
          * Updates the dropdown counter and cleans up related state
          */
-        ExtendableObject.util.removeStreetFullPredictionsDropdown = () => {
-            ExtendableObject._subscribers.streetFull.forEach(() => {
-                const dropdown = document.querySelector('[endereco-street-full-predictions]');
+        /**
+         * Removes the predictions dropdown from the DOM
+         * Cleans up any existing dropdown elements
+         * @param {string} inputId - Optional input element ID to remove dropdown for specific input only
+         */
+        ExtendableObject.util.removeStreetFullPredictionsDropdown = (inputId = '') => {
+            let selector = '[endereco-street-full-predictions]';
 
+            // If inputId is provided, target specific dropdown
+            if (inputId) {
+                selector = `[endereco-street-full-predictions][data-input-id="${inputId}"]`;
+            }
+
+            const dropdowns = inputId ? [document.querySelector(selector)] : document.querySelectorAll(selector);
+
+            dropdowns.forEach(dropdown => {
                 if (dropdown) {
                     ExtendableObject._openDropdowns--;
                     dropdown.parentNode.removeChild(dropdown);
@@ -343,10 +355,13 @@ const StreetFullExtension = {
 
             // Render dropdown under the input element
             ExtendableObject._subscribers.streetFull.forEach(function (subscriber) {
-                if (document.querySelector('[endereco-street-full-predictions]')) {
-                    ExtendableObject._openDropdowns--;
-                    document.querySelector('[endereco-street-full-predictions]').parentNode.removeChild(document.querySelector('[endereco-street-full-predictions]'));
+                // Ensure the input element has an ID for accessibility
+                if (!subscriber.object.id) {
+                    subscriber.object.id = ExtendableObject.util.generateUniqueId('endereco');
                 }
+
+                // Remove only the dropdown associated with this specific input
+                ExtendableObject.util.removeStreetFullPredictionsDropdown(subscriber.object.id);
 
                 // Render predictions only if the field is active and there are predictions.
                 if (
@@ -382,6 +397,7 @@ const StreetFullExtension = {
                     const predictionsHtml = ExtendableObject.util.Mustache.render(ExtendableObject.config.templates.streetFullPredictions, {
                         ExtendableObject,
                         predictions: preparedPredictions,
+                        inputId: subscriber.object.id,
                         offsetTop: subscriber.object.offsetTop + subscriber.object.offsetHeight,
                         offsetLeft: subscriber.object.offsetLeft,
                         width: subscriber.object.offsetWidth,

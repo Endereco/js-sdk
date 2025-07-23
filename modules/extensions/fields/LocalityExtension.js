@@ -322,6 +322,7 @@ const LocalityExtension = {
                 try {
                     const autocompleteResult = await ExtendableObject.util.getLocalityPredictions(locality);
                     const currentLocality = ExtendableObject.getLocality();
+
                     if (autocompleteResult.originalLocality !== currentLocality) {
                         return;
                     }
@@ -339,11 +340,19 @@ const LocalityExtension = {
         /**
          * Removes the predictions dropdown from the DOM
          * Cleans up any existing dropdown elements
+         * @param {string} inputId - Optional input element ID to remove dropdown for specific input only
          */
-        ExtendableObject.util.removeLocalityPredictionsDropdown = () => {
-            ExtendableObject._subscribers.locality.forEach(() => {
-                const dropdown = document.querySelector('[endereco-locality-predictions]');
+        ExtendableObject.util.removeLocalityPredictionsDropdown = (inputId = '') => {
+            let selector = '[endereco-locality-predictions]';
 
+            // If inputId is provided, target specific dropdown
+            if (inputId) {
+                selector = `[endereco-locality-predictions][data-input-id="${inputId}"]`;
+            }
+
+            const dropdowns = inputId ? [document.querySelector(selector)] : document.querySelectorAll(selector);
+
+            dropdowns.forEach(dropdown => {
                 if (dropdown) {
                     dropdown.parentNode.removeChild(dropdown);
                 }
@@ -368,9 +377,13 @@ const LocalityExtension = {
 
             // Render dropdown under the input element
             ExtendableObject._subscribers.locality.forEach(function (subscriber) {
-                if (document.querySelector('[endereco-locality-predictions]')) {
-                    document.querySelector('[endereco-locality-predictions]').parentNode.removeChild(document.querySelector('[endereco-locality-predictions]'));
+                // Ensure the input element has an ID for accessibility
+                if (!subscriber.object.id) {
+                    subscriber.object.id = ExtendableObject.util.generateUniqueId('endereco');
                 }
+
+                // Remove only the dropdown associated with this specific input
+                ExtendableObject.util.removeLocalityPredictionsDropdown(subscriber.object.id);
 
                 // Render predictions only if the field is active and there are predictions.
                 if (
@@ -426,6 +439,7 @@ const LocalityExtension = {
                     const predictionsHtml = ExtendableObject.util.Mustache.render(ExtendableObject.config.templates.localityPredictions, {
                         ExtendableObject,
                         predictions: preparedPredictions,
+                        inputId: subscriber.object.id,
                         offsetTop: subscriber.object.offsetTop + subscriber.object.offsetHeight,
                         offsetLeft: subscriber.object.offsetLeft,
                         width: subscriber.object.offsetWidth,
@@ -572,11 +586,11 @@ const LocalityExtension = {
                         locality: cityName
                     };
 
-                        if ((subdivisionCode !== undefined) &&
+                    if ((subdivisionCode !== undefined) &&
                             ExtendableObject.util.hasSubscribedField('subdivisionCode')
-                        ) {
-                            tempLocalityContainer.subdivisionCode = subdivisionCode;
-                        }
+                    ) {
+                        tempLocalityContainer.subdivisionCode = subdivisionCode;
+                    }
 
                     localityPredictionsTemp.push(tempLocalityContainer);
                 });

@@ -335,10 +335,13 @@ const StreetNameExtension = {
 
             // Render dropdown under the input element
             ExtendableObject._subscribers.streetName.forEach((subscriber) => {
-                if (document.querySelector('[endereco-street-name-predictions]')) {
-                    ExtendableObject._openDropdowns--;
-                    document.querySelector('[endereco-street-name-predictions]').parentNode.removeChild(document.querySelector('[endereco-street-name-predictions]'));
+                // Ensure the input element has an ID for accessibility
+                if (!subscriber.object.id) {
+                    subscriber.object.id = ExtendableObject.util.generateUniqueId('endereco');
                 }
+
+                // Remove only the dropdown associated with this specific input
+                ExtendableObject.util.removeStreetNamePredictionsDropdown(subscriber.object.id);
 
                 // Render predictions only if the field is active and there are predictions.
                 if (
@@ -374,6 +377,7 @@ const StreetNameExtension = {
                     const predictionsHtml = ExtendableObject.util.Mustache.render(ExtendableObject.config.templates.streetNamePredictions, {
                         ExtendableObject,
                         predictions: preparedPredictions,
+                        inputId: subscriber.object.id,
                         offsetTop: subscriber.object.offsetTop + subscriber.object.offsetHeight,
                         offsetLeft: subscriber.object.offsetLeft,
                         width: subscriber.object.offsetWidth,
@@ -416,10 +420,22 @@ const StreetNameExtension = {
          * Updates the dropdown counter and cleans up related state
          */
 
-        ExtendableObject.util.removeStreetNamePredictionsDropdown = () => {
-            ExtendableObject._subscribers.streetName.forEach(() => {
-                const dropdown = document.querySelector('[endereco-street-name-predictions]');
+        /**
+         * Removes the predictions dropdown from the DOM
+         * Cleans up any existing dropdown elements
+         * @param {string} inputId - Optional input element ID to remove dropdown for specific input only
+         */
+        ExtendableObject.util.removeStreetNamePredictionsDropdown = (inputId = '') => {
+            let selector = '[endereco-street-name-predictions]';
 
+            // If inputId is provided, target specific dropdown
+            if (inputId) {
+                selector = `[endereco-street-name-predictions][data-input-id="${inputId}"]`;
+            }
+
+            const dropdowns = inputId ? [document.querySelector(selector)] : document.querySelectorAll(selector);
+
+            dropdowns.forEach(dropdown => {
                 if (dropdown) {
                     ExtendableObject._openDropdowns--;
                     dropdown.parentNode.removeChild(dropdown);

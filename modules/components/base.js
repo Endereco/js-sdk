@@ -224,6 +224,29 @@ function EnderecoBase() {
                 return uuidv4();
             },
             /**
+             * Generates a unique ID that doesn't already exist as a DOM element ID
+             * @param {string} prefix - Optional prefix for the ID (default: 'endereco')
+             * @returns {string} - A unique ID
+             */
+            generateUniqueId: function(prefix = 'endereco') {
+                let id;
+                let attempts = 0;
+                const maxAttempts = 100;
+                
+                do {
+                    id = `${prefix}-${uuidv4()}`;
+                    attempts++;
+                    
+                    if (attempts >= maxAttempts) {
+                        console.warn('Max attempts reached generating unique ID, using timestamp fallback');
+                        id = `${prefix}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+                        break;
+                    }
+                } while (document.getElementById(id));
+                
+                return id;
+            },
+            /**
              * Escapes HTML entities in a string to prevent XSS
              * @param {string} unsafe - The potentially unsafe string
              * @returns {string} - The escaped string

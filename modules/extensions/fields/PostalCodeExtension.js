@@ -328,6 +328,7 @@ const PostalCodeExtension = {
                 try {
                     const autocompleteResult = await ExtendableObject.util.getPostalCodePredictions(postalCode);
                     const currentPostalCode = ExtendableObject.getPostalCode();
+
                     if (autocompleteResult.originalPostalCode !== currentPostalCode) {
                         return;
                     }
@@ -345,16 +346,26 @@ const PostalCodeExtension = {
         /**
          * Removes the predictions dropdown from the DOM
          * Cleans up any existing dropdown elements
+         * @param {string} inputId - Optional input element ID to remove dropdown for specific input only
          */
-        ExtendableObject.util.removePostalCodePredictionsDropdown = () => {
-            const dropdown = document.querySelector('[endereco-postal-code-predictions]');
+        ExtendableObject.util.removePostalCodePredictionsDropdown = (inputId = '') => {
+            let selector = '[endereco-postal-code-predictions]';
 
-            if (dropdown) {
-                dropdown.parentNode.removeChild(dropdown);
-                if (ExtendableObject._openDropdowns) {
-                    ExtendableObject._openDropdowns--;
-                }
+            // If inputId is provided, target specific dropdown
+            if (inputId) {
+                selector = `[endereco-postal-code-predictions][data-input-id="${inputId}"]`;
             }
+
+            const dropdowns = inputId ? [document.querySelector(selector)] : document.querySelectorAll(selector);
+
+            dropdowns.forEach(dropdown => {
+                if (dropdown) {
+                    dropdown.parentNode.removeChild(dropdown);
+                    if (ExtendableObject._openDropdowns) {
+                        ExtendableObject._openDropdowns--;
+                    }
+                }
+            });
         };
 
         /**
@@ -374,7 +385,13 @@ const PostalCodeExtension = {
 
             // Render dropdown under the input element
             ExtendableObject._subscribers.postalCode.forEach(function (subscriber) {
-                ExtendableObject.util.removePostalCodePredictionsDropdown();
+                // Ensure the input element has an ID for accessibility
+                if (!subscriber.object.id) {
+                    subscriber.object.id = ExtendableObject.util.generateUniqueId('endereco');
+                }
+
+                // Remove only the dropdown associated with this specific input
+                ExtendableObject.util.removePostalCodePredictionsDropdown(subscriber.object.id);
 
                 // Render predictions only if the field is active and there are predictions
                 if (predictions.length > 0 && document.activeElement === subscriber.object) {
@@ -428,6 +445,7 @@ const PostalCodeExtension = {
                     const predictionsHtml = ExtendableObject.util.Mustache.render(ExtendableObject.config.templates.postalCodePredictions, {
                         ExtendableObject,
                         predictions: preparedPredictions,
+                        inputId: subscriber.object.id,
                         offsetTop: subscriber.object.offsetTop + subscriber.object.offsetHeight,
                         offsetLeft: subscriber.object.offsetLeft,
                         width: subscriber.object.offsetWidth,
@@ -588,12 +606,12 @@ const PostalCodeExtension = {
                         locality: postalCodePrediction.cityName || ''
                     };
 
-                        // Fix around API
-                        if (postalCodePrediction.subdivisionCode &&
+                    // Fix around API
+                    if (postalCodePrediction.subdivisionCode &&
                             ExtendableObject.util.hasSubscribedField('subdivisionCode')
-                        ) {
-                            tempPostalCodeContainer.subdivisionCode = postalCodePrediction.subdivisionCode;
-                        }
+                    ) {
+                        tempPostalCodeContainer.subdivisionCode = postalCodePrediction.subdivisionCode;
+                    }
 
                     postalCodePredictionsTemp.push(tempPostalCodeContainer);
                 });
