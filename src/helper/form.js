@@ -188,6 +188,12 @@ const letListenersHandleSubmit = async (listeners) => {
             return Promise.resolve();
         }
 
+        // Check if onsubmit trigger is enabled for this specific listener object
+        if (!listenerObject.config?.trigger?.onsubmit) {
+            // Skip this listener and return a resolved promise
+            return Promise.resolve();
+        }
+
         return listenerObject.cb.handleFormSubmit()
             .then(result => {
                 results.push(result);
