@@ -112,13 +112,12 @@ const waitForTurn = (key, checkInterval = WAIT_FOR_TIME) => {
  */
 const isFirstInQueue = (key) => {
     const integrator = window.EnderecoIntegrator;
+    const processLevel = integrator.getProcessLevel();
 
     if (integrator.processQueue.size === 0) return false;
 
-    // Get the first key in the queue
-    const firstKey = integrator.processQueue.keys().next().value;
-
-    return key === firstKey;
+    // Use ProcessQueue's optimized isFirst method
+    return integrator.processQueue.isFirst(key, processLevel);
 };
 
 /**
@@ -1154,6 +1153,7 @@ const AddressExtension = {
          */
         ExtendableObject.util.checkAddress = (...args) => {
             const integrator = window.EnderecoIntegrator;
+            const processLevel = integrator.getProcessLevel();
             const address = ExtendableObject.address;
             const key = [
                 ExtendableObject.id,
@@ -1165,11 +1165,14 @@ const AddressExtension = {
                 return integrator.processQueue.get(key);
             }
 
-            // Start the process
+            // We first set the current level to the process via key
+            // Then start the process (which creates a promise aka running process)
+            // Then enqueuing the promise (questionable data structure, should probably work more with keys) or
+            // we should move the start-up of the process inside enqueue but still return the promise
+            integrator.processQueue.setLevelToProcess(key, processLevel);
             const promise = ExtendableObject.util.processAddressCheck(...args);
 
-            // Save in queue immediately
-            integrator.processQueue.set(key, promise);
+            integrator.processQueue.enqueue(key, promise);
 
             // When finished, remove from queue
             promise.finally(() => {

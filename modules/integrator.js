@@ -7,6 +7,7 @@ import EnderecoPhoneObject from "./phoneservices";
 import 'core-js/fn/promise/finally';
 
 import { attachSubmitListenersToForm } from '../src/helper/form';
+import ProcessQueue from '../src/services/ProcessQueue';
 
 
 const bindFieldsToAddressObject = async (addressObject, fieldSelectors, EnderecoIntegrator) => {
@@ -135,7 +136,21 @@ const EnderecoIntegrator = {
     amsFilters: {
         isAddressMetaStillRelevant: []
     },
-    processQueue: new Map(),
+    processQueue: new ProcessQueue(),
+    /**
+     * Returns the current process level for queue management.
+     * Level 0: Initial processes (billing, shipping address checks)
+     * Level 1+: Processes spawned from user interactions (modal submissions)
+     * Higher levels can execute without waiting for lower levels.
+     *
+     * @returns {number} - The current process level (default: 0)
+     */
+    getProcessLevel: function() {
+        // Default implementation returns level 0
+        // Can be overridden in custom integrations to return higher levels
+        // when processes are spawned from user interactions (e.g., modal submissions)
+        return 0;
+    },
     popupQueue: 0,
     enderecoPopupQueue: 0,
     ready: false,
