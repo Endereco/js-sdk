@@ -15,6 +15,12 @@ import streetNamePredictionsTemplate from '../../../templates/street_name_predic
 const MAX_PREDICTIONS_BEFORE_SCROLL = 6;
 const ERROR_EXPIRED_SESSION = -32700;
 
+/**
+ * Default predictions index value (no selection)
+ * @type {number}
+ */
+const PREDICTIONS_INDEX_DEFAULT = -1;
+
 const StreetNameExtension = {
     name: 'StreetNameExtension',
 
@@ -49,7 +55,7 @@ const StreetNameExtension = {
         ExtendableObject._streetFullComposeTimeout = null;
         ExtendableObject._streetNameAutocompleteTimeout = null;
         ExtendableObject._streetNameAutocompleteRequestIndex = 0;
-        ExtendableObject._streetNamePredictionsIndex = 0;
+        ExtendableObject._streetNamePredictionsIndex = PREDICTIONS_INDEX_DEFAULT;
     },
 
     /**
@@ -144,7 +150,6 @@ const StreetNameExtension = {
 
             if (ExtendableObject.streetNamePredictions !== resolvedValue) {
                 ExtendableObject._streetNamePredictions = resolvedValue;
-                ExtendableObject._streetNamePredictionsIndex = 0;
             }
         };
     },
@@ -213,7 +218,7 @@ const StreetNameExtension = {
 
                     if (!isAnyActive) {
                         ExtendableObject.streetNamePredictions = [];
-                        ExtendableObject._streetNamePredictionsIndex = 0;
+                        ExtendableObject._streetNamePredictionsIndex = PREDICTIONS_INDEX_DEFAULT;
                         ExtendableObject.util.removeStreetNamePredictionsDropdown();
                     }
                 } catch (error) {
@@ -221,10 +226,11 @@ const StreetNameExtension = {
                 }
 
                 try {
+                    await ExtendableObject.waitForPredictionApplication();
                     await ExtendableObject.waitUntilReady();
                     await ExtendableObject.cb.handleFormBlur();
                 } catch (error) {
-                    console.warn('Error in buildingNumberBlur handler:', error);
+                    console.warn('Error in streetNameBlur handler:', error);
                 }
             };
         };
@@ -241,45 +247,118 @@ const StreetNameExtension = {
                 if (e.key === 'ArrowUp' || e.key === 'Up') {
                     e.preventDefault();
                     e.stopPropagation();
-                    if (ExtendableObject._streetNamePredictionsIndex > -1) {
+                    if (ExtendableObject._streetNamePredictionsIndex > PREDICTIONS_INDEX_DEFAULT) {
                         ExtendableObject._streetNamePredictionsIndex = ExtendableObject._streetNamePredictionsIndex - 1;
                         ExtendableObject.util.renderStreetNamePredictionsDropdown(
                             ExtendableObject.streetNamePredictions
                         );
                     }
+                    // Arrow up at no selection does nothing (stays at -1)
                 } else if (e.key === 'ArrowDown' || e.key === 'Down') {
                     e.preventDefault();
                     e.stopPropagation();
                     if (ExtendableObject._streetNamePredictionsIndex < (ExtendableObject._streetNamePredictions.length - 1)) {
                         ExtendableObject._streetNamePredictionsIndex = ExtendableObject._streetNamePredictionsIndex + 1;
-                        ExtendableObject.util.renderStreetNamePredictionsDropdown(
-                            ExtendableObject.streetNamePredictions
-                        );
+                    } else {
+                        ExtendableObject._streetNamePredictionsIndex = 0;
                     }
-                } else if (e.key === 'Tab' || e.key === 'Tab') {
-                    // TODO: configurable activate in future releases.
-                    /*
-                    if (0 < ExtendableObject._streetNamePredictions.length) {
+                    ExtendableObject.util.renderStreetNamePredictionsDropdown(
+                        ExtendableObject.streetNamePredictions
+                    );
+                } else if (e.key === 'Home') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    ExtendableObject._streetNamePredictionsIndex = 0;
+                    ExtendableObject.util.renderStreetNamePredictionsDropdown(
+                        ExtendableObject.streetNamePredictions
+                    );
+                } else if (e.key === 'End') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    ExtendableObject._streetNamePredictionsIndex = ExtendableObject._streetNamePredictions.length - 1;
+                    ExtendableObject.util.renderStreetNamePredictionsDropdown(
+                        ExtendableObject.streetNamePredictions
+                    );
+                } else if (e.key === 'Escape') {
+                    ExtendableObject.resetStreetNamePredictions();
+                    ExtendableObject.util.removeStreetNamePredictionsDropdown();
+                } else if (e.key === 'Tab') {
+                    if (ExtendableObject._streetNamePredictions.length > 0 && ExtendableObject._streetNamePredictionsIndex >= 0) {
                         e.preventDefault();
-                        e.stopPropagation();
-                        ExtendableObject.cb.copyStreetNameFromPrediction();
-                    } */
+
+                        (async () => {
+                            await ExtendableObject.cb.applyStreetNamePredictionSelection(
+                                ExtendableObject._streetNamePredictionsIndex,
+                                ExtendableObject._streetNamePredictions
+                            );
+                            ExtendableObject.resetStreetNamePredictions();
+                            ExtendableObject.util.removeStreetNamePredictionsDropdown();
+
+                            // Find next focusable element
+                            const focusableElements = Array.from(document.querySelectorAll(
+                                'input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+                            ));
+                            const currentIndex = focusableElements.indexOf(e.target);
+                            const nextElement = e.shiftKey
+                                ? focusableElements[currentIndex - 1]
+                                : focusableElements[currentIndex + 1];
+
+                            if (nextElement) {
+                                nextElement.focus();
+                            }
+                        })();
+                    }
                 } else if (e.key === 'Enter' || e.key === 'Enter') {
-                    if (ExtendableObject._streetNamePredictions.length > 0) {
+                    if (ExtendableObject._streetNamePredictions.length > 0 && ExtendableObject._streetNamePredictionsIndex >= 0) {
                         e.preventDefault();
                         e.stopImmediatePropagation();
 
-                        ExtendableObject._allowFetchStreetNameAutocomplete = false;
-                        ExtendableObject.streetName = ExtendableObject.streetNamePredictions[ExtendableObject._streetNamePredictionsIndex].streetName;
-                        ExtendableObject.streetNamePredictions = [];
-                        ExtendableObject._streetNamePredictionsIndex = 0;
-                        ExtendableObject._allowFetchStreetNameAutocomplete = true;
-                        ExtendableObject.util.removeStreetNamePredictionsDropdown();
+                        (async () => {
+                            await ExtendableObject.cb.applyStreetNamePredictionSelection(
+                                ExtendableObject._streetNamePredictionsIndex,
+                                ExtendableObject._streetNamePredictions
+                            );
+                            ExtendableObject.resetStreetNamePredictions();
+                            ExtendableObject.util.removeStreetNamePredictionsDropdown();
+                        })();
                     }
                 } else if (e.key === 'Backspace' || e.key === 'Backspace') {
                     ExtendableObject.config.ux.smartFill = false;
                 }
             };
+        };
+
+        /**
+         * Applies the selected street name prediction to the field
+         * @param {number} index - Selected prediction index
+         * @param {Array} predictions - Array of available predictions
+         */
+        ExtendableObject.cb.applyStreetNamePredictionSelection = async (index, predictions) => {
+            const applicationPromise = (async () => {
+                ExtendableObject._allowFetchStreetNameAutocomplete = false;
+                await ExtendableObject.setStreetName(predictions[index].streetName);
+                ExtendableObject._allowFetchStreetNameAutocomplete = true;
+            })();
+
+            ExtendableObject._activePredictionApplications.push(applicationPromise);
+            await applicationPromise.finally(() => {
+                const index = ExtendableObject._activePredictionApplications.indexOf(applicationPromise);
+
+                if (index > -1) {
+                    ExtendableObject._activePredictionApplications.splice(index, 1);
+                }
+            });
+
+            return applicationPromise;
+        };
+
+        /**
+         * Resets street name predictions state
+         * Clears predictions array and resets selection index
+         */
+        ExtendableObject.resetStreetNamePredictions = () => {
+            ExtendableObject.streetNamePredictions = [];
+            ExtendableObject._streetNamePredictionsIndex = PREDICTIONS_INDEX_DEFAULT;
         };
     },
 
@@ -314,6 +393,7 @@ const StreetNameExtension = {
                     if (autocompleteResult.originalStreetName !== currentStreetName) {
                         return;
                     }
+                    ExtendableObject._streetNamePredictionsIndex = PREDICTIONS_INDEX_DEFAULT;
                     ExtendableObject.streetNamePredictions = autocompleteResult.predictions;
                     ExtendableObject.util.renderStreetNamePredictionsDropdown(autocompleteResult.predictions);
                 } catch (e) {
@@ -398,6 +478,16 @@ const StreetNameExtension = {
                     // Attach it to HTML.
                     subscriber.object.insertAdjacentHTML('afterend', predictionsHtml);
                     ExtendableObject._openDropdowns++;
+
+                    // Scroll active item into view
+                    setTimeout(() => {
+                        const activeItem = document.querySelector('[endereco-street-name-predictions] .endereco-predictions__item.active');
+
+                        if (activeItem) {
+                            activeItem.scrollIntoView({ block: 'nearest' });
+                        }
+                    }, 0);
+
                     document.querySelectorAll(`[data-id="${ExtendableObject.id}"] [endereco-street-name-prediction]`).forEach(function (DOMElement) {
                         DOMElement.addEventListener('mousedown', function (e) {
                             const index = parseInt(this.getAttribute('data-prediction-index'));
