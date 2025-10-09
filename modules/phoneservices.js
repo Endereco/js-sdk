@@ -1508,12 +1508,14 @@ function EnderecoPhone(customConfig={}) {
         }
 
         while (1) {
-            base.mapping.forEach( function(country) {
-                if (country.code === queryStr && '' !== queryStr) {
-                    returnHtml = country.flag;
+            // Find first match instead of last to be consistent with findCurrentPrefixIndex
+            for (var i = 0; i < base.mapping.length; i++) {
+                if (base.mapping[i].code === queryStr && '' !== queryStr) {
+                    returnHtml = base.mapping[i].flag;
                     base.currePrefix = queryStr;
+                    break; // Use first match, not last
                 }
-            });
+            }
 
             queryStr = queryStr.slice(0, -1);
 
@@ -1535,6 +1537,13 @@ function EnderecoPhone(customConfig={}) {
     }
 
     base.currePrefix = false;
+
+    base.isFlagActive = function() {
+        if (base._flagContainerDom && document.activeElement === base._flagContainerDom) {
+            return true;
+        }
+        return false;
+    };
 
     base.setPrefix = function(input, prefix) {
         if (base.currePrefix !== prefix) {
@@ -1585,6 +1594,7 @@ function EnderecoPhone(customConfig={}) {
                 var widthOfFlag = 0;
 
                 var lastHeight = 0;
+                var activeCountryIndex = -1;
 
                 if (!DOMElement.classList.contains('endereco-field-has-flags')) {
                     // Add flags class
@@ -1599,6 +1609,26 @@ function EnderecoPhone(customConfig={}) {
 
                     flagElement = DOMElement.parentElement.querySelector('.endereco-big-flag');
                     base._flagContainerDom = flagElement;
+
+                    // Add blur detection for flag element to trigger phone check
+                    var flagWasFocused = false;
+                    setInterval(function() {
+                        var flagIsFocused = (document.activeElement === flagElement);
+                        if (flagWasFocused && !flagIsFocused) {
+                            // Flag lost focus, trigger the same blur check as phone input
+                            if (base.hasLoadedExtension && base.hasLoadedExtension('PhoneExtension')) {
+                                var phoneSubscribers = base._subscribers.phone;
+                                if (phoneSubscribers && phoneSubscribers.length > 0) {
+                                    var subscriber = phoneSubscribers[0];
+                                    if (base.cb.phoneBlur) {
+                                        base.cb.phoneBlur(subscriber)(subscriber);
+                                    }
+                                }
+                            }
+                        }
+                        flagWasFocused = flagIsFocused;
+                    }, 10);
+
                     offsetFromParent = DOMElement.offsetTop;
                     heightOfInput = DOMElement.offsetHeight;
                     lastHeight = heightOfInput;
@@ -1655,7 +1685,13 @@ function EnderecoPhone(customConfig={}) {
                         e.preventDefault();
                         e.stopPropagation();
                         var dropdownDOM = this.parentElement.querySelector('.endereco-flag-dropdown');
+                        var wasHidden = dropdownDOM.classList.contains("endereco-hidden");
                         dropdownDOM.classList.toggle("endereco-hidden");
+
+                        if (wasHidden) {
+                            activeCountryIndex = findCurrentPrefixIndex();
+                            renderActiveCountry(activeCountryIndex);
+                        }
                         return false;
                     });
 
@@ -1667,7 +1703,150 @@ function EnderecoPhone(customConfig={}) {
                                 DOMElement.value.substring(0, 10)
                             );
                             dropdownElement.classList.add("endereco-hidden");
+                            activeCountryIndex = -1;
+                            renderActiveCountry(activeCountryIndex);
                         })
+                    });
+
+                    // Find index of current prefix in dropdown
+                    var findCurrentPrefixIndex = function() {
+                        if (!base.currePrefix) {
+                            return -1;
+                        }
+                        var countryElements = dropdownElement.querySelectorAll('.endereco-flag-dropdown-element');
+                        for (var i = 0; i < countryElements.length; i++) {
+                            if (countryElements[i].getAttribute('data-code') === base.currePrefix) {
+                                return i;
+                            }
+                        }
+                        return -1;
+                    };
+
+                    // Render active country highlight
+                    var renderActiveCountry = function(index) {
+                        var countryElements = dropdownElement.querySelectorAll('.endereco-flag-dropdown-element');
+                        countryElements.forEach(function(el, i) {
+                            if (i === index) {
+                                el.classList.add('active');
+                            } else {
+                                el.classList.remove('active');
+                            }
+                        });
+
+                        if (index >= 0) {
+                            var activeElement = countryElements[index];
+                            if (activeElement) {
+                                activeElement.scrollIntoView({ block: 'nearest' });
+                            }
+                        } else if (countryElements.length > 0) {
+                            countryElements[0].scrollIntoView({ block: 'nearest' });
+                        }
+                    };
+
+                    // Keyboard navigation for flag element
+                    flagElement.addEventListener('keydown', function(e) {
+                        var isOpen = !dropdownElement.classList.contains('endereco-hidden');
+                        var countryElements = dropdownElement.querySelectorAll('.endereco-flag-dropdown-element');
+
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            e.stopPropagation();
+
+                            if (isOpen) {
+                                if (activeCountryIndex >= 0) {
+                                    var selectedCountry = countryElements[activeCountryIndex];
+                                    base.setPrefix(DOMElement, selectedCountry.getAttribute("data-code"));
+                                    flagElement.querySelector('.endereco-flag').innerHTML = base.getFlagHTML(
+                                        DOMElement.value.substring(0, 10)
+                                    );
+                                }
+                                dropdownElement.classList.add('endereco-hidden');
+                                activeCountryIndex = -1;
+                                renderActiveCountry(activeCountryIndex);
+                            } else {
+                                dropdownElement.classList.remove('endereco-hidden');
+                                activeCountryIndex = findCurrentPrefixIndex();
+                                renderActiveCountry(activeCountryIndex);
+                            }
+                        } else if (e.key === 'ArrowDown' || e.key === 'Down') {
+                            if (isOpen) {
+                                e.preventDefault();
+                                e.stopPropagation();
+
+                                if (activeCountryIndex < countryElements.length - 1) {
+                                    activeCountryIndex++;
+                                } else {
+                                    activeCountryIndex = 0;
+                                }
+                                renderActiveCountry(activeCountryIndex);
+                            }
+                        } else if (e.key === 'ArrowUp' || e.key === 'Up') {
+                            if (isOpen) {
+                                e.preventDefault();
+                                e.stopPropagation();
+
+                                if (activeCountryIndex > 0) {
+                                    activeCountryIndex--;
+                                } else {
+                                    activeCountryIndex = countryElements.length - 1;
+                                }
+                                renderActiveCountry(activeCountryIndex);
+                            }
+                        } else if (e.key === 'Home') {
+                            if (isOpen) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                activeCountryIndex = 0;
+                                renderActiveCountry(activeCountryIndex);
+                            }
+                        } else if (e.key === 'End') {
+                            if (isOpen) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                activeCountryIndex = countryElements.length - 1;
+                                renderActiveCountry(activeCountryIndex);
+                            }
+                        } else if (e.key === 'Escape') {
+                            if (isOpen) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                dropdownElement.classList.add('endereco-hidden');
+                                activeCountryIndex = -1;
+                                renderActiveCountry(activeCountryIndex);
+                            }
+                        } else if (e.key === 'Tab') {
+                            if (isOpen) {
+                                var hadSelection = activeCountryIndex >= 0;
+
+                                if (activeCountryIndex >= 0) {
+                                    e.preventDefault();
+
+                                    var selectedCountry = countryElements[activeCountryIndex];
+                                    base.setPrefix(DOMElement, selectedCountry.getAttribute("data-code"));
+                                    flagElement.querySelector('.endereco-flag').innerHTML = base.getFlagHTML(
+                                        DOMElement.value.substring(0, 10)
+                                    );
+                                }
+                                dropdownElement.classList.add('endereco-hidden');
+                                activeCountryIndex = -1;
+                                renderActiveCountry(activeCountryIndex);
+
+                                if (hadSelection) {
+                                    // Find next focusable element
+                                    var focusableElements = Array.from(document.querySelectorAll(
+                                        'input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+                                    ));
+                                    var currentIndex = focusableElements.indexOf(flagElement);
+                                    var nextElement = e.shiftKey
+                                        ? focusableElements[currentIndex - 1]
+                                        : focusableElements[currentIndex + 1];
+
+                                    if (nextElement) {
+                                        nextElement.focus();
+                                    }
+                                }
+                            }
+                        }
                     });
 
                     // Add height listener.
