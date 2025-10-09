@@ -1,8 +1,8 @@
 import merge from 'lodash.merge';
-import EnderecoBase from './components/base.js'
+import EnderecoBase from './components/base.js';
 import flagButtonHTML from '../templates/flagButton.html';
 import phoneDropdownHTML from '../templates/phoneDropdownHTML.html';
-import Mustache from "mustache";
+import Mustache from 'mustache';
 
 // Flags
 import notFoundFlag from '../templates/icons/not_found.svg';
@@ -154,7 +154,6 @@ import naFlag from '../templates/flags/na.svg';
 import nrFlag from '../templates/flags/nr.svg';
 import npFlag from '../templates/flags/np.svg';
 import nlFlag from '../templates/flags/nl.svg';
-import anFlag from '../templates/flags/nl.svg';
 import ncFlag from '../templates/flags/nc.svg';
 import nzFlag from '../templates/flags/nz.svg';
 import niFlag from '../templates/flags/ni.svg';
@@ -247,17 +246,26 @@ import yeFlag from '../templates/flags/ye.svg';
 import zmFlag from '../templates/flags/zm.svg';
 import zwFlag from '../templates/flags/zw.svg';
 
-
 // Extensions.
 import PhoneExtension from './extensions/fields/PhoneExtension.js';
-import PhoneCheckExtension from "./extensions/checks/PhoneCheckExtension";
-import SessionExtension from "./extensions/session/SessionExtension";
-import CountryCodeExtension from "./extensions/fields/CountryCodeExtension";
+import PhoneCheckExtension from './extensions/checks/PhoneCheckExtension';
+import SessionExtension from './extensions/session/SessionExtension';
+import CountryCodeExtension from './extensions/fields/CountryCodeExtension';
 
-function EnderecoPhone(customConfig={}) {
+// Netherlands Antilles uses NL flag
+const anFlag = nlFlag;
 
+// Flag sizing constants
+const FLAG_SIZE_DIVIDER_SMALL = 0.80; // Ratio of flag to input height for small inputs
+const FLAG_SIZE_DIVIDER_LARGE = 0.5; // Ratio of flag to input height for large inputs
+const FLAG_SIZE_THRESHOLD = 30; // Height threshold (px) for switching divider size
+const COUNTRY_CODE_MAX_LENGTH = 10; // Maximum length of country code prefix
+const FLAG_BLUR_CHECK_INTERVAL = 10; // Interval (ms) for checking flag blur state
+
+function EnderecoPhone (customConfig = {}) {
     // Get base object, that will be extended.
-    var base = new EnderecoBase();
+    const base = new EnderecoBase();
+
     base.type = 'phone';
     base.name = 'phoneservices';
     base.numberType = 'general';
@@ -265,1223 +273,1223 @@ function EnderecoPhone(customConfig={}) {
     // Override config.
     base.config = merge(base.config, customConfig);
 
-    // This source: 
+    // This source:
     base.mapping = [
         {
-            "iso2":"DE",
-            "code":"+49",
-            "flag":deFlag
+            iso2: 'DE',
+            code: '+49',
+            flag: deFlag
         },
         {
-            "iso2":"AT",
-            "code":"+43",
-            "flag":atFlag
+            iso2: 'AT',
+            code: '+43',
+            flag: atFlag
         },
         {
-            "iso2":"CH",
-            "code":"+41",
-            "flag":chFlag
+            iso2: 'CH',
+            code: '+41',
+            flag: chFlag
         },
         {
-            "iso2":"AF",
-            "code":"+93",
-            "flag":afFlag
+            iso2: 'AF',
+            code: '+93',
+            flag: afFlag
         },
         {
-            "iso2":"AL",
-            "code":"+355",
-            "flag":alFlag
+            iso2: 'AL',
+            code: '+355',
+            flag: alFlag
         },
         {
-            "iso2":"DZ",
-            "code":"+213",
-            "flag":dzFlag
+            iso2: 'DZ',
+            code: '+213',
+            flag: dzFlag
         },
         {
-            "iso2":"AS",
-            "code":"+1-684",
-            "flag":asFlag
+            iso2: 'AS',
+            code: '+1-684',
+            flag: asFlag
         },
         {
-            "iso2":"AD",
-            "code":"+376",
-            "flag":adFlag
+            iso2: 'AD',
+            code: '+376',
+            flag: adFlag
         },
         {
-            "iso2":"AO",
-            "code":"+244",
-            "flag":aoFlag
+            iso2: 'AO',
+            code: '+244',
+            flag: aoFlag
         },
         {
-            "iso2":"AI",
-            "code":"+1-264",
-            "flag":aiFlag
+            iso2: 'AI',
+            code: '+1-264',
+            flag: aiFlag
         },
         {
-            "iso2":"AQ",
-            "code":"+672",
-            "flag":aqFlag
+            iso2: 'AQ',
+            code: '+672',
+            flag: aqFlag
         },
         {
-            "iso2":"AG",
-            "code":"+1-268",
-            "flag":agFlag
+            iso2: 'AG',
+            code: '+1-268',
+            flag: agFlag
         },
         {
-            "iso2":"AR",
-            "code":"+54",
-            "flag":arFlag
+            iso2: 'AR',
+            code: '+54',
+            flag: arFlag
         },
         {
-            "iso2":"AM",
-            "code":"+374",
-            "flag":amFlag
+            iso2: 'AM',
+            code: '+374',
+            flag: amFlag
         },
         {
-            "iso2":"AW",
-            "code":"+297",
-            "flag":awFlag
+            iso2: 'AW',
+            code: '+297',
+            flag: awFlag
         },
         {
-            "iso2":"AU",
-            "code":"+61",
-            "flag":auFlag
+            iso2: 'AU',
+            code: '+61',
+            flag: auFlag
         },
         {
-            "iso2":"AZ",
-            "code":"+994",
-            "flag":azFlag
+            iso2: 'AZ',
+            code: '+994',
+            flag: azFlag
         },
         {
-            "iso2":"BS",
-            "code":"+1-242",
-            "flag":bsFlag
+            iso2: 'BS',
+            code: '+1-242',
+            flag: bsFlag
         },
         {
-            "iso2":"BH",
-            "code":"+973",
-            "flag":bhFlag
+            iso2: 'BH',
+            code: '+973',
+            flag: bhFlag
         },
         {
-            "iso2":"BD",
-            "code":"+880",
-            "flag":bdFlag
+            iso2: 'BD',
+            code: '+880',
+            flag: bdFlag
         },
         {
-            "iso2":"BB",
-            "code":"+1-246",
-            "flag":bbFlag
+            iso2: 'BB',
+            code: '+1-246',
+            flag: bbFlag
         },
         {
-            "iso2":"BY",
-            "code":"+375",
-            "flag":byFlag
+            iso2: 'BY',
+            code: '+375',
+            flag: byFlag
         },
         {
-            "iso2":"BE",
-            "code":"+32",
-            "flag":beFlag
+            iso2: 'BE',
+            code: '+32',
+            flag: beFlag
         },
         {
-            "iso2":"BZ",
-            "code":"+501",
-            "flag":bzFlag
+            iso2: 'BZ',
+            code: '+501',
+            flag: bzFlag
         },
         {
-            "iso2":"BJ",
-            "code":"+229",
-            "flag":bjFlag
+            iso2: 'BJ',
+            code: '+229',
+            flag: bjFlag
         },
         {
-            "iso2":"BM",
-            "code":"+1-441",
-            "flag":bmFlag
+            iso2: 'BM',
+            code: '+1-441',
+            flag: bmFlag
         },
         {
-            "iso2":"BT",
-            "code":"+975",
-            "flag":btFlag
+            iso2: 'BT',
+            code: '+975',
+            flag: btFlag
         },
         {
-            "iso2":"BO",
-            "code":"+591",
-            "flag":boFlag
+            iso2: 'BO',
+            code: '+591',
+            flag: boFlag
         },
         {
-            "iso2":"BA",
-            "code":"+387",
-            "flag":baFlag
+            iso2: 'BA',
+            code: '+387',
+            flag: baFlag
         },
         {
-            "iso2":"BW",
-            "code":"+267",
-            "flag":bwFlag
+            iso2: 'BW',
+            code: '+267',
+            flag: bwFlag
         },
         {
-            "iso2":"BR",
-            "code":"+55",
-            "flag":brFlag
+            iso2: 'BR',
+            code: '+55',
+            flag: brFlag
         },
         {
-            "iso2":"IO",
-            "code":"+246",
-            "flag":ioFlag
+            iso2: 'IO',
+            code: '+246',
+            flag: ioFlag
         },
         {
-            "iso2":"VG",
-            "code":"+1-284",
-            "flag":vgFlag
+            iso2: 'VG',
+            code: '+1-284',
+            flag: vgFlag
         },
         {
-            "iso2":"BN",
-            "code":"+673",
-            "flag":bnFlag
+            iso2: 'BN',
+            code: '+673',
+            flag: bnFlag
         },
         {
-            "iso2":"BG",
-            "code":"+359",
-            "flag":bgFlag
+            iso2: 'BG',
+            code: '+359',
+            flag: bgFlag
         },
         {
-            "iso2":"BF",
-            "code":"+226",
-            "flag":bfFlag
+            iso2: 'BF',
+            code: '+226',
+            flag: bfFlag
         },
         {
-            "iso2":"BI",
-            "code":"+257",
-            "flag":biFlag
+            iso2: 'BI',
+            code: '+257',
+            flag: biFlag
         },
         {
-            "iso2":"KH",
-            "code":"+855",
-            "flag":khFlag
+            iso2: 'KH',
+            code: '+855',
+            flag: khFlag
         },
         {
-            "iso2":"CM",
-            "code":"+237",
-            "flag":cmFlag
+            iso2: 'CM',
+            code: '+237',
+            flag: cmFlag
         },
         {
-            "iso2":"CA",
-            "code":"+1",
-            "flag":caFlag
+            iso2: 'CA',
+            code: '+1',
+            flag: caFlag
         },
         {
-            "iso2":"CV",
-            "code":"+238",
-            "flag":cvFlag
+            iso2: 'CV',
+            code: '+238',
+            flag: cvFlag
         },
         {
-            "iso2":"KY",
-            "code":"+1-345",
-            "flag":kyFlag
+            iso2: 'KY',
+            code: '+1-345',
+            flag: kyFlag
         },
         {
-            "iso2":"CF",
-            "code":"+236",
-            "flag":cfFlag
+            iso2: 'CF',
+            code: '+236',
+            flag: cfFlag
         },
         {
-            "iso2":"TD",
-            "code":"+235",
-            "flag":tdFlag
+            iso2: 'TD',
+            code: '+235',
+            flag: tdFlag
         },
         {
-            "iso2":"CL",
-            "code":"+56",
-            "flag":clFlag
+            iso2: 'CL',
+            code: '+56',
+            flag: clFlag
         },
         {
-            "iso2":"CN",
-            "code":"+86",
-            "flag":cnFlag
+            iso2: 'CN',
+            code: '+86',
+            flag: cnFlag
         },
         {
-            "iso2":"CX",
-            "code":"+61",
-            "flag":cxFlag
+            iso2: 'CX',
+            code: '+61',
+            flag: cxFlag
         },
         {
-            "iso2":"CC",
-            "code":"+61",
-            "flag":ccFlag
+            iso2: 'CC',
+            code: '+61',
+            flag: ccFlag
         },
         {
-            "iso2":"CO",
-            "code":"+57",
-            "flag":coFlag
+            iso2: 'CO',
+            code: '+57',
+            flag: coFlag
         },
         {
-            "iso2":"KM",
-            "code":"+269",
-            "flag":kmFlag
+            iso2: 'KM',
+            code: '+269',
+            flag: kmFlag
         },
         {
-            "iso2":"CK",
-            "code":"+682",
-            "flag":ckFlag
+            iso2: 'CK',
+            code: '+682',
+            flag: ckFlag
         },
         {
-            "iso2":"CR",
-            "code":"+506",
-            "flag":crFlag
+            iso2: 'CR',
+            code: '+506',
+            flag: crFlag
         },
         {
-            "iso2":"HR",
-            "code":"+385",
-            "flag":hrFlag
+            iso2: 'HR',
+            code: '+385',
+            flag: hrFlag
         },
         {
-            "iso2":"CU",
-            "code":"+53",
-            "flag":cuFlag
+            iso2: 'CU',
+            code: '+53',
+            flag: cuFlag
         },
         {
-            "iso2":"CW",
-            "code":"+599",
-            "flag":cwFlag
+            iso2: 'CW',
+            code: '+599',
+            flag: cwFlag
         },
         {
-            "iso2":"CY",
-            "code":"+357",
-            "flag":cyFlag
+            iso2: 'CY',
+            code: '+357',
+            flag: cyFlag
         },
         {
-            "iso2":"CZ",
-            "code":"+420",
-            "flag":czFlag
+            iso2: 'CZ',
+            code: '+420',
+            flag: czFlag
         },
         {
-            "iso2":"CD",
-            "code":"+243",
-            "flag":cdFlag
+            iso2: 'CD',
+            code: '+243',
+            flag: cdFlag
         },
         {
-            "iso2":"DK",
-            "code":"+45",
-            "flag":dkFlag
+            iso2: 'DK',
+            code: '+45',
+            flag: dkFlag
         },
         {
-            "iso2":"DJ",
-            "code":"+253",
-            "flag":djFlag
+            iso2: 'DJ',
+            code: '+253',
+            flag: djFlag
         },
         {
-            "iso2":"DM",
-            "code":"+1-767",
-            "flag":dmFlag
+            iso2: 'DM',
+            code: '+1-767',
+            flag: dmFlag
         },
         {
-            "iso2":"DO",
-            "code":"+1-809",
-            "flag":doFlag
+            iso2: 'DO',
+            code: '+1-809',
+            flag: doFlag
         },
         {
-            "iso2":"DO",
-            "code":"+ 1-829",
-            "flag":doFlag
+            iso2: 'DO',
+            code: '+ 1-829',
+            flag: doFlag
         },
         {
-            "iso2":"DO",
-            "code":"+ 1-849",
-            "flag":doFlag
+            iso2: 'DO',
+            code: '+ 1-849',
+            flag: doFlag
         },
         {
-            "iso2":"TL",
-            "code":"+670",
-            "flag":tlFlag
+            iso2: 'TL',
+            code: '+670',
+            flag: tlFlag
         },
         {
-            "iso2":"EC",
-            "code":"+593",
-            "flag":ecFlag
+            iso2: 'EC',
+            code: '+593',
+            flag: ecFlag
         },
         {
-            "iso2":"EG",
-            "code":"+20",
-            "flag":egFlag
+            iso2: 'EG',
+            code: '+20',
+            flag: egFlag
         },
         {
-            "iso2":"SV",
-            "code":"+503",
-            "flag":svFlag
+            iso2: 'SV',
+            code: '+503',
+            flag: svFlag
         },
         {
-            "iso2":"GQ",
-            "code":"+240",
-            "flag":gqFlag
+            iso2: 'GQ',
+            code: '+240',
+            flag: gqFlag
         },
         {
-            "iso2":"ER",
-            "code":"+291",
-            "flag":erFlag
+            iso2: 'ER',
+            code: '+291',
+            flag: erFlag
         },
         {
-            "iso2":"EE",
-            "code":"+372",
-            "flag":eeFlag
+            iso2: 'EE',
+            code: '+372',
+            flag: eeFlag
         },
         {
-            "iso2":"ET",
-            "code":"+251",
-            "flag":etFlag
+            iso2: 'ET',
+            code: '+251',
+            flag: etFlag
         },
         {
-            "iso2":"FK",
-            "code":"+500",
-            "flag":fkFlag
+            iso2: 'FK',
+            code: '+500',
+            flag: fkFlag
         },
         {
-            "iso2":"FO",
-            "code":"+298",
-            "flag":foFlag
+            iso2: 'FO',
+            code: '+298',
+            flag: foFlag
         },
         {
-            "iso2":"FJ",
-            "code":"+679",
-            "flag":fjFlag
+            iso2: 'FJ',
+            code: '+679',
+            flag: fjFlag
         },
         {
-            "iso2":"FI",
-            "code":"+358",
-            "flag":fiFlag
+            iso2: 'FI',
+            code: '+358',
+            flag: fiFlag
         },
         {
-            "iso2":"FR",
-            "code":"+33",
-            "flag":frFlag
+            iso2: 'FR',
+            code: '+33',
+            flag: frFlag
         },
         {
-            "iso2":"PF",
-            "code":"+689",
-            "flag":pfFlag
+            iso2: 'PF',
+            code: '+689',
+            flag: pfFlag
         },
         {
-            "iso2":"GA",
-            "code":"+241",
-            "flag":gaFlag
+            iso2: 'GA',
+            code: '+241',
+            flag: gaFlag
         },
         {
-            "iso2":"GM",
-            "code":"+220",
-            "flag":gmFlag
+            iso2: 'GM',
+            code: '+220',
+            flag: gmFlag
         },
         {
-            "iso2":"GE",
-            "code":"+995",
-            "flag":geFlag
+            iso2: 'GE',
+            code: '+995',
+            flag: geFlag
         },
 
         {
-            "iso2":"GH",
-            "code":"+233",
-            "flag":ghFlag
+            iso2: 'GH',
+            code: '+233',
+            flag: ghFlag
         },
         {
-            "iso2":"GI",
-            "code":"+350",
-            "flag":giFlag
+            iso2: 'GI',
+            code: '+350',
+            flag: giFlag
         },
         {
-            "iso2":"GR",
-            "code":"+30",
-            "flag":grFlag
+            iso2: 'GR',
+            code: '+30',
+            flag: grFlag
         },
         {
-            "iso2":"GL",
-            "code":"+299",
-            "flag":glFlag
+            iso2: 'GL',
+            code: '+299',
+            flag: glFlag
         },
         {
-            "iso2":"GD",
-            "code":"+1-473",
-            "flag":gdFlag
+            iso2: 'GD',
+            code: '+1-473',
+            flag: gdFlag
         },
         {
-            "iso2":"GU",
-            "code":"+1-671",
-            "flag":guFlag
+            iso2: 'GU',
+            code: '+1-671',
+            flag: guFlag
         },
         {
-            "iso2":"GT",
-            "code":"+502",
-            "flag":gtFlag
+            iso2: 'GT',
+            code: '+502',
+            flag: gtFlag
         },
         {
-            "iso2":"GG",
-            "code":"+44-1481",
-            "flag":ggFlag
+            iso2: 'GG',
+            code: '+44-1481',
+            flag: ggFlag
         },
         {
-            "iso2":"GN",
-            "code":"+224",
-            "flag":gnFlag
+            iso2: 'GN',
+            code: '+224',
+            flag: gnFlag
         },
         {
-            "iso2":"GW",
-            "code":"+245",
-            "flag":gwFlag
+            iso2: 'GW',
+            code: '+245',
+            flag: gwFlag
         },
         {
-            "iso2":"GY",
-            "code":"+592",
-            "flag":gyFlag
+            iso2: 'GY',
+            code: '+592',
+            flag: gyFlag
         },
         {
-            "iso2":"HT",
-            "code":"+509",
-            "flag":htFlag
+            iso2: 'HT',
+            code: '+509',
+            flag: htFlag
         },
         {
-            "iso2":"HN",
-            "code":"+504",
-            "flag":hnFlag
+            iso2: 'HN',
+            code: '+504',
+            flag: hnFlag
         },
         {
-            "iso2":"HK",
-            "code":"+852",
-            "flag":hkFlag
+            iso2: 'HK',
+            code: '+852',
+            flag: hkFlag
         },
         {
-            "iso2":"HU",
-            "code":"+36",
-            "flag":huFlag
+            iso2: 'HU',
+            code: '+36',
+            flag: huFlag
         },
         {
-            "iso2":"IS",
-            "code":"+354",
-            "flag":isFlag
+            iso2: 'IS',
+            code: '+354',
+            flag: isFlag
         },
         {
-            "iso2":"IN",
-            "code":"+91",
-            "flag":inFlag
+            iso2: 'IN',
+            code: '+91',
+            flag: inFlag
         },
         {
-            "iso2":"ID",
-            "code":"+62",
-            "flag":idFlag
+            iso2: 'ID',
+            code: '+62',
+            flag: idFlag
         },
         {
-            "iso2":"IR",
-            "code":"+98",
-            "flag":irFlag
+            iso2: 'IR',
+            code: '+98',
+            flag: irFlag
         },
         {
-            "iso2":"IQ",
-            "code":"+964",
-            "flag":iqFlag
+            iso2: 'IQ',
+            code: '+964',
+            flag: iqFlag
         },
         {
-            "iso2":"IE",
-            "code":"+353",
-            "flag":ieFlag
+            iso2: 'IE',
+            code: '+353',
+            flag: ieFlag
         },
         {
-            "iso2":"IM",
-            "code":"+44-1624",
-            "flag":imFlag
+            iso2: 'IM',
+            code: '+44-1624',
+            flag: imFlag
         },
         {
-            "iso2":"IL",
-            "code":"+972",
-            "flag":ilFlag
+            iso2: 'IL',
+            code: '+972',
+            flag: ilFlag
         },
         {
-            "iso2":"IT",
-            "code":"+39",
-            "flag":itFlag
+            iso2: 'IT',
+            code: '+39',
+            flag: itFlag
         },
         {
-            "iso2":"CI",
-            "code":"+225",
-            "flag":ciFlag
+            iso2: 'CI',
+            code: '+225',
+            flag: ciFlag
         },
         {
-            "iso2":"JM",
-            "code":"+1-876",
-            "flag":jmFlag
+            iso2: 'JM',
+            code: '+1-876',
+            flag: jmFlag
         },
         {
-            "iso2":"JP",
-            "code":"+81",
-            "flag":jpFlag
+            iso2: 'JP',
+            code: '+81',
+            flag: jpFlag
         },
         {
-            "iso2":"JE",
-            "code":"+44-1534",
-            "flag":jeFlag
+            iso2: 'JE',
+            code: '+44-1534',
+            flag: jeFlag
         },
         {
-            "iso2":"JO",
-            "code":"+962",
-            "flag":joFlag
+            iso2: 'JO',
+            code: '+962',
+            flag: joFlag
         },
         {
-            "iso2":"KZ",
-            "code":"+7",
-            "flag":kzFlag
+            iso2: 'KZ',
+            code: '+7',
+            flag: kzFlag
         },
         {
-            "iso2":"KE",
-            "code":"+254",
-            "flag":keFlag
+            iso2: 'KE',
+            code: '+254',
+            flag: keFlag
         },
         {
-            "iso2":"KI",
-            "code":"+686",
-            "flag":kiFlag
+            iso2: 'KI',
+            code: '+686',
+            flag: kiFlag
         },
         {
-            "iso2":"XK",
-            "code":"+383",
-            "flag":xkFlag
+            iso2: 'XK',
+            code: '+383',
+            flag: xkFlag
         },
         {
-            "iso2":"KW",
-            "code":"+965",
-            "flag":kwFlag
+            iso2: 'KW',
+            code: '+965',
+            flag: kwFlag
         },
         {
-            "iso2":"KG",
-            "code":"+996",
-            "flag":kgFlag
+            iso2: 'KG',
+            code: '+996',
+            flag: kgFlag
         },
         {
-            "iso2":"LA",
-            "code":"+856",
-            "flag":laFlag
+            iso2: 'LA',
+            code: '+856',
+            flag: laFlag
         },
         {
-            "iso2":"LV",
-            "code":"+371",
-            "flag":lvFlag
+            iso2: 'LV',
+            code: '+371',
+            flag: lvFlag
         },
         {
-            "iso2":"LB",
-            "code":"+961",
-            "flag":lbFlag
+            iso2: 'LB',
+            code: '+961',
+            flag: lbFlag
         },
         {
-            "iso2":"LS",
-            "code":"+266",
-            "flag":lsFlag
+            iso2: 'LS',
+            code: '+266',
+            flag: lsFlag
         },
         {
-            "iso2":"LR",
-            "code":"+231",
-            "flag":lrFlag
+            iso2: 'LR',
+            code: '+231',
+            flag: lrFlag
         },
         {
-            "iso2":"LY",
-            "code":"+218",
-            "flag":lyFlag
+            iso2: 'LY',
+            code: '+218',
+            flag: lyFlag
         },
         {
-            "iso2":"LI",
-            "code":"+423",
-            "flag":liFlag
+            iso2: 'LI',
+            code: '+423',
+            flag: liFlag
         },
         {
-            "iso2":"LT",
-            "code":"+370",
-            "flag":ltFlag
+            iso2: 'LT',
+            code: '+370',
+            flag: ltFlag
         },
         {
-            "iso2":"LU",
-            "code":"+352",
-            "flag":luFlag
+            iso2: 'LU',
+            code: '+352',
+            flag: luFlag
         },
         {
-            "iso2":"MO",
-            "code":"+853",
-            "flag":moFlag
+            iso2: 'MO',
+            code: '+853',
+            flag: moFlag
         },
         {
-            "iso2":"MK",
-            "code":"+389",
-            "flag":mkFlag
+            iso2: 'MK',
+            code: '+389',
+            flag: mkFlag
         },
         {
-            "iso2":"MG",
-            "code":"+261",
-            "flag":mgFlag
+            iso2: 'MG',
+            code: '+261',
+            flag: mgFlag
         },
         {
-            "iso2":"MW",
-            "code":"+265",
-            "flag":mwFlag
+            iso2: 'MW',
+            code: '+265',
+            flag: mwFlag
         },
         {
-            "iso2":"MY",
-            "code":"+60",
-            "flag":myFlag
+            iso2: 'MY',
+            code: '+60',
+            flag: myFlag
         },
         {
-            "iso2":"MV",
-            "code":"+960",
-            "flag":mvFlag
+            iso2: 'MV',
+            code: '+960',
+            flag: mvFlag
         },
         {
-            "iso2":"ML",
-            "code":"+223",
-            "flag":mlFlag
+            iso2: 'ML',
+            code: '+223',
+            flag: mlFlag
         },
         {
-            "iso2":"MT",
-            "code":"+356",
-            "flag":mtFlag
+            iso2: 'MT',
+            code: '+356',
+            flag: mtFlag
         },
         {
-            "iso2":"MH",
-            "code":"+692",
-            "flag":mhFlag
+            iso2: 'MH',
+            code: '+692',
+            flag: mhFlag
         },
         {
-            "iso2":"MR",
-            "code":"+222",
-            "flag":mrFlag
+            iso2: 'MR',
+            code: '+222',
+            flag: mrFlag
         },
         {
-            "iso2":"MU",
-            "code":"+230",
-            "flag":muFlag
+            iso2: 'MU',
+            code: '+230',
+            flag: muFlag
         },
         {
-            "iso2":"YT",
-            "code":"+262",
-            "flag":ytFlag
+            iso2: 'YT',
+            code: '+262',
+            flag: ytFlag
         },
         {
-            "iso2":"MX",
-            "code":"+52",
-            "flag":mxFlag
+            iso2: 'MX',
+            code: '+52',
+            flag: mxFlag
         },
         {
-            "iso2":"FM",
-            "code":"+691",
-            "flag":fmFlag
+            iso2: 'FM',
+            code: '+691',
+            flag: fmFlag
         },
         {
-            "iso2":"MD",
-            "code":"+373",
-            "flag":mdFlag
+            iso2: 'MD',
+            code: '+373',
+            flag: mdFlag
         },
         {
-            "iso2":"MC",
-            "code":"+377",
-            "flag":mcFlag
+            iso2: 'MC',
+            code: '+377',
+            flag: mcFlag
         },
         {
-            "iso2":"MN",
-            "code":"+976",
-            "flag":mnFlag
+            iso2: 'MN',
+            code: '+976',
+            flag: mnFlag
         },
         {
-            "iso2":"ME",
-            "code":"+382",
-            "flag":meFlag
+            iso2: 'ME',
+            code: '+382',
+            flag: meFlag
         },
         {
-            "iso2":"MS",
-            "code":"+1-664",
-            "flag":msFlag
+            iso2: 'MS',
+            code: '+1-664',
+            flag: msFlag
         },
         {
-            "iso2":"MA",
-            "code":"+212",
-            "flag":maFlag
+            iso2: 'MA',
+            code: '+212',
+            flag: maFlag
         },
         {
-            "iso2":"MZ",
-            "code":"+258",
-            "flag":mzFlag
+            iso2: 'MZ',
+            code: '+258',
+            flag: mzFlag
         },
         {
-            "iso2":"MM",
-            "code":"+95",
-            "flag":mmFlag
+            iso2: 'MM',
+            code: '+95',
+            flag: mmFlag
         },
         {
-            "iso2":"NA",
-            "code":"+264",
-            "flag":naFlag
+            iso2: 'NA',
+            code: '+264',
+            flag: naFlag
         },
         {
-            "iso2":"NR",
-            "code":"+674",
-            "flag":nrFlag
+            iso2: 'NR',
+            code: '+674',
+            flag: nrFlag
         },
         {
-            "iso2":"NP",
-            "code":"+977",
-            "flag":npFlag
+            iso2: 'NP',
+            code: '+977',
+            flag: npFlag
         },
         {
-            "iso2":"NL",
-            "code":"+31",
-            "flag":nlFlag
+            iso2: 'NL',
+            code: '+31',
+            flag: nlFlag
         },
         {
-            "iso2":"AN",
-            "code":"+599",
-            "flag":anFlag
+            iso2: 'AN',
+            code: '+599',
+            flag: anFlag
         },
         {
-            "iso2":"NC",
-            "code":"+687",
-            "flag":ncFlag
+            iso2: 'NC',
+            code: '+687',
+            flag: ncFlag
         },
         {
-            "iso2":"NZ",
-            "code":"+64",
-            "flag":nzFlag
+            iso2: 'NZ',
+            code: '+64',
+            flag: nzFlag
         },
         {
-            "iso2":"NI",
-            "code":"+505",
-            "flag":niFlag
+            iso2: 'NI',
+            code: '+505',
+            flag: niFlag
         },
         {
-            "iso2":"NE",
-            "code":"+227",
-            "flag":neFlag
+            iso2: 'NE',
+            code: '+227',
+            flag: neFlag
         },
         {
-            "iso2":"NG",
-            "code":"+234",
-            "flag":ngFlag
+            iso2: 'NG',
+            code: '+234',
+            flag: ngFlag
         },
         {
-            "iso2":"NU",
-            "code":"+683",
-            "flag":nuFlag
+            iso2: 'NU',
+            code: '+683',
+            flag: nuFlag
         },
         {
-            "iso2":"KP",
-            "code":"+850",
-            "flag":kpFlag
+            iso2: 'KP',
+            code: '+850',
+            flag: kpFlag
         },
         {
-            "iso2":"MP",
-            "code":"+1-670",
-            "flag":mpFlag
+            iso2: 'MP',
+            code: '+1-670',
+            flag: mpFlag
         },
         {
-            "iso2":"NO",
-            "code":"+47",
-            "flag":noFlag
+            iso2: 'NO',
+            code: '+47',
+            flag: noFlag
         },
         {
-            "iso2":"OM",
-            "code":"+968",
-            "flag":omFlag
+            iso2: 'OM',
+            code: '+968',
+            flag: omFlag
         },
         {
-            "iso2":"PK",
-            "code":"+92",
-            "flag":pkFlag
+            iso2: 'PK',
+            code: '+92',
+            flag: pkFlag
         },
         {
-            "iso2":"PW",
-            "code":"+680",
-            "flag":pwFlag
+            iso2: 'PW',
+            code: '+680',
+            flag: pwFlag
         },
         {
-            "iso2":"PS",
-            "code":"+970",
-            "flag":psFlag
+            iso2: 'PS',
+            code: '+970',
+            flag: psFlag
         },
         {
-            "iso2":"PA",
-            "code":"+507",
-            "flag":paFlag
+            iso2: 'PA',
+            code: '+507',
+            flag: paFlag
         },
         {
-            "iso2":"PG",
-            "code":"+675",
-            "flag":pgFlag
+            iso2: 'PG',
+            code: '+675',
+            flag: pgFlag
         },
         {
-            "iso2":"PY",
-            "code":"+595",
-            "flag":pyFlag
+            iso2: 'PY',
+            code: '+595',
+            flag: pyFlag
         },
         {
-            "iso2":"PE",
-            "code":"+51",
-            "flag":peFlag
+            iso2: 'PE',
+            code: '+51',
+            flag: peFlag
         },
         {
-            "iso2":"PH",
-            "code":"+63",
-            "flag":phFlag
+            iso2: 'PH',
+            code: '+63',
+            flag: phFlag
         },
         {
-            "iso2":"PN",
-            "code":"+64",
-            "flag":pnFlag
+            iso2: 'PN',
+            code: '+64',
+            flag: pnFlag
         },
         {
-            "iso2":"PL",
-            "code":"+48",
-            "flag":plFlag
+            iso2: 'PL',
+            code: '+48',
+            flag: plFlag
         },
         {
-            "iso2":"PT",
-            "code":"+351",
-            "flag":ptFlag
+            iso2: 'PT',
+            code: '+351',
+            flag: ptFlag
         },
         {
-            "iso2":"PR",
-            "code":"+1-787",
-            "flag":prFlag
+            iso2: 'PR',
+            code: '+1-787',
+            flag: prFlag
         },
         {
-            "iso2":"PR",
-            "code":"+ 1-939",
-            "flag":prFlag
+            iso2: 'PR',
+            code: '+ 1-939',
+            flag: prFlag
         },
         {
-            "iso2":"QA",
-            "code":"+974",
-            "flag":qaFlag
+            iso2: 'QA',
+            code: '+974',
+            flag: qaFlag
         },
         {
-            "iso2":"CG",
-            "code":"+242",
-            "flag":cgFlag
+            iso2: 'CG',
+            code: '+242',
+            flag: cgFlag
         },
         {
-            "iso2":"RE",
-            "code":"+262",
-            "flag":reFlag
+            iso2: 'RE',
+            code: '+262',
+            flag: reFlag
         },
         {
-            "iso2":"RO",
-            "code":"+40",
-            "flag":roFlag
+            iso2: 'RO',
+            code: '+40',
+            flag: roFlag
         },
         {
-            "iso2":"RU",
-            "code":"+7",
-            "flag":ruFlag
+            iso2: 'RU',
+            code: '+7',
+            flag: ruFlag
         },
         {
-            "iso2":"RW",
-            "code":"+250",
-            "flag":rwFlag
+            iso2: 'RW',
+            code: '+250',
+            flag: rwFlag
         },
         {
-            "iso2":"BL",
-            "code":"+590",
-            "flag":blFlag
+            iso2: 'BL',
+            code: '+590',
+            flag: blFlag
         },
         {
-            "iso2":"SH",
-            "code":"+290",
-            "flag":shFlag
+            iso2: 'SH',
+            code: '+290',
+            flag: shFlag
         },
         {
-            "iso2":"KN",
-            "code":"+1-869",
-            "flag":knFlag
+            iso2: 'KN',
+            code: '+1-869',
+            flag: knFlag
         },
         {
-            "iso2":"LC",
-            "code":"+1-758",
-            "flag":lcFlag
+            iso2: 'LC',
+            code: '+1-758',
+            flag: lcFlag
         },
         {
-            "iso2":"MF",
-            "code":"+590",
-            "flag":mfFlag
+            iso2: 'MF',
+            code: '+590',
+            flag: mfFlag
         },
         {
-            "iso2":"PM",
-            "code":"+508",
-            "flag":pmFlag
+            iso2: 'PM',
+            code: '+508',
+            flag: pmFlag
         },
         {
-            "iso2":"VC",
-            "code":"+1-784",
-            "flag":vcFlag
+            iso2: 'VC',
+            code: '+1-784',
+            flag: vcFlag
         },
         {
-            "iso2":"WS",
-            "code":"+685",
-            "flag":wsFlag
+            iso2: 'WS',
+            code: '+685',
+            flag: wsFlag
         },
         {
-            "iso2":"SM",
-            "code":"+378",
-            "flag":smFlag
+            iso2: 'SM',
+            code: '+378',
+            flag: smFlag
         },
         {
-            "iso2":"ST",
-            "code":"+239",
-            "flag":stFlag
+            iso2: 'ST',
+            code: '+239',
+            flag: stFlag
         },
         {
-            "iso2":"SA",
-            "code":"+966",
-            "flag":saFlag
+            iso2: 'SA',
+            code: '+966',
+            flag: saFlag
         },
         {
-            "iso2":"SN",
-            "code":"+221",
-            "flag":snFlag
+            iso2: 'SN',
+            code: '+221',
+            flag: snFlag
         },
         {
-            "iso2":"RS",
-            "code":"+381",
-            "flag":rsFlag
+            iso2: 'RS',
+            code: '+381',
+            flag: rsFlag
         },
         {
-            "iso2":"SC",
-            "code":"+248",
-            "flag":scFlag
+            iso2: 'SC',
+            code: '+248',
+            flag: scFlag
         },
         {
-            "iso2":"SL",
-            "code":"+232",
-            "flag":slFlag
+            iso2: 'SL',
+            code: '+232',
+            flag: slFlag
         },
         {
-            "iso2":"SG",
-            "code":"+65",
-            "flag":sgFlag
+            iso2: 'SG',
+            code: '+65',
+            flag: sgFlag
         },
         {
-            "iso2":"SX",
-            "code":"+1-721",
-            "flag":sxFlag
+            iso2: 'SX',
+            code: '+1-721',
+            flag: sxFlag
         },
         {
-            "iso2":"SK",
-            "code":"+421",
-            "flag":skFlag
+            iso2: 'SK',
+            code: '+421',
+            flag: skFlag
         },
         {
-            "iso2":"SI",
-            "code":"+386",
-            "flag":siFlag
+            iso2: 'SI',
+            code: '+386',
+            flag: siFlag
         },
         {
-            "iso2":"SB",
-            "code":"+677",
-            "flag":sbFlag
+            iso2: 'SB',
+            code: '+677',
+            flag: sbFlag
         },
         {
-            "iso2":"SO",
-            "code":"+252",
-            "flag":soFlag
+            iso2: 'SO',
+            code: '+252',
+            flag: soFlag
         },
         {
-            "iso2":"ZA",
-            "code":"+27",
-            "flag":zaFlag
+            iso2: 'ZA',
+            code: '+27',
+            flag: zaFlag
         },
         {
-            "iso2":"KR",
-            "code":"+82",
-            "flag":krFlag
+            iso2: 'KR',
+            code: '+82',
+            flag: krFlag
         },
         {
-            "iso2":"SS",
-            "code":"+211",
-            "flag":ssFlag
+            iso2: 'SS',
+            code: '+211',
+            flag: ssFlag
         },
         {
-            "iso2":"ES",
-            "code":"+34",
-            "flag":esFlag
+            iso2: 'ES',
+            code: '+34',
+            flag: esFlag
         },
         {
-            "iso2":"LK",
-            "code":"+94",
-            "flag":lkFlag
+            iso2: 'LK',
+            code: '+94',
+            flag: lkFlag
         },
         {
-            "iso2":"SD",
-            "code":"+249",
-            "flag":sdFlag
+            iso2: 'SD',
+            code: '+249',
+            flag: sdFlag
         },
         {
-            "iso2":"SR",
-            "code":"+597",
-            "flag":srFlag
+            iso2: 'SR',
+            code: '+597',
+            flag: srFlag
         },
         {
-            "iso2":"SJ",
-            "code":"+47",
-            "flag":sjFlag
+            iso2: 'SJ',
+            code: '+47',
+            flag: sjFlag
         },
         {
-            "iso2":"SZ",
-            "code":"+268",
-            "flag":szFlag
+            iso2: 'SZ',
+            code: '+268',
+            flag: szFlag
         },
         {
-            "iso2":"SE",
-            "code":"+46",
-            "flag":seFlag
+            iso2: 'SE',
+            code: '+46',
+            flag: seFlag
         },
         {
-            "iso2":"SY",
-            "code":"+963",
-            "flag":syFlag
+            iso2: 'SY',
+            code: '+963',
+            flag: syFlag
         },
         {
-            "iso2":"TW",
-            "code":"+886",
-            "flag":twFlag
+            iso2: 'TW',
+            code: '+886',
+            flag: twFlag
         },
         {
-            "iso2":"TJ",
-            "code":"+992",
-            "flag":tjFlag
+            iso2: 'TJ',
+            code: '+992',
+            flag: tjFlag
         },
         {
-            "iso2":"TZ",
-            "code":"+255",
-            "flag":tzFlag
+            iso2: 'TZ',
+            code: '+255',
+            flag: tzFlag
         },
         {
-            "iso2":"TH",
-            "code":"+66",
-            "flag":thFlag
+            iso2: 'TH',
+            code: '+66',
+            flag: thFlag
         },
         {
-            "iso2":"TG",
-            "code":"+228",
-            "flag":tgFlag
+            iso2: 'TG',
+            code: '+228',
+            flag: tgFlag
         },
         {
-            "iso2":"TK",
-            "code":"+690",
-            "flag":tkFlag
+            iso2: 'TK',
+            code: '+690',
+            flag: tkFlag
         },
         {
-            "iso2":"TO",
-            "code":"+676",
-            "flag":toFlag
+            iso2: 'TO',
+            code: '+676',
+            flag: toFlag
         },
         {
-            "iso2":"TT",
-            "code":"+1-868",
-            "flag":ttFlag
+            iso2: 'TT',
+            code: '+1-868',
+            flag: ttFlag
         },
         {
-            "iso2":"TN",
-            "code":"+216",
-            "flag":tnFlag
+            iso2: 'TN',
+            code: '+216',
+            flag: tnFlag
         },
         {
-            "iso2":"TR",
-            "code":"+90",
-            "flag":trFlag
+            iso2: 'TR',
+            code: '+90',
+            flag: trFlag
         },
         {
-            "iso2":"TM",
-            "code":"+993",
-            "flag":tmFlag
+            iso2: 'TM',
+            code: '+993',
+            flag: tmFlag
         },
         {
-            "iso2":"TC",
-            "code":"+1-649",
-            "flag":tcFlag
+            iso2: 'TC',
+            code: '+1-649',
+            flag: tcFlag
         },
         {
-            "iso2":"TV",
-            "code":"+688",
-            "flag":tvFlag
+            iso2: 'TV',
+            code: '+688',
+            flag: tvFlag
         },
         {
-            "iso2":"VI",
-            "code":"+1-340",
-            "flag":viFlag
+            iso2: 'VI',
+            code: '+1-340',
+            flag: viFlag
         },
         {
-            "iso2":"UG",
-            "code":"+256",
-            "flag":ugFlag
+            iso2: 'UG',
+            code: '+256',
+            flag: ugFlag
         },
         {
-            "iso2":"UA",
-            "code":"+380",
-            "flag":uaFlag
+            iso2: 'UA',
+            code: '+380',
+            flag: uaFlag
         },
         {
-            "iso2":"AE",
-            "code":"+971",
-            "flag":aeFlag
+            iso2: 'AE',
+            code: '+971',
+            flag: aeFlag
         },
         {
-            "iso2":"GB",
-            "code":"+44",
-            "flag":gbFlag
+            iso2: 'GB',
+            code: '+44',
+            flag: gbFlag
         },
         {
-            "iso2":"US",
-            "code":"+1",
-            "flag":usFlag
+            iso2: 'US',
+            code: '+1',
+            flag: usFlag
         },
         {
-            "iso2":"UY",
-            "code":"+598",
-            "flag":uyFlag
+            iso2: 'UY',
+            code: '+598',
+            flag: uyFlag
         },
         {
-            "iso2":"UZ",
-            "code":"+998",
-            "flag":uzFlag
+            iso2: 'UZ',
+            code: '+998',
+            flag: uzFlag
         },
         {
-            "iso2":"VU",
-            "code":"+678",
-            "flag":vuFlag
+            iso2: 'VU',
+            code: '+678',
+            flag: vuFlag
         },
         {
-            "iso2":"VA",
-            "code":"+379",
-            "flag":vaFlag
+            iso2: 'VA',
+            code: '+379',
+            flag: vaFlag
         },
         {
-            "iso2":"VE",
-            "code":"+58",
-            "flag":veFlag
+            iso2: 'VE',
+            code: '+58',
+            flag: veFlag
         },
         {
-            "iso2":"VN",
-            "code":"+84",
-            "flag":vnFlag
+            iso2: 'VN',
+            code: '+84',
+            flag: vnFlag
         },
         {
-            "iso2":"WF",
-            "code":"+681",
-            "flag":wfFlag
+            iso2: 'WF',
+            code: '+681',
+            flag: wfFlag
         },
         {
-            "iso2":"EH",
-            "code":"+212",
-            "flag":ehFlag
+            iso2: 'EH',
+            code: '+212',
+            flag: ehFlag
         },
         {
-            "iso2":"YE",
-            "code":"+967",
-            "flag":yeFlag
+            iso2: 'YE',
+            code: '+967',
+            flag: yeFlag
         },
         {
-            "iso2":"ZM",
-            "code":"+260",
-            "flag":zmFlag
+            iso2: 'ZM',
+            code: '+260',
+            flag: zmFlag
         },
         {
-            "iso2":"ZW",
-            "code":"+263",
-            "flag":zwFlag
+            iso2: 'ZW',
+            code: '+263',
+            flag: zwFlag
         }
     ];
 
@@ -1491,7 +1499,7 @@ function EnderecoPhone(customConfig={}) {
         PhoneCheckExtension,
         CountryCodeExtension,
         SessionExtension
-    ]
+    ];
 
     // Load extesions.
     base.loadExtensions();
@@ -1499,18 +1507,18 @@ function EnderecoPhone(customConfig={}) {
     // Call "onCreate" callbacks.
     base.created();
 
-    base.getFlagHTML = function(numberDigits) {
-        var queryStr = numberDigits.trim();
-        var returnHtml = '';
+    base.getFlagHTML = function (numberDigits) {
+        let queryStr = numberDigits.trim();
+        let returnHtml = '';
 
-        if ('00' === queryStr.substring(0,2)) {
+        if (queryStr.substring(0, 2) === '00') {
             queryStr = queryStr.replace(/^.{2}/g, '+');
         }
 
         while (1) {
             // Find first match instead of last to be consistent with findCurrentPrefixIndex
-            for (var i = 0; i < base.mapping.length; i++) {
-                if (base.mapping[i].code === queryStr && '' !== queryStr) {
+            for (let i = 0; i < base.mapping.length; i++) {
+                if (base.mapping[i].code === queryStr && queryStr !== '') {
                     returnHtml = base.mapping[i].flag;
                     base.currePrefix = queryStr;
                     break; // Use first match, not last
@@ -1519,82 +1527,84 @@ function EnderecoPhone(customConfig={}) {
 
             queryStr = queryStr.slice(0, -1);
 
-            if ('' !== returnHtml) {
+            if (returnHtml !== '') {
                 break;
             }
 
-            if (0 === queryStr.length) {
+            if (queryStr.length === 0) {
                 break;
             }
         }
 
-        if ('' === returnHtml) {
+        if (returnHtml === '') {
             returnHtml = notFoundFlag;
             base.currePrefix = '';
         }
 
         return returnHtml;
-    }
+    };
 
     base.currePrefix = false;
 
-    base.isFlagActive = function() {
+    base.isFlagActive = function () {
         if (base._flagContainerDom && document.activeElement === base._flagContainerDom) {
             return true;
         }
+
         return false;
     };
 
-    base.setPrefix = function(input, prefix) {
+    base.setPrefix = function (input, prefix) {
         if (base.currePrefix !== prefix) {
-            var inputValue = input.value;
-            if ("" !== base.currePrefix) {
+            let inputValue = input.value;
+
+            if (base.currePrefix !== '') {
                 inputValue = inputValue.substring(base.currePrefix.length);
             }
 
             input.value = prefix + inputValue;
 
-            if (!!window.jQuery && !!window.jQuery.trigger) {
+            if (Boolean(window.jQuery) && Boolean(window.jQuery.trigger)) {
                 window.jQuery(input).trigger('change').trigger('blur');
-            } else if (!!window.$ && !!window.$.trigger) {
+            } else if (Boolean(window.$) && Boolean(window.$.trigger)) {
                 window.$(input).trigger('change').trigger('blue');
             } else {
                 input.dispatchEvent(new Event('change'));
                 input.dispatchEvent(new Event('blur'));
             }
         }
-    }
+    };
 
     // Render flags method.
-    base.renderFlags = function() {
+    base.renderFlags = function () {
         if (
-            !!window.EnderecoIntegrator.config.ux.showPhoneFlag &&
-            ['E164','INTERNATIONAL'].includes(window.EnderecoIntegrator.config.phoneFormat)
+            Boolean(window.EnderecoIntegrator.config.ux.showPhoneFlag) &&
+            ['E164', 'INTERNATIONAL'].includes(window.EnderecoIntegrator.config.phoneFormat)
         ) {
-            base._subscribers.phone.forEach( function(subscriber) {
-                var DOMElement = subscriber.object;
-                var flagsHTML = flagButtonHTML;
+            base._subscribers.phone.forEach(function (subscriber) {
+                const DOMElement = subscriber.object;
+                const flagsHTML = flagButtonHTML;
 
                 // No escaping required because the template data contains no user input or server response.
-                var dropdownHTML = Mustache.render(
+                const dropdownHTML = Mustache.render(
                     phoneDropdownHTML,
                     {
-                        "countries": base.mapping
+                        countries: base.mapping
                     }
                 );
 
-                var heightOfInput = 0;
-                var heightOfFlag = 0;
-                var offsetFromParent = 0;
-                var flagElement, dropdownElement;
-                var topOffset = 0;
-                var dropdownTopOffset = 0;
-                var leftOffset = 0;
-                var dividerSize = 0;
-                var widthOfFlag = 0;
+                let heightOfInput = 0;
+                let heightOfFlag = 0;
+                let offsetFromParent = 0;
+                let flagElement, dropdownElement;
+                let topOffset = 0;
+                let dropdownTopOffset = 0;
+                let leftOffset = 0;
+                let dividerSize = 0;
+                let widthOfFlag = 0;
 
-                var lastHeight = 0;
-                var activeCountryIndex = -1;
+                let lastHeight = 0;
+                let activeCountryIndex = -1;
 
                 if (!DOMElement.classList.contains('endereco-field-has-flags')) {
                     // Add flags class
@@ -1611,15 +1621,19 @@ function EnderecoPhone(customConfig={}) {
                     base._flagContainerDom = flagElement;
 
                     // Add blur detection for flag element to trigger phone check
-                    var flagWasFocused = false;
-                    setInterval(function() {
-                        var flagIsFocused = (document.activeElement === flagElement);
+                    let flagWasFocused = false;
+
+                    setInterval(function () {
+                        const flagIsFocused = (document.activeElement === flagElement);
+
                         if (flagWasFocused && !flagIsFocused) {
                             // Flag lost focus, trigger the same blur check as phone input
                             if (base.hasLoadedExtension && base.hasLoadedExtension('PhoneExtension')) {
-                                var phoneSubscribers = base._subscribers.phone;
+                                const phoneSubscribers = base._subscribers.phone;
+
                                 if (phoneSubscribers && phoneSubscribers.length > 0) {
-                                    var subscriber = phoneSubscribers[0];
+                                    const subscriber = phoneSubscribers[0];
+
                                     if (base.cb.phoneBlur) {
                                         base.cb.phoneBlur(subscriber)(subscriber);
                                     }
@@ -1627,20 +1641,20 @@ function EnderecoPhone(customConfig={}) {
                             }
                         }
                         flagWasFocused = flagIsFocused;
-                    }, 10);
+                    }, FLAG_BLUR_CHECK_INTERVAL);
 
                     offsetFromParent = DOMElement.offsetTop;
                     heightOfInput = DOMElement.offsetHeight;
                     lastHeight = heightOfInput;
 
-                    dividerSize = 0.80;
-                    if (heightOfInput > 30) {
-                        dividerSize = 0.5;
+                    dividerSize = FLAG_SIZE_DIVIDER_SMALL;
+                    if (heightOfInput > FLAG_SIZE_THRESHOLD) {
+                        dividerSize = FLAG_SIZE_DIVIDER_LARGE;
                     }
                     heightOfFlag = heightOfInput * dividerSize;
                     topOffset = offsetFromParent + ((heightOfInput - heightOfFlag) / 2);
                     leftOffset = ((heightOfInput - heightOfFlag) / 2);
-                    dropdownTopOffset = topOffset+heightOfInput;
+                    dropdownTopOffset = topOffset + heightOfInput;
 
                     flagElement.style.top = `${topOffset}px`;
                     flagElement.style.left = `${leftOffset}px`;
@@ -1649,23 +1663,25 @@ function EnderecoPhone(customConfig={}) {
                     flagElement.querySelector('.endereco-flag').style.width = `${heightOfFlag}px`;
 
                     widthOfFlag = flagElement.offsetWidth + ((heightOfInput - heightOfFlag) / 2);
-                    DOMElement.style.paddingLeft= `${widthOfFlag}px`;
+                    DOMElement.style.paddingLeft = `${widthOfFlag}px`;
 
                     // Add input listener.
-                    var $oldValue = DOMElement.value;
-                    setInterval( function() {
-                        var $newValue = DOMElement.value;
+                    let $oldValue = DOMElement.value;
+
+                    setInterval(function () {
+                        const $newValue = DOMElement.value;
+
                         if ($oldValue !== $newValue) {
                             $oldValue = $newValue;
                             flagElement.querySelector('.endereco-flag').innerHTML = base.getFlagHTML(
-                                DOMElement.value.substring(0, 10)
+                                DOMElement.value.substring(0, COUNTRY_CODE_MAX_LENGTH)
                             );
                         }
                     }, 1);
 
                     // Set default value.
                     flagElement.querySelector('.endereco-flag').innerHTML = base.getFlagHTML(
-                        DOMElement.value.substring(0, 10)
+                        DOMElement.value.substring(0, COUNTRY_CODE_MAX_LENGTH)
                     );
 
                     // Add autocomplete für diverse codes.
@@ -1674,58 +1690,63 @@ function EnderecoPhone(customConfig={}) {
                         dropdownHTML);
                     dropdownElement = DOMElement.parentElement.querySelector('.endereco-flag-dropdown');
                     dropdownElement.style.top = `${dropdownTopOffset}px`;
-                    document.querySelector('body').addEventListener('click', function(e) {
+                    document.querySelector('body').addEventListener('click', function (e) {
                         if (!dropdownElement.contains(e.target)) {
-                            dropdownElement.classList.add("endereco-hidden");
+                            dropdownElement.classList.add('endereco-hidden');
                         }
                     });
 
                     // Add click listener to big flag.
-                    flagElement.addEventListener('click', function(e) {
+                    flagElement.addEventListener('click', function (e) {
                         e.preventDefault();
                         e.stopPropagation();
-                        var dropdownDOM = this.parentElement.querySelector('.endereco-flag-dropdown');
-                        var wasHidden = dropdownDOM.classList.contains("endereco-hidden");
-                        dropdownDOM.classList.toggle("endereco-hidden");
+                        const dropdownDOM = this.parentElement.querySelector('.endereco-flag-dropdown');
+                        const wasHidden = dropdownDOM.classList.contains('endereco-hidden');
+
+                        dropdownDOM.classList.toggle('endereco-hidden');
 
                         if (wasHidden) {
                             activeCountryIndex = findCurrentPrefixIndex();
                             renderActiveCountry(activeCountryIndex);
                         }
+
                         return false;
                     });
 
                     // Add click listener to dropdown elements.
-                    dropdownElement.querySelectorAll('.endereco-flag-dropdown-element').forEach(function(element) {
-                        element.addEventListener('click', function(e) {
-                            base.setPrefix(DOMElement, this.getAttribute("data-code"));
+                    dropdownElement.querySelectorAll('.endereco-flag-dropdown-element').forEach(function (element) {
+                        element.addEventListener('click', function (e) {
+                            base.setPrefix(DOMElement, this.getAttribute('data-code'));
                             flagElement.querySelector('.endereco-flag').innerHTML = base.getFlagHTML(
-                                DOMElement.value.substring(0, 10)
+                                DOMElement.value.substring(0, COUNTRY_CODE_MAX_LENGTH)
                             );
-                            dropdownElement.classList.add("endereco-hidden");
+                            dropdownElement.classList.add('endereco-hidden');
                             activeCountryIndex = -1;
                             renderActiveCountry(activeCountryIndex);
-                        })
+                        });
                     });
 
                     // Find index of current prefix in dropdown
-                    var findCurrentPrefixIndex = function() {
+                    const findCurrentPrefixIndex = function () {
                         if (!base.currePrefix) {
                             return -1;
                         }
-                        var countryElements = dropdownElement.querySelectorAll('.endereco-flag-dropdown-element');
-                        for (var i = 0; i < countryElements.length; i++) {
+                        const countryElements = dropdownElement.querySelectorAll('.endereco-flag-dropdown-element');
+
+                        for (let i = 0; i < countryElements.length; i++) {
                             if (countryElements[i].getAttribute('data-code') === base.currePrefix) {
                                 return i;
                             }
                         }
+
                         return -1;
                     };
 
                     // Render active country highlight
-                    var renderActiveCountry = function(index) {
-                        var countryElements = dropdownElement.querySelectorAll('.endereco-flag-dropdown-element');
-                        countryElements.forEach(function(el, i) {
+                    const renderActiveCountry = function (index) {
+                        const countryElements = dropdownElement.querySelectorAll('.endereco-flag-dropdown-element');
+
+                        countryElements.forEach(function (el, i) {
                             if (i === index) {
                                 el.classList.add('active');
                             } else {
@@ -1734,7 +1755,8 @@ function EnderecoPhone(customConfig={}) {
                         });
 
                         if (index >= 0) {
-                            var activeElement = countryElements[index];
+                            const activeElement = countryElements[index];
+
                             if (activeElement) {
                                 activeElement.scrollIntoView({ block: 'nearest' });
                             }
@@ -1744,9 +1766,9 @@ function EnderecoPhone(customConfig={}) {
                     };
 
                     // Keyboard navigation for flag element
-                    flagElement.addEventListener('keydown', function(e) {
-                        var isOpen = !dropdownElement.classList.contains('endereco-hidden');
-                        var countryElements = dropdownElement.querySelectorAll('.endereco-flag-dropdown-element');
+                    flagElement.addEventListener('keydown', function (e) {
+                        const isOpen = !dropdownElement.classList.contains('endereco-hidden');
+                        const countryElements = dropdownElement.querySelectorAll('.endereco-flag-dropdown-element');
 
                         if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault();
@@ -1754,10 +1776,11 @@ function EnderecoPhone(customConfig={}) {
 
                             if (isOpen) {
                                 if (activeCountryIndex >= 0) {
-                                    var selectedCountry = countryElements[activeCountryIndex];
-                                    base.setPrefix(DOMElement, selectedCountry.getAttribute("data-code"));
+                                    const selectedCountry = countryElements[activeCountryIndex];
+
+                                    base.setPrefix(DOMElement, selectedCountry.getAttribute('data-code'));
                                     flagElement.querySelector('.endereco-flag').innerHTML = base.getFlagHTML(
-                                        DOMElement.value.substring(0, 10)
+                                        DOMElement.value.substring(0, COUNTRY_CODE_MAX_LENGTH)
                                     );
                                 }
                                 dropdownElement.classList.add('endereco-hidden');
@@ -1816,15 +1839,16 @@ function EnderecoPhone(customConfig={}) {
                             }
                         } else if (e.key === 'Tab') {
                             if (isOpen) {
-                                var hadSelection = activeCountryIndex >= 0;
+                                const hadSelection = activeCountryIndex >= 0;
 
                                 if (activeCountryIndex >= 0) {
                                     e.preventDefault();
 
-                                    var selectedCountry = countryElements[activeCountryIndex];
-                                    base.setPrefix(DOMElement, selectedCountry.getAttribute("data-code"));
+                                    const selectedCountry = countryElements[activeCountryIndex];
+
+                                    base.setPrefix(DOMElement, selectedCountry.getAttribute('data-code'));
                                     flagElement.querySelector('.endereco-flag').innerHTML = base.getFlagHTML(
-                                        DOMElement.value.substring(0, 10)
+                                        DOMElement.value.substring(0, COUNTRY_CODE_MAX_LENGTH)
                                     );
                                 }
                                 dropdownElement.classList.add('endereco-hidden');
@@ -1833,11 +1857,11 @@ function EnderecoPhone(customConfig={}) {
 
                                 if (hadSelection) {
                                     // Find next focusable element
-                                    var focusableElements = Array.from(document.querySelectorAll(
+                                    const focusableElements = Array.from(document.querySelectorAll(
                                         'input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])'
                                     ));
-                                    var currentIndex = focusableElements.indexOf(flagElement);
-                                    var nextElement = e.shiftKey
+                                    const currentIndex = focusableElements.indexOf(flagElement);
+                                    const nextElement = e.shiftKey
                                         ? focusableElements[currentIndex - 1]
                                         : focusableElements[currentIndex + 1];
 
@@ -1850,20 +1874,20 @@ function EnderecoPhone(customConfig={}) {
                     });
 
                     // Add height listener.
-                    setInterval( function() {
+                    setInterval(function () {
                         offsetFromParent = DOMElement.offsetTop;
                         heightOfInput = DOMElement.offsetHeight;
                         if (lastHeight !== heightOfInput) {
                             lastHeight = heightOfInput;
 
-                            dividerSize = 0.80;
-                            if (heightOfInput > 30) {
-                                dividerSize = 0.5;
+                            dividerSize = FLAG_SIZE_DIVIDER_SMALL;
+                            if (heightOfInput > FLAG_SIZE_THRESHOLD) {
+                                dividerSize = FLAG_SIZE_DIVIDER_LARGE;
                             }
                             heightOfFlag = heightOfInput * dividerSize;
                             topOffset = offsetFromParent + ((heightOfInput - heightOfFlag) / 2);
                             leftOffset = ((heightOfInput - heightOfFlag) / 2);
-                            dropdownTopOffset = topOffset+heightOfInput;
+                            dropdownTopOffset = topOffset + heightOfInput;
 
                             flagElement.style.top = `${topOffset}px`;
                             flagElement.style.left = `${leftOffset}px`;
@@ -1872,18 +1896,17 @@ function EnderecoPhone(customConfig={}) {
                             flagElement.querySelector('.endereco-flag').style.width = `${heightOfFlag}px`;
 
                             widthOfFlag = flagElement.offsetWidth + ((heightOfInput - heightOfFlag) / 2);
-                            DOMElement.style.paddingLeft= `${widthOfFlag}px`;
+                            DOMElement.style.paddingLeft = `${widthOfFlag}px`;
 
                             dropdownElement.style.top = `${dropdownTopOffset}px`;
                         }
                     }, 1);
                 }
-
             });
         }
-    }
+    };
 
     return base;
 }
 
-export default EnderecoPhone
+export default EnderecoPhone;
