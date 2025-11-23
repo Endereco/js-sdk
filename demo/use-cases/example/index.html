@@ -541,8 +541,8 @@
 				<label class="label">
 					Land
 					<select class="country" id="country">
-						<option value="" selected>-- Bitte Land auswählen --</option>
-						<option value="DE">Deutschland</option>
+						<option value="">-- Bitte Land auswählen --</option>
+						<option value="DE" selected>Deutschland</option>
 						<option value="FR">Frankreich</option>
 						<option value="US">USA</option>
                         <option value="RO">Rumänien</option>
@@ -1145,14 +1145,21 @@
 
 <script>
 	function setFields(e) {
+		let countryCodes = ['DE', 'FR', 'US'];
 		var country = document.querySelector('#country');
-		country.closest('form').querySelectorAll('.region').forEach( function(selectDOM) {
-			if (parseInt(country.value) === parseInt(selectDOM.getAttribute('data-country-id'))) {
-				selectDOM.disabled = false;
-			} else {
-				selectDOM.disabled = true;
-			}
-		})
+		country
+			.closest('form')
+			.querySelectorAll('.region')
+			.forEach(function (selectDOM) {
+				if (
+					countryCodes.indexOf(country.value) + 1 ===
+					parseInt(selectDOM.getAttribute('data-country-id'))
+				) {
+					selectDOM.disabled = false;
+				} else {
+					selectDOM.disabled = true;
+				}
+			});
 	}
 	setFields();
 	document.querySelector('#country').addEventListener('change', setFields);
