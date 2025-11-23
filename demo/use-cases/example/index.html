@@ -132,7 +132,7 @@
             window.EnderecoIntegrator.themeName = 'my-theme';
             window.EnderecoIntegrator.defaultCountrySelect = true; // Feature "Preselect country"
             window.EnderecoIntegrator.config.apiUrl = 'http://localhost:8888/proxyfile';
-            window.EnderecoIntegrator.config.apiKey = ''; // Hier kommt Dein API Key.
+			window.EnderecoIntegrator.config.apiKey = sessionStorage.getItem('apiKey') ?? ''; // Hier kommt Dein API Key.
             window.EnderecoIntegrator.config.showDebugInfo = false;
             window.EnderecoIntegrator.config.remoteApiUrl = 'http://endereco-service.de/rpc/v1';
             window.EnderecoIntegrator.config.trigger.onblur = true;
@@ -371,19 +371,23 @@
 </div>
 
 <script>
-	document.addEventListener('DOMContentLoaded', function() {
+		document.addEventListener('DOMContentLoaded', function () {	
+		const lastApiKey = sessionStorage.getItem('apiKey') ?? '';
 		const apiKeyInput = document.querySelector('#apiKey');
-
+		apiKeyInput.value = lastApiKey;
 		if (apiKeyInput) {
 			apiKeyInput.addEventListener('change', updateApiKey);
 
 			function updateApiKey() {
 				const apiKey = apiKeyInput.value.trim();
-				if (window.EnderecoIntegrator) {
-					window.EnderecoIntegrator.config.apiKey = apiKey;
-					Object.values(window.EnderecoIntegrator.integratedObjects).forEach(obj => {
-						obj.config.apiKey = apiKey;
-					});
+				if (apiKey) {
+					sessionStorage.setItem('apiKey', apiKey);
+					 if (window.EnderecoIntegrator) {
+						 window.EnderecoIntegrator.config.apiKey = apiKey;
+						 Object.values(window.EnderecoIntegrator.integratedObjects).forEach(obj => {
+							 obj.config.apiKey = apiKey;
+						 });
+					}
 				}
 			}
 
