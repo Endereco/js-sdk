@@ -9,6 +9,12 @@ const WAIT_FOR_TIME = 100;
 const ERROR_EXPIRED_SESSION = -32700;
 const MILLISECONDS_IN_SECOND = 1000;
 
+// Bitmask constants for diff filtering
+const DIFF_NEUTRAL = 1;
+const DIFF_ADD = 2;
+const DIFF_REMOVE = 4;
+const DIFF_ALL = DIFF_NEUTRAL | DIFF_ADD | DIFF_REMOVE;
+
 /**
  * Pauses execution for a specified number of milliseconds.
  * @param {number} ms - The number of milliseconds to sleep.
@@ -1238,9 +1244,18 @@ const AddressExtension = {
 
                 // Prepare main address.
                 // TODO: replace button then replace button classes.
-                // Security: Create escaped copy of original address
+                // Security: Create escaped copy of original address, then preprocess
                 const escapedOriginalAddress = ExtendableObject.util.escapeAddress(originalAddress);
-                const mainAddressHtml = ExtendableObject.util.formatAddress(escapedOriginalAddress, statuscodes, true, true);
+                const preprocessedOriginalAddress = ExtendableObject.util.preprocessAddressParts(escapedOriginalAddress, statuscodes);
+                const mainAddressHtml = ExtendableObject.util.formatAddress(
+                    preprocessedOriginalAddress,
+                    statuscodes,
+                    {
+                        forceCountryDisplay: true,
+                        useHtml: true,
+                        countryCodeForTemplate: originalAddress.countryCode
+                    }
+                );
                 const editButtonHTML = ExtendableObject.config.templates.buttonEditAddress.replace('{{{buttonClasses}}}', ExtendableObject.config.templates.primaryButtonClasses);
                 const confirmButtonHTML = ExtendableObject.config.templates.buttonConfirmAddress.replace('{{{buttonClasses}}}', ExtendableObject.config.templates.secondaryButtonClasses);
 
@@ -1338,48 +1353,57 @@ const AddressExtension = {
                 return;
             }
 
+            // Integrity check for the case, when input address has the subdivisionCode and output doesn't
+            const addressToProcess = { ...originalAddress };
+
+            if (
+                predictions.length > 0 &&
+                addressToProcess.subdivisionCode !== undefined &&
+                predictions[0].subdivisionCode === undefined
+            ) {
+                delete addressToProcess.subdivisionCode;
+            }
+
             // Popup needed.
-            // Security: Create escaped copy of original address
-            const escapedOriginalAddress = ExtendableObject.util.escapeAddress(originalAddress);
-            const mainAddressHtml = ExtendableObject.util.formatAddress(escapedOriginalAddress, statuscodes);
+            // Security: Create escaped copy of original address, then preprocess
+            const escapedOriginalAddress = ExtendableObject.util.escapeAddress(addressToProcess);
+            const preprocessedOriginalAddress = ExtendableObject.util.preprocessAddressParts(escapedOriginalAddress, statuscodes);
 
-            // Escape first prediction
             const escapedFirstPrediction = ExtendableObject.util.escapeAddress(predictions[0]);
-            const firstPrediction = ExtendableObject.util.formatAddress(escapedFirstPrediction, statuscodes);
-            let mainAddressDiffHtml = '';
+            const preprocessedFirstPrediction = ExtendableObject.util.preprocessAddressParts(escapedFirstPrediction, statuscodes);
 
-            // Calculate main address diff.
-            const diff = diffWords(mainAddressHtml, firstPrediction, { ignoreCase: false });
-
-            diff.forEach((part) => {
-                const markClass = part.added
-                    ? 'endereco-span--add'
-                    : part.removed ? 'endereco-span--remove' : 'endereco-span--neutral';
-
-                // Escaping part.value is not necessary here because the original address and the predictions were already escaped.
-
-                mainAddressDiffHtml += `<span class="${markClass}">${part.value}</span>`;
-            });
+            // Calculate main address diff - show neutral and removed parts (what was in original)
+            const mainAddressDiffed = ExtendableObject.util.diffAddressParts(
+                preprocessedOriginalAddress,
+                preprocessedFirstPrediction,
+                DIFF_NEUTRAL | DIFF_REMOVE
+            );
+            const mainAddressDiffHtml = ExtendableObject.util.formatAddress(
+                mainAddressDiffed,
+                statuscodes,
+                {
+                    countryCodeForTemplate: originalAddress.countryCode
+                }
+            );
 
             // Prepare predictions.
             const processedPredictions = [];
 
             predictions.forEach((addressPrediction) => {
-                // Security: Create escaped copy of prediction for safe display
+                // Security: Create escaped copy of prediction, then preprocess
                 const escapedPrediction = ExtendableObject.util.escapeAddress(addressPrediction);
-                const addressFormatted = ExtendableObject.util.formatAddress(escapedPrediction, statuscodes);
-                let addressDiff = '';
-                const diff = diffWords(mainAddressHtml, addressFormatted, { ignoreCase: false });
+                const preprocessedPrediction = ExtendableObject.util.preprocessAddressParts(escapedPrediction, statuscodes);
 
-                diff.forEach((part) => {
-                    const markClass = part.added
-                        ? 'endereco-span--add'
-                        : part.removed ? 'endereco-span--remove' : 'endereco-span--neutral';
-
-                    // Escaping part.value is not necessary here because the original address and the predictions were already escaped.
-
-                    addressDiff += `<span class="${markClass}">${part.value}</span>`;
-                });
+                // Calculate diff - show neutral and added parts (what will be in prediction)
+                const addressDiffed = ExtendableObject.util.diffAddressParts(
+                    preprocessedOriginalAddress,
+                    preprocessedPrediction,
+                    DIFF_NEUTRAL | DIFF_ADD
+                );
+                const addressDiff = ExtendableObject.util.formatAddress(
+                    addressDiffed,
+                    statuscodes,
+                    { countryCodeForTemplate: originalAddress.countryCode });
 
                 processedPredictions.push({
                     addressDiff
@@ -1861,15 +1885,14 @@ const AddressExtension = {
         };
 
         /**
-         * Formats an address into a string representation.
-         * @param {Object} address - The address object to format.
-         * @param {string[]} statuscodes - An array of status codes affecting formatting.
-         * @param {boolean} [forceCountryDisplay=false] - Whether to force display of the country.
-         * @param {boolean} [useHtml=false] - Whether to use HTML in the formatted output.
-         * @returns {string} - The formatted address string.
+         * Preprocesses an address object for rendering by adding derived fields
+         * like countryName, subdivisionName, and placeholders for missing values.
+         *
+         * @param {Object} address - The address object to preprocess.
+         * @param {string[]} statuscodes - An array of status codes affecting preprocessing.
+         * @returns {Object} - A new address object with derived fields added.
          */
-        ExtendableObject.util.formatAddress = (address, statuscodes, forceCountryDisplay = false, useHtml = false) => {
-            // Format current address.
+        ExtendableObject.util.preprocessAddressParts = (address, statuscodes) => {
             const preparedData = { ...address };
 
             // Enrich address with countryName
@@ -1887,8 +1910,7 @@ const AddressExtension = {
 
             if (
                 Object.prototype.hasOwnProperty.call(address, 'subdivisionCode') &&
-                typeof address.subdivisionCode === 'string' &&
-                address.subdivisionCode.trim().length > 0
+                typeof address.subdivisionCode === 'string'
             ) {
                 if (Boolean(window.EnderecoIntegrator.subdivisionCodeToNameMapping) &&
                     Boolean(window.EnderecoIntegrator.subdivisionCodeToNameMapping[address.subdivisionCode.toUpperCase()])
@@ -1899,7 +1921,7 @@ const AddressExtension = {
                         window.EnderecoIntegrator.subdivisionCodeToNameMapping[address.subdivisionCode.toUpperCase()];
                     preparedData.subdivisionName = textAreaForSubdivision.value;
                 } else {
-                    if (address.subdivisionCode.toUpperCase()) {
+                    if (address.subdivisionCode.toUpperCase() !== '') {
                         preparedData.subdivisionName = address.subdivisionCode.toUpperCase().split('-')[1];
                     } else {
                         preparedData.subdivisionName = '&nbsp;';
@@ -1923,10 +1945,36 @@ const AddressExtension = {
                 delete preparedData.streetFull;
             }
 
+            return preparedData;
+        };
+
+        /**
+         * Formats an address into a string representation.
+         * @param {Object} address - The address object to format.
+         * @param {string[]} statuscodes - An array of status codes affecting formatting.
+         * @param {Object} [options={}] - Formatting options.
+         * @param {boolean} [options.forceCountryDisplay=false] - Whether to force display of the country.
+         * @param {boolean} [options.useHtml=false] - Whether to use HTML in the formatted output.
+         * @param {string} [options.countryCodeForTemplate=null] - Country code for template selection (use when address contains diff spans).
+         * @returns {string} - The formatted address string.
+         */
+        ExtendableObject.util.formatAddress = (address, statuscodes, options = {}) => {
+            const {
+                forceCountryDisplay = false,
+                useHtml = false,
+                countryCodeForTemplate = null
+            } = options;
+
+            // If countryCodeForTemplate is provided, address is already preprocessed (contains diff spans)
+            const preparedData = countryCodeForTemplate
+                ? { ...address }
+                : ExtendableObject.util.preprocessAddressParts(address, statuscodes);
+
             const isSubdivisionVisible = ExtendableObject.util.hasSubscribedField('subdivisionCode');
 
             preparedData.showSubdisivion = (preparedData.subdivisionName !== '&nbsp;') &&
                 Object.prototype.hasOwnProperty.call(address, 'subdivisionCode') &&
+                typeof address.subdivisionCode === 'string' &&
                 (
                     statuscodes.includes('subdivision_code_needs_correction') ||
                     statuscodes.includes('address_multiple_variants')
@@ -1940,9 +1988,10 @@ const AddressExtension = {
 
             // Define which template to use
             let useTemplate = 'default';
+            const templateCountryCode = countryCodeForTemplate || address.countryCode;
 
-            if (undefined !== ExtendableObject.config.templates.addressFull[address.countryCode.toLowerCase()]) {
-                useTemplate = address.countryCode.toLowerCase();
+            if (undefined !== ExtendableObject.config.templates.addressFull[templateCountryCode.toLowerCase()]) {
+                useTemplate = templateCountryCode.toLowerCase();
             }
             const template = JSON.parse(JSON.stringify(ExtendableObject.config.templates.addressFull[useTemplate]));
 
@@ -2028,6 +2077,67 @@ const AddressExtension = {
             });
 
             return escapedAddress;
+        };
+
+        /**
+         * Compares two addresses field by field and returns a new address object
+         * where each field value contains diff spans for rendering.
+         *
+         * @param {Object} originalAddress - The original address to compare.
+         * @param {Object} comparisonAddress - The address to compare against.
+         * @param {number} [mask=DIFF_ALL] - Bitmask to filter which diff parts to include (DIFF_NEUTRAL | DIFF_ADD | DIFF_REMOVE).
+         * @returns {Object} - A new address object with field values containing diff spans.
+         */
+        ExtendableObject.util.diffAddressParts = (originalAddress, comparisonAddress, mask = DIFF_ALL) => {
+            const diffedAddress = { ...originalAddress };
+            const fieldsToCompare = [
+                'additionalInfo',
+                'streetFull',
+                'streetName',
+                'buildingNumber',
+                'postalCode',
+                'locality',
+                'countryName',
+                'subdivisionName'
+            ];
+
+            fieldsToCompare.forEach(field => {
+                if (!Object.prototype.hasOwnProperty.call(originalAddress, field) ||
+                    typeof originalAddress[field] !== 'string'
+                ) {
+                    return;
+                }
+
+                const originalValue = originalAddress[field];
+                const comparisonValue = Object.prototype.hasOwnProperty.call(comparisonAddress, field)
+                    ? (comparisonAddress[field] || '')
+                    : '';
+
+                const diff = diffWords(originalValue, comparisonValue, { ignoreCase: false });
+                let diffHtml = '';
+
+                diff.forEach((part) => {
+                    if (part.added && !(mask & DIFF_ADD)) {
+                        return;
+                    }
+                    if (part.removed && !(mask & DIFF_REMOVE)) {
+                        return;
+                    }
+                    if (!part.added && !part.removed && !(mask & DIFF_NEUTRAL)) {
+                        return;
+                    }
+
+                    const markClass = part.added
+                        ? 'endereco-span--add'
+                        : part.removed ? 'endereco-span--remove' : 'endereco-span--neutral';
+
+                    diffHtml += `<span class="${markClass}">${part.value}</span>`;
+                });
+
+                diffedAddress[field] = diffHtml;
+            });
+
+            return diffedAddress;
         };
     },
 
