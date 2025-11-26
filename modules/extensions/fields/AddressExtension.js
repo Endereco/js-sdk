@@ -1885,7 +1885,11 @@ const AddressExtension = {
                 preparedData.countryName = address.countryCode.toUpperCase();
             }
 
-            if (Object.prototype.hasOwnProperty.call(address, 'subdivisionCode')) {
+            if (
+                Object.prototype.hasOwnProperty.call(address, 'subdivisionCode') &&
+                typeof address.subdivisionCode === 'string' &&
+                address.subdivisionCode.trim().length > 0
+            ) {
                 if (Boolean(window.EnderecoIntegrator.subdivisionCodeToNameMapping) &&
                     Boolean(window.EnderecoIntegrator.subdivisionCodeToNameMapping[address.subdivisionCode.toUpperCase()])
                 ) {
