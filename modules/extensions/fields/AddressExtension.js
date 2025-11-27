@@ -1551,16 +1551,35 @@ const AddressExtension = {
             let mainAddressDiffHtml = '';
 
             // Calculate main address diff.
-            const diff = diffWords(mainAddressHtml, firstPrediction, { ignoreCase: false });
+            // Remove <br> tags only from the beginning for diff comparison
+            const mainAddressHtmlNoBr = mainAddressHtml.replace(/^<br\s*\/?>/gi, '').trim();
+            const firstPredictionNoBr = firstPrediction.replace(/^<br\s*\/?>/gi, '').trim();
+            const diff = diffWords(mainAddressHtmlNoBr, firstPredictionNoBr, { ignoreCase: false });
 
             diff.forEach((part) => {
+                // Skip empty spaces when marked as removed to prevent unnecessary red highlights
+                const isRemovedEmptySpace = part.removed && part.value.trim() === '';
+                
+                // If it's a removed empty space, treat it as neutral and don't highlight it
+                if (isRemovedEmptySpace) {
+                    mainAddressDiffHtml += part.value;
+                    return;
+                }
+                
                 const markClass = part.added
                     ? 'endereco-span--add'
                     : part.removed ? 'endereco-span--remove' : 'endereco-span--neutral';
 
+                // Remove <br> from the beginning of each part
+                let partValue = part.value;
+                if (mainAddressDiffHtml === '' || mainAddressDiffHtml.trim() === '') {
+                    // If this is the first part, remove <br> from the beginning
+                    partValue = partValue.replace(/^<br\s*\/?>/gi, '');
+                }
+
                 // Escaping part.value is not necessary here because the original address and the predictions were already escaped.
 
-                mainAddressDiffHtml += `<span class="${markClass}">${part.value}</span>`;
+                mainAddressDiffHtml += `<span class="${markClass}">${partValue}</span>`;
             });
 
             // Prepare predictions.
@@ -1569,18 +1588,37 @@ const AddressExtension = {
             predictions.forEach((addressPrediction) => {
                 // Security: Create escaped copy of prediction for safe display
                 const escapedPrediction = ExtendableObject.util.escapeAddress(addressPrediction);
-                const addressFormatted = ExtendableObject.util.formatAddress(escapedPrediction, statuscodes);
+                let addressFormatted = ExtendableObject.util.formatAddress(escapedPrediction, statuscodes);
+                // Remove <br> tags only from the beginning
+                addressFormatted = addressFormatted.replace(/^<br\s*\/?>/gi, '').trim();
                 let addressDiff = '';
-                const diff = diffWords(mainAddressHtml, addressFormatted, { ignoreCase: false });
+                // Use versions without <br> at the beginning for diff comparison
+                const diff = diffWords(mainAddressHtmlNoBr, addressFormatted, { ignoreCase: false });
 
                 diff.forEach((part) => {
+                    // Skip empty spaces when marked as removed to prevent unnecessary red highlights
+                    const isRemovedEmptySpace = part.removed && part.value.trim() === '';
+                    
+                    // If it's a removed empty space, treat it as neutral and don't highlight it
+                    if (isRemovedEmptySpace) {
+                        addressDiff += part.value;
+                        return;
+                    }
+                    
                     const markClass = part.added
                         ? 'endereco-span--add'
                         : part.removed ? 'endereco-span--remove' : 'endereco-span--neutral';
 
+                    // Remove <br> from the beginning of each part
+                    let partValue = part.value;
+                    if (addressDiff === '' || addressDiff.trim() === '') {
+                        // If this is the first part, remove <br> from the beginning
+                        partValue = partValue.replace(/^<br\s*\/?>/gi, '');
+                    }
+
                     // Escaping part.value is not necessary here because the original address and the predictions were already escaped.
 
-                    addressDiff += `<span class="${markClass}">${part.value}</span>`;
+                    addressDiff += `<span class="${markClass}">${partValue}</span>`;
                 });
 
                 processedPredictions.push({
