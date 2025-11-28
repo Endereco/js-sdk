@@ -36,7 +36,8 @@ var PhoneExtension = {
                         }
                         ExtendableObject.onBlurTimeout = setTimeout( function() {
                             var newStatus;
-                            if (!ExtendableObject.anyActive() && ExtendableObject.util.shouldBeChecked() && !window.EnderecoIntegrator.hasSubmit) {
+                            var flagActive = ExtendableObject.isFlagActive && ExtendableObject.isFlagActive();
+                            if (!ExtendableObject.anyActive() && !flagActive && ExtendableObject.util.shouldBeChecked() && !window.EnderecoIntegrator.hasSubmit) {
                                 // Second. Check Address.
                                 clearTimeout(ExtendableObject.onBlurTimeout);
                                 ExtendableObject.onBlurTimeout = null;
