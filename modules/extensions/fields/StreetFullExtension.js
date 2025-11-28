@@ -16,6 +16,12 @@ import streetFullTemplateFactory from '../../../templates/streetNameTemplates';
 const MAX_PREDICTIONS_BEFORE_SCROLL = 6;
 const ERROR_EXPIRED_SESSION = -32700;
 
+/**
+ * Default predictions index value (no selection)
+ * @type {number}
+ */
+const PREDICTIONS_INDEX_DEFAULT = -1;
+
 const StreetFullExtension = {
     name: 'StreetFullExtension',
 
@@ -56,7 +62,7 @@ const StreetFullExtension = {
         ExtendableObject._streetFullAutocompleteRequestIndex = 0;
         ExtendableObject._streetFullSplitTimeout = null;
         ExtendableObject._streetFullSplitRequestIndex = 0;
-        ExtendableObject._streetFullPredictionsIndex = 0;
+        ExtendableObject._streetFullPredictionsIndex = PREDICTIONS_INDEX_DEFAULT;
     },
 
     /**
@@ -147,7 +153,6 @@ const StreetFullExtension = {
 
             if (ExtendableObject.streetFullPredictions !== resolvedValue) {
                 ExtendableObject._streetFullPredictions = resolvedValue;
-                ExtendableObject._streetFullPredictionsIndex = 0;
             }
         };
     },
@@ -212,15 +217,16 @@ const StreetFullExtension = {
 
                 if (!isAnyActive) {
                     ExtendableObject.streetFullPredictions = [];
-                    ExtendableObject._streetFullPredictionsIndex = 0;
+                    ExtendableObject._streetFullPredictionsIndex = PREDICTIONS_INDEX_DEFAULT;
                     ExtendableObject.util.removeStreetFullPredictionsDropdown();
                 }
 
                 try {
+                    await ExtendableObject.waitForPredictionApplication();
                     await ExtendableObject.waitUntilReady();
                     await ExtendableObject.cb.handleFormBlur();
                 } catch (error) {
-                    console.warn('Error in buildingNumberBlur handler:', error);
+                    console.warn('Error in streetFullBlur handler:', error);
                 }
             };
         };
@@ -234,45 +240,118 @@ const StreetFullExtension = {
                 if (e.key === 'ArrowUp' || e.key === 'Up') {
                     e.preventDefault();
                     e.stopPropagation();
-                    if (ExtendableObject._streetFullPredictionsIndex > -1) {
+                    if (ExtendableObject._streetFullPredictionsIndex > PREDICTIONS_INDEX_DEFAULT) {
                         ExtendableObject._streetFullPredictionsIndex = ExtendableObject._streetFullPredictionsIndex - 1;
                         ExtendableObject.util.renderStreetFullPredictionsDropdown(
                             ExtendableObject.streetFullPredictions
                         );
                     }
+                    // Arrow up at no selection does nothing (stays at -1)
                 } else if (e.key === 'ArrowDown' || e.key === 'Down') {
                     e.preventDefault();
                     e.stopPropagation();
                     if (ExtendableObject._streetFullPredictionsIndex < (ExtendableObject._streetFullPredictions.length - 1)) {
                         ExtendableObject._streetFullPredictionsIndex = ExtendableObject._streetFullPredictionsIndex + 1;
-                        ExtendableObject.util.renderStreetFullPredictionsDropdown(
-                            ExtendableObject.streetFullPredictions
-                        );
+                    } else {
+                        ExtendableObject._streetFullPredictionsIndex = 0;
                     }
-                } else if (e.key === 'Tab' || e.key === 'Tab') {
-                    // TODO: configurable activate in future releases.
-                    /*
-                    if (0 < ExtendableObject._streetFullPredictions.length) {
+                    ExtendableObject.util.renderStreetFullPredictionsDropdown(
+                        ExtendableObject.streetFullPredictions
+                    );
+                } else if (e.key === 'Home') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    ExtendableObject._streetFullPredictionsIndex = 0;
+                    ExtendableObject.util.renderStreetFullPredictionsDropdown(
+                        ExtendableObject.streetFullPredictions
+                    );
+                } else if (e.key === 'End') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    ExtendableObject._streetFullPredictionsIndex = ExtendableObject._streetFullPredictions.length - 1;
+                    ExtendableObject.util.renderStreetFullPredictionsDropdown(
+                        ExtendableObject.streetFullPredictions
+                    );
+                } else if (e.key === 'Escape') {
+                    ExtendableObject.resetStreetFullPredictions();
+                    ExtendableObject.util.removeStreetFullPredictionsDropdown();
+                } else if (e.key === 'Tab') {
+                    if (ExtendableObject._streetFullPredictions.length > 0 && ExtendableObject._streetFullPredictionsIndex >= 0) {
                         e.preventDefault();
-                        e.stopPropagation();
-                        ExtendableObject.cb.copyStreetFullFromPrediction();
-                    } */
+
+                        (async () => {
+                            await ExtendableObject.cb.applyStreetFullPredictionSelection(
+                                ExtendableObject._streetFullPredictionsIndex,
+                                ExtendableObject._streetFullPredictions
+                            );
+                            ExtendableObject.resetStreetFullPredictions();
+                            ExtendableObject.util.removeStreetFullPredictionsDropdown();
+
+                            // Find next focusable element
+                            const focusableElements = Array.from(document.querySelectorAll(
+                                'input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+                            ));
+                            const currentIndex = focusableElements.indexOf(e.target);
+                            const nextElement = e.shiftKey
+                                ? focusableElements[currentIndex - 1]
+                                : focusableElements[currentIndex + 1];
+
+                            if (nextElement) {
+                                nextElement.focus();
+                            }
+                        })();
+                    }
                 } else if (e.key === 'Enter' || e.key === 'Enter') {
-                    if (ExtendableObject._streetFullPredictions.length > 0) {
+                    if (ExtendableObject._streetFullPredictions.length > 0 && ExtendableObject._streetFullPredictionsIndex >= 0) {
                         e.preventDefault();
                         e.stopImmediatePropagation();
 
-                        ExtendableObject._allowFetchStreetFullAutocomplete = false;
-                        ExtendableObject.streetFull = ExtendableObject.streetFullPredictions[ExtendableObject._streetFullPredictionsIndex].streetFull;
-                        ExtendableObject.streetFullPredictions = [];
-                        ExtendableObject._streetFullPredictionsIndex = 0;
-                        ExtendableObject._allowFetchStreetFullAutocomplete = true;
-                        ExtendableObject.util.removeStreetFullPredictionsDropdown();
+                        (async () => {
+                            await ExtendableObject.cb.applyStreetFullPredictionSelection(
+                                ExtendableObject._streetFullPredictionsIndex,
+                                ExtendableObject._streetFullPredictions
+                            );
+                            ExtendableObject.resetStreetFullPredictions();
+                            ExtendableObject.util.removeStreetFullPredictionsDropdown();
+                        })();
                     }
                 } else if (e.key === 'Backspace' || e.key === 'Backspace') {
                     ExtendableObject.config.ux.smartFill = false;
                 }
             };
+        };
+
+        /**
+         * Applies the selected street full prediction to the field
+         * @param {number} index - Selected prediction index
+         * @param {Array} predictions - Array of available predictions
+         */
+        ExtendableObject.cb.applyStreetFullPredictionSelection = async (index, predictions) => {
+            const applicationPromise = (async () => {
+                ExtendableObject._allowFetchStreetFullAutocomplete = false;
+                await ExtendableObject.setStreetFull(predictions[index].streetFull);
+                ExtendableObject._allowFetchStreetFullAutocomplete = true;
+            })();
+
+            ExtendableObject._activePredictionApplications.push(applicationPromise);
+            await applicationPromise.finally(() => {
+                const index = ExtendableObject._activePredictionApplications.indexOf(applicationPromise);
+
+                if (index > -1) {
+                    ExtendableObject._activePredictionApplications.splice(index, 1);
+                }
+            });
+
+            return applicationPromise;
+        };
+
+        /**
+         * Resets street full predictions state
+         * Clears predictions array and resets selection index
+         */
+        ExtendableObject.resetStreetFullPredictions = () => {
+            ExtendableObject.streetFullPredictions = [];
+            ExtendableObject._streetFullPredictionsIndex = PREDICTIONS_INDEX_DEFAULT;
         };
     },
 
@@ -307,6 +386,8 @@ const StreetFullExtension = {
                     if (autocompleteResult.originalStreetFull !== getCurrentStreetFull) {
                         return;
                     }
+
+                    ExtendableObject._streetFullPredictionsIndex = PREDICTIONS_INDEX_DEFAULT;
                     ExtendableObject.streetFullPredictions = autocompleteResult.predictions;
                     ExtendableObject.util.renderStreetFullPredictionsDropdown(autocompleteResult.predictions);
                 } catch (e) {
@@ -418,6 +499,16 @@ const StreetFullExtension = {
                     // Attach it to HTML.
                     subscriber.object.insertAdjacentHTML('afterend', predictionsHtml);
                     ExtendableObject._openDropdowns++;
+
+                    // Scroll active item into view
+                    setTimeout(() => {
+                        const activeItem = document.querySelector('[endereco-street-full-predictions] .endereco-predictions__item.active');
+
+                        if (activeItem) {
+                            activeItem.scrollIntoView({ block: 'nearest' });
+                        }
+                    }, 0);
+
                     document.querySelectorAll(`[data-id="${ExtendableObject.id}"] [endereco-street-full-prediction]`).forEach(function (DOMElement) {
                         DOMElement.addEventListener('mousedown', function (e) {
                             const index = parseInt(this.getAttribute('data-prediction-index'));
