@@ -1,5 +1,6 @@
 import defaultTpl from './fulladdress/default.html';
 import frTpl from './fulladdress/fr.html';
+import roTpl from './fulladdress/ro.html';
 
 var templates = {
     default: defaultTpl,
@@ -83,6 +84,7 @@ var templates = {
     ye: frTpl,
     zm: frTpl,
     zw: frTpl,
+    ro: roTpl,
 
     getTemplate: function(countryCode) {
         countryCode = countryCode.toLowerCase();
