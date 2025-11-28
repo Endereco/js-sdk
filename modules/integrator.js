@@ -61,7 +61,7 @@ const bindFieldsToAddressObject = async (addressObject, fieldSelectors, Endereco
             )
             addressObject.addSubscriber(subscriber);
 
-            EnderecoIntegrator.prepareDOMElement(DOMElement)
+            EnderecoIntegrator.prepareDOMElement(DOMElement, addressObject)
         })
     }
 }
@@ -179,7 +179,7 @@ const EnderecoIntegrator = {
             location.reload();
         }
     },
-    prepareDOMElement: (DOMElement) => {
+    prepareDOMElement: (DOMElement, addressObject) => {
         // To be overridden in system specific implementation.
     },
     isAddressFormStillValid: (EAO) => {
