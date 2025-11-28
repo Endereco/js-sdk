@@ -4,14 +4,14 @@
 			<p class="endereco-modal__header-main">{{{title}}}</p>
 			<p class="endereco-modal__header-sub">{{{EnderecoAddressObject.config.texts.notFoundSubline}}}</p>
 
-			{{#showClose}}<span class="endereco-modal__close" endereco-modal-close></span>{{/showClose}}
+			{{#showClose}}<span class="endereco-modal__close" endereco-modal-close tabindex="6"></span>{{/showClose}}
 		</div>
 		<div class="endereco-modal__body">
 			<div class="endereco-modal__divider">
-				<span class="endereco-modal__divider-innertext">{{{EnderecoAddressObject.config.texts.yourInput}}} <small><a href="javascript:void(0)" endereco-edit-address>{{{EnderecoAddressObject.config.texts.editYourInput}}}</a></small></span>
+				<span class="endereco-modal__divider-innertext">{{{EnderecoAddressObject.config.texts.yourInput}}} <small><a href="javascript:void(0)" endereco-edit-address tabindex="-1">{{{EnderecoAddressObject.config.texts.editYourInput}}}</a></small></span>
 			</div>
 			<div class="endereco-modal__address-container">
-				{{{ mainAddress }}}
+				<span class="endereco-modal__address-inner">{{{ mainAddress }}}</span>
 			</div>
 			<div class="endereco-modal__warning">
 				{{{EnderecoAddressObject.config.texts.warningText}}}
@@ -19,7 +19,7 @@
 			{{#showConfirCheckbox}}
 			<div class="endereco-modal__address-confirmation">
 				<label>
-					<input type="checkbox" value="1" endereco-confirm-address-checkbox> {{{EnderecoAddressObject.config.texts.confirmMyAddressCheckbox}}}
+					<input type="checkbox" value="1" endereco-confirm-address-checkbox tabindex="3"> {{{EnderecoAddressObject.config.texts.confirmMyAddressCheckbox}}}
 				</label>
 			</div>
 			{{/showConfirCheckbox}}

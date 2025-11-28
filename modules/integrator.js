@@ -61,7 +61,7 @@ const bindFieldsToAddressObject = async (addressObject, fieldSelectors, Endereco
             )
             addressObject.addSubscriber(subscriber);
 
-            EnderecoIntegrator.prepareDOMElement(DOMElement)
+            EnderecoIntegrator.prepareDOMElement(DOMElement, addressObject)
         })
     }
 }
@@ -179,7 +179,7 @@ const EnderecoIntegrator = {
             location.reload();
         }
     },
-    prepareDOMElement: (DOMElement) => {
+    prepareDOMElement: (DOMElement, addressObject) => {
         // To be overridden in system specific implementation.
     },
     isAddressFormStillValid: (EAO) => {
@@ -457,6 +457,38 @@ const EnderecoIntegrator = {
         return EPHSO;
     },
     test: {},
+    initHandlers: () => {
+        if (window.__enderecoEscHandlerAttached) {
+            return;
+        }
+        window.__enderecoEscHandlerAttached = true;
+
+        document.addEventListener('keydown', (e) => {
+            if (!document.body.classList.contains('modal-open')) {
+                return;
+            }
+
+            if (e.key !== 'Escape') {
+                return;
+            }
+
+            const active = document.activeElement;
+            if (!active || active.tagName !== 'INPUT') {
+                return;
+            }
+
+            const prediction = active.nextElementSibling;
+            if (!prediction || !prediction.classList.contains('endereco-predictions-wrapper')) {
+                return;
+            }
+
+            // stop modal ESC
+            e.stopPropagation();
+
+            // close only predictions
+            prediction.remove();
+        }, true);
+    },
     initAMS: async(
         fieldSelectors,
         options= {
@@ -466,6 +498,8 @@ const EnderecoIntegrator = {
             intent: 'edit'
         }
     ) => {
+        window.EnderecoIntegrator.initHandlers();
+        
         if (!window.EnderecoIntegrator.activeServices.ams) {
             return;
         }
