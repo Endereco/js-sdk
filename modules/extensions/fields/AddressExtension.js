@@ -1563,6 +1563,61 @@ const AddressExtension = {
                 mainAddressDiffHtml += `<span class="${markClass}">${part.value}</span>`;
             });
 
+            // Helper function to split a diff part that contains <br> tags
+            // This prevents <br> tags from being grouped with content in the diff
+            // IMPORTANT: postalCode and locality should always stay together on the same line
+            // The template format is: "postalCode locality <br>" - they must not be separated
+            const splitPartWithBr = (part) => {
+                const parts = [];
+                const brRegex = /<br\s*\/?>/gi;
+                let lastIndex = 0;
+                let match;
+                
+                // Find all <br> tags and their positions
+                const brMatches = [];
+                while ((match = brRegex.exec(part.value)) !== null) {
+                    brMatches.push({
+                        index: match.index,
+                        length: match[0].length,
+                        value: match[0]
+                    });
+                }
+                
+                // Process each <br> tag
+                brMatches.forEach((brMatch) => {
+                    // Add content before this <br>
+                    if (brMatch.index > lastIndex) {
+                        const beforeBr = part.value.substring(lastIndex, brMatch.index);
+                        parts.push({
+                            added: part.added,
+                            removed: part.removed,
+                            value: beforeBr
+                        });
+                    }
+                    // Add <br> as neutral separator
+                    parts.push({
+                        added: false,
+                        removed: false,
+                        value: brMatch.value
+                    });
+                    lastIndex = brMatch.index + brMatch.length;
+                });
+                
+                // Add remaining content after last <br>
+                if (lastIndex < part.value.length) {
+                    const afterBr = part.value.substring(lastIndex);
+                    if (afterBr.trim()) {
+                        parts.push({
+                            added: part.added,
+                            removed: part.removed,
+                            value: afterBr
+                        });
+                    }
+                }
+                
+                return parts.length > 0 ? parts : [part];
+            };
+
             // Prepare predictions.
             const processedPredictions = [];
 
@@ -1574,14 +1629,26 @@ const AddressExtension = {
                 const diff = diffWords(mainAddressHtml, addressFormatted, { ignoreCase: false });
 
                 diff.forEach((part) => {
-                    const markClass = part.added
-                        ? 'endereco-span--add'
-                        : part.removed ? 'endereco-span--remove' : 'endereco-span--neutral';
+                    // Split parts that contain <br> tags to handle them separately
+                    const processedParts = splitPartWithBr(part);
+                    
+                    processedParts.forEach((processedPart) => {
+                        const markClass = processedPart.added
+                            ? 'endereco-span--add'
+                            : processedPart.removed ? 'endereco-span--remove' : 'endereco-span--neutral';
 
-                    // Escaping part.value is not necessary here because the original address and the predictions were already escaped.
+                        // Escaping part.value is not necessary here because the original address and the predictions were already escaped.
 
-                    addressDiff += `<span class="${markClass}">${part.value}</span>`;
+                        addressDiff += `<span class="${markClass}">${processedPart.value}</span>`;
+                    });
                 });
+                
+                // Remove <br> or <br/> between postalCode and locality to keep them on the same line
+                // This regex handles all patterns where <br> appears between postal-code and locality spans
+                addressDiff = addressDiff.replace(
+                    /(endereco-postal-code[^<]*<\/span>)(\s*<span[^>]*>)?\s*(<br\s*\/?>)\s*(<\/span>)?\s*(<span[^>]*endereco-locality)/gi,
+                    '$1 $5'
+                );
 
                 processedPredictions.push({
                     addressDiff
