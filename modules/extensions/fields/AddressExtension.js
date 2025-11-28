@@ -1550,6 +1550,61 @@ const AddressExtension = {
             const firstPrediction = ExtendableObject.util.formatAddress(escapedFirstPrediction, statuscodes);
             let mainAddressDiffHtml = '';
 
+            // Helper function to split a diff part that contains <br> tags
+            // This prevents <br> tags from being grouped with content in the diff
+            // IMPORTANT: postalCode and locality should always stay together on the same line
+            // The template format is: "postalCode locality <br>" - they must not be separated
+            const splitPartWithBr = (part) => {
+                const parts = [];
+                const brRegex = /<br\s*\/?>/gi;
+                let lastIndex = 0;
+                let match;
+                
+                // Find all <br> tags and their positions
+                const brMatches = [];
+                while ((match = brRegex.exec(part.value)) !== null) {
+                    brMatches.push({
+                        index: match.index,
+                        length: match[0].length,
+                        value: match[0]
+                    });
+                }
+                
+                // Process each <br> tag
+                brMatches.forEach((brMatch) => {
+                    // Add content before this <br>
+                    if (brMatch.index > lastIndex) {
+                        const beforeBr = part.value.substring(lastIndex, brMatch.index);
+                        parts.push({
+                            added: part.added,
+                            removed: part.removed,
+                            value: beforeBr
+                        });
+                    }
+                    // Add <br> as neutral separator
+                    parts.push({
+                        added: false,
+                        removed: false,
+                        value: brMatch.value
+                    });
+                    lastIndex = brMatch.index + brMatch.length;
+                });
+                
+                // Add remaining content after last <br>
+                if (lastIndex < part.value.length) {
+                    const afterBr = part.value.substring(lastIndex);
+                    if (afterBr.trim()) {
+                        parts.push({
+                            added: part.added,
+                            removed: part.removed,
+                            value: afterBr
+                        });
+                    }
+                }
+                
+                return parts.length > 0 ? parts : [part];
+            };
+
             // Calculate main address diff.
             // Remove <br> tags only from the beginning for diff comparison
             const mainAddressHtmlNoBr = mainAddressHtml.replace(/^<br\s*\/?>/gi, '').trim();
@@ -1566,20 +1621,54 @@ const AddressExtension = {
                     return;
                 }
                 
-                const markClass = part.added
-                    ? 'endereco-span--add'
-                    : part.removed ? 'endereco-span--remove' : 'endereco-span--neutral';
+                // Check if this part contains <br> tags - split to prevent grouping issues
+                // This ensures proper separation in "Ihre Eingabe" section
+                const hasBr = /<br\s*\/?>/gi.test(part.value);
+                
+                if (hasBr) {
+                    // Split the part into sub-parts, treating <br> as neutral
+                    const subParts = splitPartWithBr(part);
+                    subParts.forEach((subPart) => {
+                        const isBr = /<br\s*\/?>/gi.test(subPart.value);
+                        const markClass = isBr
+                            ? 'endereco-span--neutral'
+                            : (subPart.added
+                                ? 'endereco-span--add'
+                                : subPart.removed ? 'endereco-span--remove' : 'endereco-span--neutral');
+                        
+                        let partValue = subPart.value;
+                        
+                        // Always preserve <br> tags - they are part of the template structure
+                        // Only remove <br> from the very beginning of the entire output
+                        if (mainAddressDiffHtml === '' || mainAddressDiffHtml.trim() === '') {
+                            // If this is the first part, remove <br> from the beginning
+                            partValue = partValue.replace(/^<br\s*\/?>/gi, '');
+                        }
+                        
+                        // For <br> tags, render them directly without wrapping in span (they're already neutral)
+                        if (isBr) {
+                            mainAddressDiffHtml += partValue;
+                        } else {
+                            mainAddressDiffHtml += `<span class="${markClass}">${partValue}</span>`;
+                        }
+                    });
+                } else {
+                    // No <br> in this part, process normally
+                    const markClass = part.added
+                        ? 'endereco-span--add'
+                        : part.removed ? 'endereco-span--remove' : 'endereco-span--neutral';
 
-                // Remove <br> from the beginning of each part
-                let partValue = part.value;
-                if (mainAddressDiffHtml === '' || mainAddressDiffHtml.trim() === '') {
-                    // If this is the first part, remove <br> from the beginning
-                    partValue = partValue.replace(/^<br\s*\/?>/gi, '');
+                    // Remove <br> from the beginning of each part
+                    let partValue = part.value;
+                    if (mainAddressDiffHtml === '' || mainAddressDiffHtml.trim() === '') {
+                        // If this is the first part, remove <br> from the beginning
+                        partValue = partValue.replace(/^<br\s*\/?>/gi, '');
+                    }
+
+                    // Escaping part.value is not necessary here because the original address and the predictions were already escaped.
+
+                    mainAddressDiffHtml += `<span class="${markClass}">${partValue}</span>`;
                 }
-
-                // Escaping part.value is not necessary here because the original address and the predictions were already escaped.
-
-                mainAddressDiffHtml += `<span class="${markClass}">${partValue}</span>`;
             });
 
             // Prepare predictions.
@@ -1605,20 +1694,48 @@ const AddressExtension = {
                         return;
                     }
                     
-                    const markClass = part.added
-                        ? 'endereco-span--add'
-                        : part.removed ? 'endereco-span--remove' : 'endereco-span--neutral';
+                    // Check if this part contains <br> tags - split to prevent grouping issues
+                    // This prevents <br> from being grouped with postal code, causing spacing issues
+                    const hasBr = /<br\s*\/?>/gi.test(part.value);
+                    
+                    if (hasBr) {
+                        // Split the part into sub-parts, treating <br> as neutral
+                        const subParts = splitPartWithBr(part);
+                        subParts.forEach((subPart) => {
+                            const isBr = /<br\s*\/?>/gi.test(subPart.value);
+                            const markClass = isBr
+                                ? 'endereco-span--neutral'
+                                : (subPart.added
+                                    ? 'endereco-span--add'
+                                    : subPart.removed ? 'endereco-span--remove' : 'endereco-span--neutral');
+                            
+                            let partValue = subPart.value;
+                            
+                            
+                            if (addressDiff === '' || addressDiff.trim() === '') {
+                                // If this is the first part, remove <br> from the beginning
+                                partValue = partValue.replace(/^<br\s*\/?>/gi, '');
+                            }
+                            
+                            addressDiff += `<span class="${markClass}">${partValue}</span>`;
+                        });
+                    } else {
+                        // No <br> in this part, process normally
+                        const markClass = part.added
+                            ? 'endereco-span--add'
+                            : part.removed ? 'endereco-span--remove' : 'endereco-span--neutral';
 
-                    // Remove <br> from the beginning of each part
-                    let partValue = part.value;
-                    if (addressDiff === '' || addressDiff.trim() === '') {
-                        // If this is the first part, remove <br> from the beginning
-                        partValue = partValue.replace(/^<br\s*\/?>/gi, '');
+                        // Remove <br> from the beginning of each part
+                        let partValue = part.value;
+                        if (addressDiff === '' || addressDiff.trim() === '') {
+                            // If this is the first part, remove <br> from the beginning
+                            partValue = partValue.replace(/^<br\s*\/?>/gi, '');
+                        }
+
+                        // Escaping part.value is not necessary here because the original address and the predictions were already escaped.
+
+                        addressDiff += `<span class="${markClass}">${partValue}</span>`;
                     }
-
-                    // Escaping part.value is not necessary here because the original address and the predictions were already escaped.
-
-                    addressDiff += `<span class="${markClass}">${partValue}</span>`;
                 });
 
                 processedPredictions.push({
