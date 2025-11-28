@@ -1348,6 +1348,40 @@ const AddressExtension = {
         };
 
         /**
+         * Helper function to remove leading <br> tags from HTML string
+         * Handles both <br> and <br/> tags, and specifically prevents <br> at the start of endereco-span--remove and endereco-span--neutral
+         * @param {string} html - The HTML string to process
+         * @returns {string} - The HTML string with leading <br> tags removed
+         */
+        ExtendableObject.util.removeLeadingBr = (html) => {
+            let previousLength;
+            // Keep removing until no more changes occur (handles multiple leading <br> tags)
+            do {
+                previousLength = html.length;
+                // Remove spans that contain only <br> or <br/> (with any whitespace) at the beginning - this must come first
+                // Use a more flexible pattern that matches any content between tags that is only whitespace and <br>
+                html = html.replace(/^(<span[^>]*class="[^"]*endereco-span[^"]*"[^>]*>)([\s\S]*?)(<\/span>)\s*/i, (match, openTag, content, closeTag) => {
+                    // Check if content contains only whitespace and <br> tags
+                    const contentWithoutBr = content.replace(/<br\s*\/?>/gi, '').trim();
+                    if (contentWithoutBr === '') {
+                        // Span contains only <br> and whitespace, remove it
+                        return '';
+                    }
+                    return match;
+                });
+                // Remove <br> or <br/> from the start of endereco-span--remove spans (but keep the span if it has more content)
+                html = html.replace(/^(<span[^>]*class="[^"]*endereco-span--remove[^"]*"[^>]*>)\s*(<br\s*\/?>)\s*/i, '$1');
+                // Remove <br> or <br/> from the start of endereco-span--neutral spans (but keep the span if it has more content)
+                html = html.replace(/^(<span[^>]*class="[^"]*endereco-span--neutral[^"]*"[^>]*>)\s*(<br\s*\/?>)\s*/i, '$1');
+                // Remove standalone <br> or <br/> at the beginning
+                html = html.replace(/^(<br\s*\/?>)\s*/i, '');
+                // Remove any remaining leading whitespace
+                html = html.replace(/^\s+/, '');
+            } while (html.length !== previousLength);
+            return html;
+        };
+
+        /**
          * Initiates an address check process, utilizing caching if available.
          * @param {...any} args - Additional arguments passed to the address check process.
          * @returns {Promise} - A promise representing the address check process.
@@ -1441,7 +1475,9 @@ const AddressExtension = {
                 // TODO: replace button then replace button classes.
                 // Security: Create escaped copy of original address
                 const escapedOriginalAddress = ExtendableObject.util.escapeAddress(originalAddress);
-                const mainAddressHtml = ExtendableObject.util.formatAddress(escapedOriginalAddress, statuscodes, true, true);
+                let mainAddressHtml = ExtendableObject.util.formatAddress(escapedOriginalAddress, statuscodes, true, true);
+                // Remove leading <br> from main address
+                mainAddressHtml = ExtendableObject.util.removeLeadingBr(mainAddressHtml);
                 const editButtonHTML = ExtendableObject.config.templates.buttonEditAddress.replace('{{{buttonClasses}}}', ExtendableObject.config.templates.primaryButtonClasses);
                 const confirmButtonHTML = ExtendableObject.config.templates.buttonConfirmAddress.replace('{{{buttonClasses}}}', ExtendableObject.config.templates.secondaryButtonClasses);
 
@@ -1562,6 +1598,9 @@ const AddressExtension = {
 
                 mainAddressDiffHtml += `<span class="${markClass}">${part.value}</span>`;
             });
+            
+            // Remove leading <br> from main address diff
+            mainAddressDiffHtml = ExtendableObject.util.removeLeadingBr(mainAddressDiffHtml);
 
             // Helper function to split a diff part that contains <br> tags
             // This prevents <br> tags from being grouped with content in the diff
@@ -1649,6 +1688,9 @@ const AddressExtension = {
                     /(endereco-postal-code[^<]*<\/span>)(\s*<span[^>]*>)?\s*(<br\s*\/?>)\s*(<\/span>)?\s*(<span[^>]*endereco-locality)/gi,
                     '$1 $5'
                 );
+                
+                // Remove leading <br> from address diff
+                addressDiff = ExtendableObject.util.removeLeadingBr(addressDiff);
 
                 processedPredictions.push({
                     addressDiff
