@@ -61,6 +61,7 @@ function EnderecoBase() {
         _changed: false,
 
         _awaits: 0,
+        _activePredictionApplications: [],
         waitForExtension: function(extensions, timeout= 10) {
             var $self = this;
             return new Promise(function(resolve, reject) {
@@ -134,6 +135,12 @@ function EnderecoBase() {
                     }
                 }, 100);
             })
+        },
+        waitForPredictionApplication: function() {
+            if (this._activePredictionApplications.length === 0) {
+                return Promise.resolve();
+            }
+            return Promise.all(this._activePredictionApplications);
         },
         anyActive: function() {
             var $self = this;

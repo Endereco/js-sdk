@@ -109,15 +109,20 @@ window.EnderecoIntegrator.isAddressFormStillValid = (EAO) => {
     return true;
 }
 
-window.EnderecoIntegrator.prepareDOMElement = (DOMElement) => {
+window.EnderecoIntegrator.prepareDOMElement = (DOMElement, addressObject) => {
     // Check if the element has already been prepared
     if (DOMElement._enderecoBlurListenerAttached) {
         return; // Skip if already prepared
     }
 
-    const enderecoBlurListener = (e) => {
+    const enderecoBlurListener = async (e) => {
+        // Wait for any active prediction applications to complete
+        if (addressObject && addressObject.waitForPredictionApplication) {
+            await addressObject.waitForPredictionApplication();
+        }
+
         // Dispatch 'focus' and 'blur' events on the target element
-        let prevActiveElement = document.activeElement;
+        const prevActiveElement = document.activeElement;
         e.target.dispatchEvent(new CustomEvent('focus', { bubbles: true, cancelable: true }));
         e.target.dispatchEvent(new CustomEvent('blur', { bubbles: true, cancelable: true }));
         prevActiveElement.dispatchEvent(new CustomEvent('focus', { bubbles: true, cancelable: true }));
