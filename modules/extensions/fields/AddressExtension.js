@@ -8,6 +8,7 @@ import EnderecoSubscriber from '../../subscriber';
 const WAIT_FOR_TIME = 100;
 const ERROR_EXPIRED_SESSION = -32700;
 const MILLISECONDS_IN_SECOND = 1000;
+const FOCUS_DELAY = 100;
 
 /**
  * Pauses execution for a specified number of milliseconds.
@@ -392,6 +393,217 @@ const attachConfirmAddressHandlers = (ExtendableObject, modalElement, onConfirm)
 };
 
 /**
+ * Sets up focus trap for modal accessibility.
+ * @param {Object} ExtendableObject - The address object instance.
+ * @param {HTMLElement} modalElement - The modal element.
+ */
+const setupFocusTrap = (ExtendableObject, modalElement) => {
+    ExtendableObject._previouslyFocusedElement = document.activeElement;
+
+    const setupRadioRovingTabindex = () => {
+        const radios = modalElement.querySelectorAll('input[type="radio"][name="endereco-address-predictions"]');
+
+        if (radios.length === 0) return;
+
+        let checkedRadio = Array.from(radios).find(radio => radio.checked);
+
+        if (!checkedRadio) {
+            checkedRadio = radios[0];
+            checkedRadio.checked = true;
+        }
+
+        radios.forEach(radio => {
+            radio.tabIndex = radio === checkedRadio ? 1 : -1;
+        });
+
+        // Scroll checked radio into view on initial render
+        if (checkedRadio) {
+            const checkedLabel = checkedRadio.nextElementSibling;
+
+            if (checkedLabel) {
+                checkedLabel.scrollIntoView({ behavior: 'auto', block: 'nearest' });
+            }
+        }
+
+        radios.forEach(radio => {
+            radio.addEventListener('keydown', (e) => {
+                let newIndex = -1;
+                const currentIndex = Array.from(radios).indexOf(radio);
+
+                if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    newIndex = (currentIndex + 1) % radios.length;
+                } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    newIndex = (currentIndex - 1 + radios.length) % radios.length;
+                }
+
+                if (newIndex !== -1) {
+                    radios[newIndex].tabIndex = 1;
+                    radios[newIndex].checked = true;
+                    radios[newIndex].focus();
+                    radio.tabIndex = -1;
+
+                    // Scroll the radio button's label into view
+                    const label = radios[newIndex].nextElementSibling;
+
+                    if (label) {
+                        label.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
+
+                    radios[newIndex].dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            });
+
+            radio.addEventListener('focus', () => {
+                radios.forEach((r) => {
+                    r.tabIndex = -1;
+                });
+                radio.tabIndex = 1;
+            });
+        });
+    };
+
+    setupRadioRovingTabindex();
+
+    const getFirstAndLastFocusable = () => {
+        const focusableSelector = [
+            'input:not([disabled]):not([tabindex="-1"])',
+            'button:not([disabled]):not([tabindex="-1"])',
+            'a[href]:not([tabindex="-1"])',
+            '[tabindex]:not([tabindex="-1"]):not([disabled])'
+        ].join(',');
+
+        const allFocusable = Array.from(modalElement.querySelectorAll(focusableSelector));
+
+        const visibleFocusable = allFocusable.filter(el => {
+            return el.offsetParent !== null || el.tagName === 'SPAN'; // SPAN for close button
+        });
+
+        visibleFocusable.sort((a, b) => {
+            const aIdx = a.tabIndex || 0;
+            const bIdx = b.tabIndex || 0;
+
+            return aIdx - bIdx;
+        });
+
+        return {
+            first: visibleFocusable[0],
+            last: visibleFocusable[visibleFocusable.length - 1]
+        };
+    };
+
+    const handleTabKey = (e) => {
+        if (e.key !== 'Tab') return;
+
+        const { first, last } = getFirstAndLastFocusable();
+
+        if (!first) return;
+
+        if (e.shiftKey) {
+            if (document.activeElement === first) {
+                e.preventDefault();
+                last?.focus();
+            }
+        } else {
+            if (document.activeElement === last) {
+                e.preventDefault();
+                first.focus();
+            }
+        }
+    };
+
+    const handleEditLinkActivation = (e) => {
+        const editLinks = modalElement.querySelectorAll('[endereco-edit-address]');
+
+        editLinks.forEach(editLink => {
+            if (editLink && e.target === editLink && (e.key === 'Enter' || e.key === ' ')) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                editLink.click();
+            }
+        });
+    };
+
+    const handleCloseButtonActivation = (e) => {
+        const closeButton = modalElement.querySelector('[endereco-modal-close]');
+
+        if (closeButton && e.target === closeButton && (e.key === 'Enter' || e.key === ' ')) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            closeButton.click();
+        }
+    };
+
+    const handleEscapeKey = (e) => {
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const closeButton = modalElement.querySelector('[endereco-modal-close]');
+
+            if (closeButton) {
+                closeButton.click();
+            }
+        }
+    };
+
+    modalElement.addEventListener('keydown', handleTabKey);
+    modalElement.addEventListener('keydown', handleEscapeKey);
+    modalElement.addEventListener('keydown', handleEditLinkActivation);
+    modalElement.addEventListener('keydown', handleCloseButtonActivation);
+
+    const { first } = getFirstAndLastFocusable();
+
+    if (first) {
+        // Use setTimeout to ensure modal is fully rendered
+        setTimeout(() => {
+            first.focus();
+        }, FOCUS_DELAY);
+    }
+
+    ExtendableObject._focusTrapCleanup = () => {
+        if (modalElement && modalElement.removeEventListener) {
+            modalElement.removeEventListener('keydown', handleTabKey);
+            modalElement.removeEventListener('keydown', handleEscapeKey);
+            modalElement.removeEventListener('keydown', handleEditLinkActivation);
+            modalElement.removeEventListener('keydown', handleCloseButtonActivation);
+        }
+    };
+
+    // Register focus restoration as a modal close callback to ensure it completes before modal removal
+    ExtendableObject.onCloseModal.push((ExtendableObject) => {
+        return restoreFocus(ExtendableObject);
+    });
+};
+
+/**
+ * Restores focus to the previously focused element.
+ * @param {Object} ExtendableObject - The address object instance.
+ */
+const restoreFocus = (ExtendableObject) => {
+    if (ExtendableObject._focusTrapCleanup) {
+        ExtendableObject._focusTrapCleanup();
+        ExtendableObject._focusTrapCleanup = null;
+    }
+
+    if (ExtendableObject._previouslyFocusedElement &&
+        document.body.contains(ExtendableObject._previouslyFocusedElement)) {
+        try {
+            ExtendableObject._previouslyFocusedElement.focus();
+        } catch (error) {
+            // Fallback: focus document body if element is no longer focusable
+            console.warn('Could not restore focus to previous element:', error);
+            document.body.focus();
+        }
+    }
+
+    ExtendableObject._previouslyFocusedElement = null;
+};
+
+/**
  * Attaches event handlers for the confirmation checkbox.
  * @param {Object} ExtendableObject - The address object instance.
  * @param {HTMLElement} modalElement - The modal element.
@@ -649,6 +861,10 @@ const AddressExtension = {
         ExtendableObject.onAfterAddressPersisted = [];
         ExtendableObject.onEditAddress = [];
         ExtendableObject.onConfirmAddress = [];
+
+        // Focus management for accessibility
+        ExtendableObject._previouslyFocusedElement = null;
+        ExtendableObject._focusTrapCleanup = null;
     },
 
     /**
@@ -1041,22 +1257,7 @@ const AddressExtension = {
                 if (ExtendableObject._addressPredictionsIndex !== newValue) {
                     ExtendableObject._addressPredictionsIndex = newValue;
 
-                    // Inform all subscribers about the change.
-                    const notificationProcesses = [];
-
-                    ExtendableObject._subscribers.addressPredictionsIndex.forEach((subscriber) => {
-                        try {
-                            notificationProcesses.push(
-                                subscriber.updateDOMValue(newValue)
-                            );
-                        } catch (subErr) {
-                            console.warn('Failed to update addressPredictionsIndex subscriber:', {
-                                error: subErr,
-                                value: resolvedValue
-                            });
-                        }
-                    });
-                    await Promise.all(notificationProcesses);
+                    // DOM Update block removed, to prevent race conditions
                 }
             } catch (err) {
                 console.warn('Error setting addressPredictionsIndex:', {
@@ -1144,6 +1345,40 @@ const AddressExtension = {
             ExtendableObject.forms.forEach((form) => {
                 form.setAttribute('endereco-form-needs-validation', true);
             });
+        };
+
+        /**
+         * Helper function to remove leading <br> tags from HTML string
+         * Handles both <br> and <br/> tags, and specifically prevents <br> at the start of endereco-span--remove and endereco-span--neutral
+         * @param {string} html - The HTML string to process
+         * @returns {string} - The HTML string with leading <br> tags removed
+         */
+        ExtendableObject.util.removeLeadingBr = (html) => {
+            let previousLength;
+            // Keep removing until no more changes occur (handles multiple leading <br> tags)
+            do {
+                previousLength = html.length;
+                // Remove spans that contain only <br> or <br/> (with any whitespace) at the beginning - this must come first
+                // Use a more flexible pattern that matches any content between tags that is only whitespace and <br>
+                html = html.replace(/^(<span[^>]*class="[^"]*endereco-span[^"]*"[^>]*>)([\s\S]*?)(<\/span>)\s*/i, (match, openTag, content, closeTag) => {
+                    // Check if content contains only whitespace and <br> tags
+                    const contentWithoutBr = content.replace(/<br\s*\/?>/gi, '').trim();
+                    if (contentWithoutBr === '') {
+                        // Span contains only <br> and whitespace, remove it
+                        return '';
+                    }
+                    return match;
+                });
+                // Remove <br> or <br/> from the start of endereco-span--remove spans (but keep the span if it has more content)
+                html = html.replace(/^(<span[^>]*class="[^"]*endereco-span--remove[^"]*"[^>]*>)\s*(<br\s*\/?>)\s*/i, '$1');
+                // Remove <br> or <br/> from the start of endereco-span--neutral spans (but keep the span if it has more content)
+                html = html.replace(/^(<span[^>]*class="[^"]*endereco-span--neutral[^"]*"[^>]*>)\s*(<br\s*\/?>)\s*/i, '$1');
+                // Remove standalone <br> or <br/> at the beginning
+                html = html.replace(/^(<br\s*\/?>)\s*/i, '');
+                // Remove any remaining leading whitespace
+                html = html.replace(/^\s+/, '');
+            } while (html.length !== previousLength);
+            return html;
         };
 
         /**
@@ -1240,7 +1475,9 @@ const AddressExtension = {
                 // TODO: replace button then replace button classes.
                 // Security: Create escaped copy of original address
                 const escapedOriginalAddress = ExtendableObject.util.escapeAddress(originalAddress);
-                const mainAddressHtml = ExtendableObject.util.formatAddress(escapedOriginalAddress, statuscodes, true, true);
+                let mainAddressHtml = ExtendableObject.util.formatAddress(escapedOriginalAddress, statuscodes, true, true);
+                // Remove leading <br> from main address
+                mainAddressHtml = ExtendableObject.util.removeLeadingBr(mainAddressHtml);
                 const editButtonHTML = ExtendableObject.config.templates.buttonEditAddress.replace('{{{buttonClasses}}}', ExtendableObject.config.templates.primaryButtonClasses);
                 const confirmButtonHTML = ExtendableObject.config.templates.buttonConfirmAddress.replace('{{{buttonClasses}}}', ExtendableObject.config.templates.secondaryButtonClasses);
 
@@ -1275,6 +1512,7 @@ const AddressExtension = {
                 const modalElement = document.querySelector('[endereco-popup]');
 
                 return new Promise((resolve) => {
+                    setupFocusTrap(ExtendableObject, modalElement);
                     attachModalCloseHandlers(ExtendableObject, modalElement, () => {
                         resolve({
                             userHasEditingIntent: true,
@@ -1360,6 +1598,64 @@ const AddressExtension = {
 
                 mainAddressDiffHtml += `<span class="${markClass}">${part.value}</span>`;
             });
+            
+            // Remove leading <br> from main address diff
+            mainAddressDiffHtml = ExtendableObject.util.removeLeadingBr(mainAddressDiffHtml);
+
+            // Helper function to split a diff part that contains <br> tags
+            // This prevents <br> tags from being grouped with content in the diff
+            // IMPORTANT: postalCode and locality should always stay together on the same line
+            // The template format is: "postalCode locality <br>" - they must not be separated
+            const splitPartWithBr = (part) => {
+                const parts = [];
+                const brRegex = /<br\s*\/?>/gi;
+                let lastIndex = 0;
+                let match;
+                
+                // Find all <br> tags and their positions
+                const brMatches = [];
+                while ((match = brRegex.exec(part.value)) !== null) {
+                    brMatches.push({
+                        index: match.index,
+                        length: match[0].length,
+                        value: match[0]
+                    });
+                }
+                
+                // Process each <br> tag
+                brMatches.forEach((brMatch) => {
+                    // Add content before this <br>
+                    if (brMatch.index > lastIndex) {
+                        const beforeBr = part.value.substring(lastIndex, brMatch.index);
+                        parts.push({
+                            added: part.added,
+                            removed: part.removed,
+                            value: beforeBr
+                        });
+                    }
+                    // Add <br> as neutral separator
+                    parts.push({
+                        added: false,
+                        removed: false,
+                        value: brMatch.value
+                    });
+                    lastIndex = brMatch.index + brMatch.length;
+                });
+                
+                // Add remaining content after last <br>
+                if (lastIndex < part.value.length) {
+                    const afterBr = part.value.substring(lastIndex);
+                    if (afterBr.trim()) {
+                        parts.push({
+                            added: part.added,
+                            removed: part.removed,
+                            value: afterBr
+                        });
+                    }
+                }
+                
+                return parts.length > 0 ? parts : [part];
+            };
 
             // Prepare predictions.
             const processedPredictions = [];
@@ -1372,14 +1668,29 @@ const AddressExtension = {
                 const diff = diffWords(mainAddressHtml, addressFormatted, { ignoreCase: false });
 
                 diff.forEach((part) => {
-                    const markClass = part.added
-                        ? 'endereco-span--add'
-                        : part.removed ? 'endereco-span--remove' : 'endereco-span--neutral';
+                    // Split parts that contain <br> tags to handle them separately
+                    const processedParts = splitPartWithBr(part);
+                    
+                    processedParts.forEach((processedPart) => {
+                        const markClass = processedPart.added
+                            ? 'endereco-span--add'
+                            : processedPart.removed ? 'endereco-span--remove' : 'endereco-span--neutral';
 
-                    // Escaping part.value is not necessary here because the original address and the predictions were already escaped.
+                        // Escaping part.value is not necessary here because the original address and the predictions were already escaped.
 
-                    addressDiff += `<span class="${markClass}">${part.value}</span>`;
+                        addressDiff += `<span class="${markClass}">${processedPart.value}</span>`;
+                    });
                 });
+                
+                // Remove <br> or <br/> between postalCode and locality to keep them on the same line
+                // This regex handles all patterns where <br> appears between postal-code and locality spans
+                addressDiff = addressDiff.replace(
+                    /(endereco-postal-code[^<]*<\/span>)(\s*<span[^>]*>)?\s*(<br\s*\/?>)\s*(<\/span>)?\s*(<span[^>]*endereco-locality)/gi,
+                    '$1 $5'
+                );
+                
+                // Remove leading <br> from address diff
+                addressDiff = ExtendableObject.util.removeLeadingBr(addressDiff);
 
                 processedPredictions.push({
                     addressDiff
@@ -1421,6 +1732,7 @@ const AddressExtension = {
             const modalElement = document.querySelector('[endereco-popup]');
 
             return new Promise((resolve) => {
+                setupFocusTrap(ExtendableObject, modalElement);
                 attachModalCloseHandlers(ExtendableObject, modalElement, () => {
                     resolve({
                         userHasEditingIntent: true,
@@ -2216,15 +2528,15 @@ const AddressExtension = {
         ExtendableObject.config.templates.addressNoPredictionWrapper = addressNoPredictionWrapper;
 
         if (!ExtendableObject.config.templates.button) {
-            ExtendableObject.config.templates.button = '<button class="{{{buttonClasses}}}" endereco-use-selection endereco-disabled-until-confirmed>{{{EnderecoAddressObject.config.texts.useSelected}}}</button>';
+            ExtendableObject.config.templates.button = '<button class="{{{buttonClasses}}}" endereco-use-selection endereco-disabled-until-confirmed tabindex="3">{{{EnderecoAddressObject.config.texts.useSelected}}}</button>';
         }
 
         if (!ExtendableObject.config.templates.buttonEditAddress) {
-            ExtendableObject.config.templates.buttonEditAddress = '<button class="{{{buttonClasses}}}" endereco-edit-address>{{{EnderecoAddressObject.config.texts.editAddress}}}</button>';
+            ExtendableObject.config.templates.buttonEditAddress = '<button class="{{{buttonClasses}}}" endereco-edit-address tabindex="2">{{{EnderecoAddressObject.config.texts.editAddress}}}</button>';
         }
 
         if (!ExtendableObject.config.templates.buttonConfirmAddress) {
-            ExtendableObject.config.templates.buttonConfirmAddress = '<button class="{{{buttonClasses}}}" endereco-confirm-address endereco-disabled-until-confirmed>{{{EnderecoAddressObject.config.texts.confirmAddress}}}</button>';
+            ExtendableObject.config.templates.buttonConfirmAddress = '<button class="{{{buttonClasses}}}" endereco-confirm-address endereco-disabled-until-confirmed tabindex="4">{{{EnderecoAddressObject.config.texts.confirmAddress}}}</button>';
         }
     },
     extend: async (ExtendableObject) => {

@@ -13,6 +13,12 @@ const MAX_PREDICTIONS_BEFORE_SCROLL = 6;
  */
 const ERROR_EXPIRED_SESSION = -32700;
 
+/**
+ * Default predictions index value (no selection)
+ * @type {number}
+ */
+const PREDICTIONS_INDEX_DEFAULT = -1;
+
 const LocalityExtension = {
     name: 'LocalityExtension',
 
@@ -28,9 +34,8 @@ const LocalityExtension = {
         ExtendableObject._localityAutocompleteRequestIndex = 1;
         ExtendableObject._localityChunk = '';
         ExtendableObject._localityPredictions = [];
-        ExtendableObject._localityPredictionsIndex = 0;
+        ExtendableObject._localityPredictionsIndex = PREDICTIONS_INDEX_DEFAULT;
         ExtendableObject._localityTimeout = null;
-        ExtendableObject._localityPredictionsIndex = 0;
 
         ExtendableObject._allowToNotifyLocalitySubscribers = true;
         ExtendableObject._allowFetchLocalityAutocomplete = false;
@@ -223,15 +228,16 @@ const LocalityExtension = {
                 if (!isAnyActive) {
                     // Reset values and remove dropdown
                     ExtendableObject.localityPredictions = [];
-                    ExtendableObject._localityPredictionsIndex = 0;
+                    ExtendableObject._localityPredictionsIndex = PREDICTIONS_INDEX_DEFAULT;
                     ExtendableObject.util.removeLocalityPredictionsDropdown();
                 }
 
                 try {
+                    await ExtendableObject.waitForPredictionApplication();
                     await ExtendableObject.waitUntilReady();
                     await ExtendableObject.cb.handleFormBlur();
                 } catch (error) {
-                    console.warn('Error in buildingNumberBlur handler:', error);
+                    console.warn('Error in localityBlur handler:', error);
                 }
             };
         };
@@ -246,32 +252,75 @@ const LocalityExtension = {
                 if (e.key === 'ArrowUp' || e.key === 'Up') {
                     e.preventDefault();
                     e.stopPropagation();
-                    if (ExtendableObject._localityPredictionsIndex > -1) {
+                    if (ExtendableObject._localityPredictionsIndex > PREDICTIONS_INDEX_DEFAULT) {
                         ExtendableObject._localityPredictionsIndex = ExtendableObject._localityPredictionsIndex - 1;
                         ExtendableObject.util.renderLocalityPredictionsDropdown();
                     }
+                    // Arrow up at no selection does nothing (stays at -1)
                 } else if (e.key === 'ArrowDown' || e.key === 'Down') {
                     e.preventDefault();
                     e.stopPropagation();
                     if (ExtendableObject._localityPredictionsIndex < (ExtendableObject._localityPredictions.length - 1)) {
                         ExtendableObject._localityPredictionsIndex = ExtendableObject._localityPredictionsIndex + 1;
-                        ExtendableObject.util.renderLocalityPredictionsDropdown();
+                    } else {
+                        ExtendableObject._localityPredictionsIndex = 0;
                     }
-                } else if (e.key === 'Tab' || e.key === 'Tab') {
-                    // TODO: configurable activate in future releases.
+                    ExtendableObject.util.renderLocalityPredictionsDropdown();
+                } else if (e.key === 'Home') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    ExtendableObject._localityPredictionsIndex = 0;
+                    ExtendableObject.util.renderLocalityPredictionsDropdown();
+                } else if (e.key === 'End') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    ExtendableObject._localityPredictionsIndex = ExtendableObject._localityPredictions.length - 1;
+                    ExtendableObject.util.renderLocalityPredictionsDropdown();
+                } else if (e.key === 'Escape') {
+                    ExtendableObject.resetLocalityPredictions();
+                    ExtendableObject.util.removeLocalityPredictionsDropdown();
+                } else if (e.key === 'Tab') {
+                    if (ExtendableObject._localityPredictions.length > 0 && ExtendableObject._localityPredictionsIndex >= 0) {
+                        e.preventDefault();
+
+                        (async () => {
+                            await ExtendableObject.cb.applyLocalityPredictionSelection(
+                                ExtendableObject._localityPredictionsIndex,
+                                ExtendableObject._localityPredictions
+                            );
+                            ExtendableObject.resetLocalityPredictions();
+                            ExtendableObject.util.removeLocalityPredictionsDropdown();
+
+                            // Find next focusable element
+                            const focusableElements = Array.from(document.querySelectorAll(
+                                'input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+                            ));
+                            const currentIndex = focusableElements.indexOf(e.target);
+                            const nextElement = e.shiftKey
+                                ? focusableElements[currentIndex - 1]
+                                : focusableElements[currentIndex + 1];
+
+                            if (nextElement) {
+                                nextElement.focus();
+                            }
+                        })();
+                    }
                 } else if (e.key === 'Enter' || e.key === 'Enter') {
                     if (ExtendableObject._localityPredictions.length > 0 && ExtendableObject._localityPredictionsIndex >= 0) {
                         e.preventDefault();
                         e.stopImmediatePropagation();
 
-                        ExtendableObject.cb.applyLocalityPredictionSelection(
-                            ExtendableObject._localityPredictionsIndex,
-                            ExtendableObject._localityPredictions
-                        );
-                        ExtendableObject.localityPredictions = [];
+                        (async () => {
+                            await ExtendableObject.cb.applyLocalityPredictionSelection(
+                                ExtendableObject._localityPredictionsIndex,
+                                ExtendableObject._localityPredictions
+                            );
+                            ExtendableObject.resetLocalityPredictions();
+                            ExtendableObject.util.removeLocalityPredictionsDropdown();
+                        })();
+                    } else {
+                        ExtendableObject.util.removeLocalityPredictionsDropdown();
                     }
-
-                    ExtendableObject.util.removeLocalityPredictionsDropdown();
                 } else if (e.key === 'Backspace' || e.key === 'Backspace') {
                     ExtendableObject.config.ux.smartFill = false;
                 }
@@ -284,18 +333,42 @@ const LocalityExtension = {
          * @param {number} index - Selected prediction index
          * @param {Array} predictions - Array of available predictions
          */
-        ExtendableObject.cb.applyLocalityPredictionSelection = (index, predictions) => {
-            ExtendableObject._allowFetchLocalityAutocomplete = false;
-            ExtendableObject._allowFetchPostalCodeAutocomplete = false;
-            ExtendableObject.locality = predictions[index].locality;
-            if (predictions[index].postalCode && predictions[index].postalCode !== '') {
-                ExtendableObject.postalCode = predictions[index].postalCode;
-            }
-            if (predictions[index].subdivisionCode && predictions[index].subdivisionCode !== '') {
-                ExtendableObject.subdivisionCode = predictions[index].subdivisionCode;
-            }
-            ExtendableObject._allowFetchLocalityAutocomplete = true;
-            ExtendableObject._allowFetchPostalCodeAutocomplete = false;
+        ExtendableObject.cb.applyLocalityPredictionSelection = async (index, predictions) => {
+            const applicationPromise = (async () => {
+                ExtendableObject._allowFetchLocalityAutocomplete = false;
+                ExtendableObject._allowFetchPostalCodeAutocomplete = false;
+                await ExtendableObject.setLocality(predictions[index].locality);
+
+                if (predictions[index].postalCode && predictions[index].postalCode !== '') {
+                    await ExtendableObject.setPostalCode(predictions[index].postalCode);
+                }
+
+                if (predictions[index].subdivisionCode && predictions[index].subdivisionCode !== '') {
+                    await ExtendableObject.setSubdivisionCode(predictions[index].subdivisionCode);
+                }
+                ExtendableObject._allowFetchLocalityAutocomplete = true;
+                ExtendableObject._allowFetchPostalCodeAutocomplete = false;
+            })();
+
+            ExtendableObject._activePredictionApplications.push(applicationPromise);
+            await applicationPromise.finally(() => {
+                const index = ExtendableObject._activePredictionApplications.indexOf(applicationPromise);
+
+                if (index > -1) {
+                    ExtendableObject._activePredictionApplications.splice(index, 1);
+                }
+            });
+
+            return applicationPromise;
+        };
+
+        /**
+         * Resets locality predictions state
+         * Clears predictions array and resets selection index
+         */
+        ExtendableObject.resetLocalityPredictions = () => {
+            ExtendableObject.localityPredictions = [];
+            ExtendableObject._localityPredictionsIndex = PREDICTIONS_INDEX_DEFAULT;
         };
     },
 
@@ -326,6 +399,8 @@ const LocalityExtension = {
                     if (autocompleteResult.originalLocality !== currentLocality) {
                         return;
                     }
+
+                    ExtendableObject._localityPredictionsIndex = PREDICTIONS_INDEX_DEFAULT;
                     await ExtendableObject.setLocalityPredictions(autocompleteResult.predictions);
                     ExtendableObject.util.renderLocalityPredictionsDropdown();
                 } catch (err) {
@@ -459,6 +534,16 @@ const LocalityExtension = {
 
                     // Attach it to HTML.
                     subscriber.object.insertAdjacentHTML('afterend', predictionsHtml);
+
+                    // Scroll active item into view
+                    setTimeout(() => {
+                        const activeItem = document.querySelector('[endereco-locality-predictions] .endereco-predictions__item.active');
+
+                        if (activeItem) {
+                            activeItem.scrollIntoView({ block: 'nearest' });
+                        }
+                    }, 0);
+
                     document.querySelectorAll(`[data-id="${ExtendableObject.id}"] [endereco-locality-prediction]`).forEach((DOMElement) => {
                         DOMElement.addEventListener('mousedown', (e) => {
                             const index = parseInt(DOMElement.getAttribute('data-prediction-index'));
