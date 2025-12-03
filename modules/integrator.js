@@ -491,11 +491,6 @@ const EnderecoIntegrator = {
 
         addressObject.setIntent(options.intent);
 
-        // Preselect a value.
-        if (!addressObject.getCountryCode() && integrator.defaultCountrySelect) {
-            await addressObject.setCountryCode(integrator.defaultCountry);
-        }
-
         if (!!options.addressType) {
             await addressObject.setAddressType(options.addressType)
         }
@@ -508,12 +503,17 @@ const EnderecoIntegrator = {
 
         addressObject.activate();
 
+        // Preselect a value.
+        if (!addressObject.getCountryCode() && integrator.defaultCountrySelect) {
+            await addressObject.setCountryCode(integrator.defaultCountry);
+        }
+
         integrator.afterAMSActivation.forEach( (callback) => {
             callback(addressObject);
         })
 
         await addressObject.waitUntilReady();
-
+        
         if (!addressObject.util.isAddressCheckFinished()) {
             addressObject.util.markAddressDirty();
         }
