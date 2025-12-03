@@ -743,7 +743,9 @@ const AddressExtension = {
                 const addressValue = await ExtendableObject.cb.setAddress(resolvedValue);
 
                 const setterPromises = ExtendableObject.fieldNames.map(fieldName => {
-                    if (Object.prototype.hasOwnProperty.call(resolvedValue, fieldName)) {
+                    if (Object.prototype.hasOwnProperty.call(addressValue, fieldName) &&
+                        typeof addressValue[fieldName] === 'string'
+                    ) {
                         // Dynamically calculate the setter name (e.g., "streetName" -> "setStreetName")
                         const setterName = `set${fieldName.charAt(0).toUpperCase()}${fieldName.slice(1)}`;
 
