@@ -134,7 +134,7 @@
             window.EnderecoIntegrator.config.apiUrl = 'http://localhost:8888/proxyfile';
             window.EnderecoIntegrator.config.apiKey = ''; // Hier kommt Dein API Key.
             window.EnderecoIntegrator.config.showDebugInfo = false;
-            window.EnderecoIntegrator.config.remoteApiUrl = 'http://endereco-service.de/rpc/v1';
+			window.EnderecoIntegrator.config.remoteApiUrl = localStorage.getItem('remoteApiUrl') || 'endereco-service.de';
             window.EnderecoIntegrator.config.trigger.onblur = true;
             window.EnderecoIntegrator.config.trigger.onsubmit = true;
             window.EnderecoIntegrator.config.ux.smartFill = true;
@@ -358,6 +358,24 @@
 <body>
 
 <div class="form-container">
+	<div>
+		<label class="label">
+			Server Url
+			<select class="remoteApiUrl" id="remoteApiUrl">
+				<option value="">-- Bitte einen Server auswählen --</option>
+				<option value="endereco-service.de" selected>
+					https://endereco-service.de
+				</option>
+				<option value="s2.endereco-service.de">
+					https://s2.endereco-service.de
+				</option>
+				<option value="staging.endereco-service.de">
+					https://staging.endereco-service.de
+				</option>
+				<option value="localhost">http://localhost</option>
+			</select>
+		</label>
+	</div>
 	<form>
 		<div class="row">
 			<div style="width: 100%">
@@ -369,6 +387,50 @@
 		</div>
 	</form>
 </div>
+
+<script>
+	document.addEventListener('DOMContentLoaded', function () {
+		var remoteApiUrlInput = document.querySelector('#remoteApiUrl');
+
+		if (remoteApiUrlInput) {
+			remoteApiUrlInput.value =
+				localStorage.getItem('remoteApiUrl') || 'https://endereco-service.de';
+			remoteApiUrlInput.addEventListener('change', updateRemoteApiUrl);
+
+			function updateRemoteApiUrl() {
+				const remoteApiUrl = remoteApiUrlInput.value.trim();
+				if (remoteApiUrl) {
+					localStorage.setItem('remoteApiUrl', remoteApiUrl);
+					if (window.EnderecoIntegrator) {
+						window.EnderecoIntegrator.config.remoteApiUrl = remoteApiUrl;
+						Object.values(
+							window.EnderecoIntegrator.integratedObjects
+						).forEach((obj) => {
+							obj.config.remoteApiUrl = remoteApiUrl;
+						});
+					}
+				}
+			}
+
+			function setRemoteApiUrl() {
+				if (
+					window.EnderecoIntegrator &&
+					window.EnderecoIntegrator.onLoad &&
+					!window.EnderecoIntegrator.ready
+				) {
+					window.EnderecoIntegrator.onLoad.push(updateRemoteApiUrl);
+				} else {
+					updateRemoteApiUrl();
+				}
+			}
+
+			// Ensure remoteApiUrl is set if already present when page loads
+			if (remoteApiUrlInput.value.trim()) {
+				setRemoteApiUrl();
+			}
+		}
+	});
+</script>
 
 <script>
 	document.addEventListener('DOMContentLoaded', function() {
