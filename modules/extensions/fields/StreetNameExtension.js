@@ -280,6 +280,10 @@ const StreetNameExtension = {
                         ExtendableObject.streetNamePredictions
                     );
                 } else if (e.key === 'Escape') {
+                    if(ExtendableObject._streetNamePredictions.length) {
+                        e.preventDefault();
+                        e.stopPropagation(); 
+                    }
                     ExtendableObject.resetStreetNamePredictions();
                     ExtendableObject.util.removeStreetNamePredictionsDropdown();
                 } else if (e.key === 'Tab') {
