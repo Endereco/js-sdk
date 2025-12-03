@@ -280,6 +280,10 @@ const PostalCodeExtension = {
                     ExtendableObject._postalCodePredictionsIndex = ExtendableObject._postalCodePredictions.length - 1;
                     ExtendableObject.util.renderPostalCodePredictionsDropdown();
                 } else if (e.key === 'Escape') {
+                    if(ExtendableObject._postalCodePredictions.length) {
+                        e.preventDefault();
+                        e.stopPropagation(); 
+                    } 
                     ExtendableObject.resetPostalCodePredictions();
                     ExtendableObject.util.removePostalCodePredictionsDropdown();
                 } else if (e.key === 'Tab') {

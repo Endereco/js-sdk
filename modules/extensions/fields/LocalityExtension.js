@@ -277,6 +277,10 @@ const LocalityExtension = {
                     ExtendableObject._localityPredictionsIndex = ExtendableObject._localityPredictions.length - 1;
                     ExtendableObject.util.renderLocalityPredictionsDropdown();
                 } else if (e.key === 'Escape') {
+                    if(ExtendableObject._localityPredictions.length) {
+                        e.preventDefault();
+                        e.stopPropagation(); 
+                    }                    
                     ExtendableObject.resetLocalityPredictions();
                     ExtendableObject.util.removeLocalityPredictionsDropdown();
                 } else if (e.key === 'Tab') {
