@@ -273,6 +273,10 @@ const StreetFullExtension = {
                         ExtendableObject.streetFullPredictions
                     );
                 } else if (e.key === 'Escape') {
+                    if(ExtendableObject._streetFullPredictions.length) {
+                        e.preventDefault();
+                        e.stopPropagation(); 
+                    }
                     ExtendableObject.resetStreetFullPredictions();
                     ExtendableObject.util.removeStreetFullPredictionsDropdown();
                 } else if (e.key === 'Tab') {
