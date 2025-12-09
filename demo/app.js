@@ -70,16 +70,19 @@ router.get('/', async (req, res) => {
 
 // Proxy file upload
 router.post('/proxyfile', async (req, res) => {
+    const serverUrl = req.header('x-remote-api-url') ?? 'staging.endereco-service.de';
     let postData = req.body;
 
     const options = {
-        hostname: 'staging.endereco-service.de',
+        hostname: serverUrl,
         port: 443,
         path: '/rpc/v1',
         method: 'POST',
         headers: req.headers,
-        servername: 'staging.endereco-service.de'
+        servername: serverUrl
     };
+
+    delete options.headers['accept-encoding'];
 
     const proxyReq = https.request(options, proxyRes => {
         let body = '';
