@@ -2199,7 +2199,6 @@ const AddressExtension = {
             const cacheKey = generateAddressCacheKey(addressToCheck);
 
             const headers = {
-                'X-Auth-Key': ExtendableObject.config.apiKey,
                 'X-Agent': ExtendableObject.config.agentName,
                 'X-Remote-Api-Url': ExtendableObject.config.remoteApiUrl,
                 'X-Transaction-Referer': window.location.href,
@@ -2207,6 +2206,11 @@ const AddressExtension = {
                     ? ExtendableObject.sessionId
                     : 'not_required'
             };
+
+            // Only add API key if it's provided
+            if (ExtendableObject.config.apiKey) {
+                headers['X-Auth-Key'] = ExtendableObject.config.apiKey;
+            }
 
             if (!ExtendableObject.addressCheckCache.cachedResults[cacheKey]) {
                 try {
