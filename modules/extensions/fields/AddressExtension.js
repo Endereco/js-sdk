@@ -829,6 +829,7 @@ const AddressExtension = {
         ExtendableObject._addressTimestamp = [];
         ExtendableObject._addressType = 'general_address';
         ExtendableObject._intent = 'edit';
+        ExtendableObject._targetSelector = 'body';
 
         // Subscriber storage
         ExtendableObject._subscribers.address = [];
@@ -892,6 +893,22 @@ const AddressExtension = {
          */
         ExtendableObject.setIntent = (intent) => {
             ExtendableObject._intent = intent;
+        };
+
+        /**
+         * Gets the current targetSelector.
+         * @returns {string} - The current targetSelector.
+         */
+        ExtendableObject.getTargetSelector = () => {
+            return ExtendableObject._targetSelector;
+        };
+
+        /**
+         * Sets the current targetSelector.
+         * @param {string} targetSelector - The intent to set.
+         */
+        ExtendableObject.setTargetSelector = (targetSelector) => {
+            ExtendableObject._targetSelector = targetSelector;
         };
 
         // Add getter and setter for fields.
@@ -1483,7 +1500,11 @@ const AddressExtension = {
                     }
                 );
 
-                document.querySelector('body').insertAdjacentHTML('beforeend', modalHTML);
+                let targetElement = ExtendableObject.getTargetSelector();
+
+                if (!document.querySelector(targetElement)) { targetElement = 'body'; }
+
+                document.querySelector(targetElement).insertAdjacentHTML('beforeend', modalHTML);
                 document.querySelector('body').classList.add('endereco-no-scroll');
 
                 ExtendableObject.onAfterModalRendered.forEach(function (cb) {
@@ -1639,7 +1660,11 @@ const AddressExtension = {
                 }
             );
 
-            document.querySelector('body').insertAdjacentHTML('beforeend', predictionsWrapperHtml);
+            let targetElement = ExtendableObject.getTargetSelector();
+
+            if (!document.querySelector(targetElement)) { targetElement = 'body'; }
+
+            document.querySelector(targetElement).insertAdjacentHTML('beforeend', predictionsWrapperHtml);
             document.querySelector('body').classList.add('endereco-no-scroll');
 
             ExtendableObject.onAfterModalRendered.forEach(function (cb) {
