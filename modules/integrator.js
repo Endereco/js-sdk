@@ -463,7 +463,8 @@ const EnderecoIntegrator = {
             addressType: 'general_address',
             name: 'default',
             beforeActivation: undefined,
-            intent: 'edit'
+            intent: 'edit',
+            targetSelector: 'body'
         }
     ) => {
         if (!window.EnderecoIntegrator.activeServices.ams) {
@@ -490,6 +491,13 @@ const EnderecoIntegrator = {
         await addressObject.syncValues()
 
         addressObject.setIntent(options.intent);
+
+        addressObject.setTargetSelector(options.targetSelector);
+
+        // Preselect a value.
+        if (!addressObject.getCountryCode() && integrator.defaultCountrySelect) {
+            await addressObject.setCountryCode(integrator.defaultCountry);
+        }
 
         if (!!options.addressType) {
             await addressObject.setAddressType(options.addressType)
