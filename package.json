@@ -1,6 +1,6 @@
 {
   "name": "@endereco/js-sdk",
-  "version": "1.14.0",
+  "version": "1.14.1",
   "main": "index.js",
   "scripts": {
     "build": "npm run build-styles && cross-env NODE_ENV=production webpack --progress && npm run copy",
@@ -27,7 +27,7 @@
     "cross-env": "^7.0.2",
     "css-loader": "^7.1.2",
     "custom-event-polyfill": "^1.0.7",
-    "diff": "^7.0.0",
+    "diff": "^8.0.3",
     "eslint": "^8.57.1",
     "eslint-config-standard": "^17.1.0",
     "eslint-plugin-import": "^2.31.0",
