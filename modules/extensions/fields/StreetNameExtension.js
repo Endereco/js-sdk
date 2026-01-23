@@ -56,6 +56,9 @@ const StreetNameExtension = {
         ExtendableObject._streetNameAutocompleteTimeout = null;
         ExtendableObject._streetNameAutocompleteRequestIndex = 0;
         ExtendableObject._streetNamePredictionsIndex = PREDICTIONS_INDEX_DEFAULT;
+
+        ExtendableObject._directionUp = 'up';
+        ExtendableObject._directionDown = 'down';
     },
 
     /**
@@ -250,7 +253,8 @@ const StreetNameExtension = {
                     if (ExtendableObject._streetNamePredictionsIndex > PREDICTIONS_INDEX_DEFAULT) {
                         ExtendableObject._streetNamePredictionsIndex = ExtendableObject._streetNamePredictionsIndex - 1;
                         ExtendableObject.util.renderStreetNamePredictionsDropdown(
-                            ExtendableObject.streetNamePredictions
+                            ExtendableObject.streetNamePredictions,
+                            ExtendableObject._directionUp
                         );
                     }
                     // Arrow up at no selection does nothing (stays at -1)
@@ -263,7 +267,8 @@ const StreetNameExtension = {
                         ExtendableObject._streetNamePredictionsIndex = 0;
                     }
                     ExtendableObject.util.renderStreetNamePredictionsDropdown(
-                        ExtendableObject.streetNamePredictions
+                        ExtendableObject.streetNamePredictions,
+                        ExtendableObject._directionDown
                     );
                 } else if (e.key === 'Home') {
                     e.preventDefault();
@@ -280,9 +285,9 @@ const StreetNameExtension = {
                         ExtendableObject.streetNamePredictions
                     );
                 } else if (e.key === 'Escape') {
-                    if(ExtendableObject._streetNamePredictions.length) {
+                    if (ExtendableObject._streetNamePredictions.length) {
                         e.preventDefault();
-                        e.stopPropagation(); 
+                        e.stopPropagation();
                     }
                     ExtendableObject.resetStreetNamePredictions();
                     ExtendableObject.util.removeStreetNamePredictionsDropdown();
@@ -414,8 +419,27 @@ const StreetNameExtension = {
          * - Diff highlighting for suggestions
          * - Event listeners for selection
          */
-        ExtendableObject.util.renderStreetNamePredictionsDropdown = (predictions) => {
+        ExtendableObject.util.renderStreetNamePredictionsDropdown = (predictions, scrollDirection = null) => {
             predictions = JSON.parse(JSON.stringify(predictions)); // Create a copy
+
+            // Save predictions container scroll state
+            ExtendableObject.scrollState = {};
+            if (scrollDirection === ExtendableObject._directionUp || scrollDirection === ExtendableObject._directionDown) {
+                const currentActiveItem = document.querySelector('[endereco-street-name-predictions] .endereco-predictions__item.active');
+
+                if (currentActiveItem) {
+                    const container = currentActiveItem.closest('.endereco-predictions');
+                    const itemTopRelative = currentActiveItem.offsetTop - container.scrollTop;
+                    const itemHeight = currentActiveItem.offsetHeight;
+                    const scrollTop = container.scrollTop;
+
+                    ExtendableObject.scrollState = {
+                        itemTopRelative,
+                        itemHeight,
+                        scrollTop
+                    };
+                }
+            }
 
             // Render dropdown under the input element
             ExtendableObject._subscribers.streetName.forEach((subscriber) => {
@@ -488,7 +512,38 @@ const StreetNameExtension = {
                         const activeItem = document.querySelector('[endereco-street-name-predictions] .endereco-predictions__item.active');
 
                         if (activeItem) {
-                            activeItem.scrollIntoView({ block: 'nearest' });
+                            if (scrollDirection === ExtendableObject._directionUp || scrollDirection === ExtendableObject._directionDown) {
+                                const container = activeItem.closest('.endereco-predictions');
+                                const isFirst = activeItem === container.querySelector('.endereco-predictions__item:first-child');
+
+                                // If first element in list is active - we don't need scroll
+                                if (isFirst) { return; }
+
+                                // Restoring Old Scroll State
+                                if (ExtendableObject.scrollState) {
+                                    container.scrollTop = ExtendableObject.scrollState.scrollTop;
+                                }
+
+                                const itemTop = activeItem.offsetTop;
+                                const itemBottom = itemTop + activeItem.offsetHeight;
+
+                                const viewTop = container.scrollTop;
+                                const viewBottom = viewTop + container.clientHeight;
+
+                                // If active item is not visible -> scrolling
+                                if (scrollDirection === ExtendableObject._directionUp) {
+                                    if (itemTop < viewTop) {
+                                        container.scrollTop = itemTop;
+                                    }
+                                }
+                                if (scrollDirection === ExtendableObject._directionDown) {
+                                    if (itemBottom > viewBottom) {
+                                        container.scrollTop = itemBottom - container.clientHeight;
+                                    }
+                                }
+                            } else {
+                                activeItem.scrollIntoView({ block: 'nearest' });
+                            }
                         }
                     }, 0);
 

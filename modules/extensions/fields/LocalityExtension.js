@@ -47,6 +47,9 @@ const LocalityExtension = {
         ExtendableObject._localityAutocompleteTimeout = null;
 
         ExtendableObject._subscribers.localityChunk = [];
+
+        ExtendableObject._directionUp = 'up';
+        ExtendableObject._directionDown = 'down';
     },
 
     /**
@@ -254,7 +257,7 @@ const LocalityExtension = {
                     e.stopPropagation();
                     if (ExtendableObject._localityPredictionsIndex > PREDICTIONS_INDEX_DEFAULT) {
                         ExtendableObject._localityPredictionsIndex = ExtendableObject._localityPredictionsIndex - 1;
-                        ExtendableObject.util.renderLocalityPredictionsDropdown();
+                        ExtendableObject.util.renderLocalityPredictionsDropdown(ExtendableObject._directionUp);
                     }
                     // Arrow up at no selection does nothing (stays at -1)
                 } else if (e.key === 'ArrowDown' || e.key === 'Down') {
@@ -265,7 +268,7 @@ const LocalityExtension = {
                     } else {
                         ExtendableObject._localityPredictionsIndex = 0;
                     }
-                    ExtendableObject.util.renderLocalityPredictionsDropdown();
+                    ExtendableObject.util.renderLocalityPredictionsDropdown(ExtendableObject._directionDown);
                 } else if (e.key === 'Home') {
                     e.preventDefault();
                     e.stopPropagation();
@@ -277,9 +280,9 @@ const LocalityExtension = {
                     ExtendableObject._localityPredictionsIndex = ExtendableObject._localityPredictions.length - 1;
                     ExtendableObject.util.renderLocalityPredictionsDropdown();
                 } else if (e.key === 'Escape') {
-                    if(ExtendableObject._localityPredictions.length) {
+                    if (ExtendableObject._localityPredictions.length) {
                         e.preventDefault();
-                        e.stopPropagation(); 
+                        e.stopPropagation();
                     }
                     ExtendableObject.resetLocalityPredictions();
                     ExtendableObject.util.removeLocalityPredictionsDropdown();
@@ -442,10 +445,29 @@ const LocalityExtension = {
          * Renders the predictions dropdown with diff highlighting
          * Handles dropdown positioning, diff highlighting, and event listeners
          */
-        ExtendableObject.util.renderLocalityPredictionsDropdown = () => {
+        ExtendableObject.util.renderLocalityPredictionsDropdown = (scrollDirection = null) => {
             // TODO: this has to be moved to parameters, as well as keydown callbacks.
             const originalLocality = ExtendableObject.getLocality();
             const predictions = ExtendableObject.getLocalityPredictions();
+
+            // Save predictions container scroll state
+            ExtendableObject.scrollState = {};
+            if (scrollDirection === ExtendableObject._directionUp || scrollDirection === ExtendableObject._directionDown) {
+                const currentActiveItem = document.querySelector('[endereco-locality-predictions] .endereco-predictions__item.active');
+
+                if (currentActiveItem) {
+                    const container = currentActiveItem.closest('.endereco-predictions');
+                    const itemTopRelative = currentActiveItem.offsetTop - container.scrollTop;
+                    const itemHeight = currentActiveItem.offsetHeight;
+                    const scrollTop = container.scrollTop;
+
+                    ExtendableObject.scrollState = {
+                        itemTopRelative,
+                        itemHeight,
+                        scrollTop
+                    };
+                }
+            }
 
             // Is subdivision visible?
             let isSubdivisionVisible = false;
@@ -544,7 +566,38 @@ const LocalityExtension = {
                         const activeItem = document.querySelector('[endereco-locality-predictions] .endereco-predictions__item.active');
 
                         if (activeItem) {
-                            activeItem.scrollIntoView({ block: 'nearest' });
+                            if (scrollDirection === ExtendableObject._directionUp || scrollDirection === ExtendableObject._directionDown) {
+                                const container = activeItem.closest('.endereco-predictions');
+                                const isFirst = activeItem === container.querySelector('.endereco-predictions__item:first-child');
+
+                                // If first element in list is active - we don't need scroll
+                                if (isFirst) { return; }
+
+                                // Restoring Old Scroll State
+                                if (ExtendableObject.scrollState) {
+                                    container.scrollTop = ExtendableObject.scrollState.scrollTop;
+                                }
+
+                                const itemTop = activeItem.offsetTop;
+                                const itemBottom = itemTop + activeItem.offsetHeight;
+
+                                const viewTop = container.scrollTop;
+                                const viewBottom = viewTop + container.clientHeight;
+
+                                // If active item is not visible -> scrolling
+                                if (scrollDirection === ExtendableObject._directionUp) {
+                                    if (itemTop < viewTop) {
+                                        container.scrollTop = itemTop;
+                                    }
+                                }
+                                if (scrollDirection === ExtendableObject._directionDown) {
+                                    if (itemBottom > viewBottom) {
+                                        container.scrollTop = itemBottom - container.clientHeight;
+                                    }
+                                }
+                            } else {
+                                activeItem.scrollIntoView({ block: 'nearest' });
+                            }
                         }
                     }, 0);
 
