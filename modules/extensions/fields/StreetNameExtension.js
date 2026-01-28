@@ -423,21 +423,40 @@ const StreetNameExtension = {
             predictions = JSON.parse(JSON.stringify(predictions)); // Create a copy
 
             // Save predictions container scroll state
-            ExtendableObject.scrollState = {};
-            if (scrollDirection === ExtendableObject._directionUp || scrollDirection === ExtendableObject._directionDown) {
-                const currentActiveItem = document.querySelector('[endereco-street-name-predictions] .endereco-predictions__item.active');
+            ExtendableObject.scrollState = null;
+            if (
+                scrollDirection === ExtendableObject._directionUp ||
+                scrollDirection === ExtendableObject._directionDown
+            ) {
+                const currentActiveItem = document.querySelector(
+                    '[endereco-street-name-predictions] .endereco-predictions__item.active'
+                );
 
                 if (currentActiveItem) {
                     const container = currentActiveItem.closest('.endereco-predictions');
-                    const itemTopRelative = currentActiveItem.offsetTop - container.scrollTop;
-                    const itemHeight = currentActiveItem.offsetHeight;
-                    const scrollTop = container.scrollTop;
 
-                    ExtendableObject.scrollState = {
-                        itemTopRelative,
-                        itemHeight,
-                        scrollTop
-                    };
+                    const itemTop = currentActiveItem.offsetTop;
+                    const itemBottom = itemTop + currentActiveItem.offsetHeight;
+
+                    const viewTop = container.scrollTop;
+                    const viewBottom = viewTop + container.clientHeight;
+
+                    const isVisible = itemBottom > viewTop && itemTop < viewBottom;
+
+                    if (isVisible) {
+                        // keep relative position
+                        ExtendableObject.scrollState = {
+                            mode: 'keep',
+                            itemTopRelative: itemTop - container.scrollTop,
+                            scrollTop: container.scrollTop
+                        };
+                    } else {
+                        // Active item is outside viewport → force positioning
+                        ExtendableObject.scrollState = {
+                            mode: 'force',
+                            direction: scrollDirection
+                        };
+                    }
                 }
             }
 
@@ -511,18 +530,17 @@ const StreetNameExtension = {
                     setTimeout(() => {
                         const activeItem = document.querySelector('[endereco-street-name-predictions] .endereco-predictions__item.active');
 
-                        if (activeItem) {
-                            if (scrollDirection === ExtendableObject._directionUp || scrollDirection === ExtendableObject._directionDown) {
-                                const container = activeItem.closest('.endereco-predictions');
-                                const isFirst = activeItem === container.querySelector('.endereco-predictions__item:first-child');
+                        if (
+                            activeItem &&
+                            ExtendableObject.scrollState &&
+                            (scrollDirection === ExtendableObject._directionUp ||
+                             scrollDirection === ExtendableObject._directionDown)
+                        ) {
+                            const container = activeItem.closest('.endereco-predictions');
 
-                                // If first element in list is active - we don't need scroll
-                                if (isFirst) { return; }
-
-                                // Restoring Old Scroll State
-                                if (ExtendableObject.scrollState) {
-                                    container.scrollTop = ExtendableObject.scrollState.scrollTop;
-                                }
+                            if (ExtendableObject.scrollState.mode === 'keep') {
+                                // Restore previous scroll position
+                                container.scrollTop = ExtendableObject.scrollState.scrollTop;
 
                                 const itemTop = activeItem.offsetTop;
                                 const itemBottom = itemTop + activeItem.offsetHeight;
@@ -530,18 +548,30 @@ const StreetNameExtension = {
                                 const viewTop = container.scrollTop;
                                 const viewBottom = viewTop + container.clientHeight;
 
-                                // If active item is not visible -> scrolling
-                                if (scrollDirection === ExtendableObject._directionUp) {
-                                    if (itemTop < viewTop) {
-                                        container.scrollTop = itemTop;
-                                    }
+                                if (scrollDirection === ExtendableObject._directionUp && itemTop < viewTop) {
+                                    container.scrollTop = itemTop;
                                 }
-                                if (scrollDirection === ExtendableObject._directionDown) {
-                                    if (itemBottom > viewBottom) {
-                                        container.scrollTop = itemBottom - container.clientHeight;
-                                    }
+
+                                if (scrollDirection === ExtendableObject._directionDown && itemBottom > viewBottom) {
+                                    container.scrollTop = itemBottom - container.clientHeight;
                                 }
-                            } else {
+                            }
+
+                            if (ExtendableObject.scrollState.mode === 'force') {
+                                // Force active item into viewport
+                                if (ExtendableObject.scrollState.direction === ExtendableObject._directionDown) {
+                                    container.scrollTop = activeItem.offsetTop;
+                                }
+
+                                if (ExtendableObject.scrollState.direction === ExtendableObject._directionUp) {
+                                    container.scrollTop =
+                                        activeItem.offsetTop -
+                                        container.clientHeight +
+                                        activeItem.offsetHeight;
+                                }
+                            }
+                        } else {
+                            if (activeItem) {
                                 activeItem.scrollIntoView({ block: 'nearest' });
                             }
                         }
