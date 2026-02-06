@@ -382,7 +382,13 @@ const resumeFormSubmission = (originalEvent, form) => {
         targetElement = originalButton;
         newEvent = new MouseEvent('click', { bubbles: true, cancelable: true, view: window });
     } else if (originalEvent.type === 'keydown' && originalEvent.key === 'Enter') {
-        const originalElement = originalEvent.target;
+        // When resuming a click-triggered submit we must not rely on originalEvent.target
+        // being the submit button itself. Users can click on nested elements (e.g. <span>
+        // or <svg> inside the button), so originalEvent.target may be that inner element.
+        // Using closest('button, input[type="submit"]') ensures we always resolve to the
+        // actual submit control regardless of where inside the button the click occurred.
+        const originalButton = originalEvent.target.closest('button, input[type="submit"]');
+
 
         if (!originalElement) return;
         targetElement = originalElement;
