@@ -556,8 +556,22 @@ const setupFocusTrap = (ExtendableObject, modalElement) => {
         }
     };
 
+    const handleEnterKey = (e) => {
+        if (e.key !== 'Enter') return;
+
+        // Prevent Enter from escaping the modal to a wrapping form
+        e.stopPropagation();
+
+        // Prevent implicit form submission from input elements (radio, checkbox, etc.).
+        // Buttons, links and other elements keep their default Enter activation.
+        if (e.target.tagName === 'INPUT') {
+            e.preventDefault();
+        }
+    };
+
     modalElement.addEventListener('keydown', handleTabKey);
     modalElement.addEventListener('keydown', handleEscapeKey);
+    modalElement.addEventListener('keydown', handleEnterKey);
     modalElement.addEventListener('keydown', handleEditLinkActivation);
     modalElement.addEventListener('keydown', handleCloseButtonActivation);
 
@@ -574,6 +588,7 @@ const setupFocusTrap = (ExtendableObject, modalElement) => {
         if (modalElement && modalElement.removeEventListener) {
             modalElement.removeEventListener('keydown', handleTabKey);
             modalElement.removeEventListener('keydown', handleEscapeKey);
+            modalElement.removeEventListener('keydown', handleEnterKey);
             modalElement.removeEventListener('keydown', handleEditLinkActivation);
             modalElement.removeEventListener('keydown', handleCloseButtonActivation);
         }
@@ -2598,15 +2613,15 @@ const AddressExtension = {
         ExtendableObject.config.templates.addressNoPredictionWrapper = addressNoPredictionWrapper;
 
         if (!ExtendableObject.config.templates.button) {
-            ExtendableObject.config.templates.button = '<button class="{{{buttonClasses}}}" endereco-use-selection endereco-disabled-until-confirmed tabindex="3">{{{EnderecoAddressObject.config.texts.useSelected}}}</button>';
+            ExtendableObject.config.templates.button = '<button type="button" class="{{{buttonClasses}}}" endereco-use-selection endereco-disabled-until-confirmed tabindex="3">{{{EnderecoAddressObject.config.texts.useSelected}}}</button>';
         }
 
         if (!ExtendableObject.config.templates.buttonEditAddress) {
-            ExtendableObject.config.templates.buttonEditAddress = '<button class="{{{buttonClasses}}}" endereco-edit-address tabindex="2">{{{EnderecoAddressObject.config.texts.editAddress}}}</button>';
+            ExtendableObject.config.templates.buttonEditAddress = '<button type="button" class="{{{buttonClasses}}}" endereco-edit-address tabindex="2">{{{EnderecoAddressObject.config.texts.editAddress}}}</button>';
         }
 
         if (!ExtendableObject.config.templates.buttonConfirmAddress) {
-            ExtendableObject.config.templates.buttonConfirmAddress = '<button class="{{{buttonClasses}}}" endereco-confirm-address endereco-disabled-until-confirmed tabindex="4">{{{EnderecoAddressObject.config.texts.confirmAddress}}}</button>';
+            ExtendableObject.config.templates.buttonConfirmAddress = '<button type="button" class="{{{buttonClasses}}}" endereco-confirm-address endereco-disabled-until-confirmed tabindex="4">{{{EnderecoAddressObject.config.texts.confirmAddress}}}</button>';
         }
     },
     extend: async (ExtendableObject) => {
