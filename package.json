@@ -1,6 +1,6 @@
 {
   "name": "@endereco/js-sdk",
-  "version": "1.14.1",
+  "version": "1.14.2",
   "main": "index.js",
   "scripts": {
     "build": "npm run build-styles && cross-env NODE_ENV=production webpack --progress && npm run copy",
