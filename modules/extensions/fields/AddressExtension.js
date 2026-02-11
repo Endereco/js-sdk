@@ -152,6 +152,31 @@ const generateAddressCacheKey = (address) => {
 };
 
 /**
+ * Observes a modal element for external removal from the DOM (e.g. a parent modal closing).
+ * @param {HTMLElement} modalElement - The modal element to observe.
+ * @param {Function} onRemoved - Callback invoked when the modal is no longer in the document.
+ * @returns {MutationObserver} The observer instance (call .disconnect() to stop observing).
+ */
+const observeModalRemoval = (modalElement, onRemoved) => {
+    if (!document.contains(modalElement)) {
+        onRemoved();
+
+        return { disconnect () {} };
+    }
+
+    const observer = new MutationObserver(() => {
+        if (!document.contains(modalElement)) {
+            observer.disconnect();
+            onRemoved();
+        }
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    return observer;
+};
+
+/**
  * Attaches event handlers for closing the modal.
  * @param {Object} ExtendableObject - The address object instance.
  * @param {HTMLElement} modalElement - The modal element.
@@ -1570,8 +1595,26 @@ const AddressExtension = {
                 const modalElement = document.querySelector('[endereco-popup]');
 
                 return new Promise((resolve) => {
+                    const removalObserver = observeModalRemoval(modalElement, () => {
+                        document.querySelector('body').classList.remove('endereco-no-scroll');
+                        ExtendableObject.addressPredictionsIndex = 0;
+                        window.EnderecoIntegrator.popupQueue--;
+                        window.EnderecoIntegrator.enderecoPopupQueue--;
+
+                        if (ExtendableObject.modalClosed) {
+                            ExtendableObject.modalClosed();
+                        }
+
+                        resolve({
+                            userHasEditingIntent: true,
+                            userConfirmedSelection: false,
+                            selectedAddress: originalAddress
+                        });
+                    });
+
                     setupFocusTrap(ExtendableObject, modalElement);
                     attachModalCloseHandlers(ExtendableObject, modalElement, () => {
+                        removalObserver.disconnect();
                         resolve({
                             userHasEditingIntent: true,
                             userConfirmedSelection: false,
@@ -1579,6 +1622,7 @@ const AddressExtension = {
                         });
                     });
                     attachEditAddressHandlers(ExtendableObject, modalElement, () => {
+                        removalObserver.disconnect();
                         resolve({
                             userHasEditingIntent: true,
                             userConfirmedSelection: false,
@@ -1587,6 +1631,7 @@ const AddressExtension = {
                     });
                     attachConfirmationCheckboxHandlers(ExtendableObject, modalElement);
                     attachConfirmAddressHandlers(ExtendableObject, modalElement, () => {
+                        removalObserver.disconnect();
                         resolve({
                             userHasEditingIntent: false,
                             userConfirmedSelection: true,
@@ -1731,8 +1776,26 @@ const AddressExtension = {
             const modalElement = document.querySelector('[endereco-popup]');
 
             return new Promise((resolve) => {
+                const removalObserver = observeModalRemoval(modalElement, () => {
+                    document.querySelector('body').classList.remove('endereco-no-scroll');
+                    ExtendableObject.addressPredictionsIndex = 0;
+                    window.EnderecoIntegrator.popupQueue--;
+                    window.EnderecoIntegrator.enderecoPopupQueue--;
+
+                    if (ExtendableObject.modalClosed) {
+                        ExtendableObject.modalClosed();
+                    }
+
+                    resolve({
+                        userHasEditingIntent: true,
+                        userConfirmedSelection: false,
+                        selectedAddress: originalAddress
+                    });
+                });
+
                 setupFocusTrap(ExtendableObject, modalElement);
                 attachModalCloseHandlers(ExtendableObject, modalElement, () => {
+                    removalObserver.disconnect();
                     resolve({
                         userHasEditingIntent: true,
                         userConfirmedSelection: false,
@@ -1741,6 +1804,7 @@ const AddressExtension = {
                 });
 
                 attachEditAddressHandlers(ExtendableObject, modalElement, () => {
+                    removalObserver.disconnect();
                     resolve({
                         userHasEditingIntent: true,
                         userConfirmedSelection: false,
@@ -1749,6 +1813,7 @@ const AddressExtension = {
                 });
 
                 attachSelectionHandlers(ExtendableObject, modalElement, (selectedIndex) => {
+                    removalObserver.disconnect();
                     resolve({
                         userHasEditingIntent: false,
                         userConfirmedSelection: true,
