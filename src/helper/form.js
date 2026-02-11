@@ -235,7 +235,7 @@ const getFormSubmitListeners = (form) => {
  */
 const blockSubmit = (e) => {
     e.preventDefault();
-    e.stopPropagation();
+    e.stopImmediatePropagation();
 };
 
 /**
