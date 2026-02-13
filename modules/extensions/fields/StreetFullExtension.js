@@ -468,7 +468,6 @@ const StreetFullExtension = {
                         // keep relative position
                         ExtendableObject.scrollState = {
                             mode: 'keep',
-                            itemTopRelative: itemTop - container.scrollTop,
                             scrollTop: container.scrollTop
                         };
                     } else {
@@ -550,6 +549,12 @@ const StreetFullExtension = {
                     // Scroll active item into view
                     setTimeout(() => {
                         const activeItem = document.querySelector('[endereco-street-full-predictions] .endereco-predictions__item.active');
+
+                        if (ExtendableObject._streetFullPredictionsIndex === 0) {
+                            activeItem.scrollIntoView({ block: 'nearest' });
+
+                            return;
+                        }
 
                         if (
                             activeItem &&
