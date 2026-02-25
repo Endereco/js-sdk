@@ -46,6 +46,10 @@ var TitleExtension = {
                             ExtendableObject._title = newValue;
                             ExtendableObject._changed = true;
 
+                            if ('' === newValue.trim()) {
+                                ExtendableObject.titleStatus = [];  
+                            }
+
                             // Inform all subscribers about the change.
                             ExtendableObject._subscribers.title.forEach(function (subscriber) {
                                 subscriber.value = value;

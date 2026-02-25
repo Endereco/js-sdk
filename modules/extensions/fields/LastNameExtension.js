@@ -47,6 +47,10 @@ var LastNameExtension = {
                             ExtendableObject._lastName = newValue;
                             ExtendableObject._changed = true;
 
+                            if ('' === newValue.trim()) {
+                                ExtendableObject.lastNameStatus = [];  
+                            }
+
                             // Inform all subscribers about the change.
                             ExtendableObject._subscribers.lastName.forEach(function (subscriber) {
                                 subscriber.value = value;

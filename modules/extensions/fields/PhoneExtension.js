@@ -117,6 +117,10 @@ var PhoneExtension = {
                                 ExtendableObject._phone = newValue;
                                 ExtendableObject._changed = true;
 
+                                if ('' === newValue.trim()) {
+                                    ExtendableObject.phoneStatus = [];  
+                                }
+
                                 // Inform all subscribers about the change.
                                 ExtendableObject._subscribers.phone.forEach(function (subscriber) {
                                     subscriber.value = newValue;

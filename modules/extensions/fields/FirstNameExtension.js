@@ -46,6 +46,10 @@ var FirstNameExtension = {
                             ExtendableObject._firstName = newValue;
                             ExtendableObject._changed = true;
 
+                            if ('' === newValue.trim()) {
+                                ExtendableObject.firstNameStatus = [];  
+                            }
+                            
                             // Inform all subscribers about the change.
                             ExtendableObject._subscribers.firstName.forEach(function (subscriber) {
                                 subscriber.value = value;
