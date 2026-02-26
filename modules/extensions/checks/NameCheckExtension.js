@@ -17,6 +17,7 @@ var NameCheckExtension = {
                 ExtendableObject._subscribers.titleStatus = [];
                 ExtendableObject._subscribers.nameScore = [];
                 ExtendableObject._nameCheckRequestIndex = 1;
+                ExtendableObject._nameCorrected = false;
 
                 // Add change event hadler.
                 ExtendableObject.cb.salutationStatusChange = function(subscriber) {
@@ -316,54 +317,43 @@ var NameCheckExtension = {
                                         ExtendableObject.firstNameStatus = [];
                                         ExtendableObject.lastNameStatus = [];
 
-                                        if (!['m', 'f', 'd'].includes(ExtendableObject.salutation) && !!responsePredictions[0].salutation) {
-                                            ExtendableObject.salutation = responsePredictions[0].salutation;
-                                            salutationCopied = true;
-                                        }
+                                        // Execute auto-correct on name fields and set salutation and title exactly once
+                                        // across all requests, regardless of the current request index.
+                                        if (!ExtendableObject._nameCorrected) {
+                                            if (!['m', 'f', 'd'].includes(ExtendableObject.salutation) && !!responsePredictions[0].salutation) {
+                                                ExtendableObject.salutation = responsePredictions[0].salutation;
+                                                salutationCopied = true;
+                                            }
 
-                                        if (1 === ExtendableObject._nameCheckRequestIndex) {
-                                            if (!responseStatus.includes('name_transpositioned')) {
+                                            if (ExtendableObject.isTitleRelevant()) {
+                                                ExtendableObject.title = responsePredictions[0].title;
+
+                                                if (responsePredictions[0].title !== '') {
+                                                    ExtendableObject.titleStatus = ['title_correct'];
+                                                }
+                                            }
+
+                                            if (responseStatus.includes('name_transpositioned')) {
+                                                if (ExtendableObject.config.ux.correctTranspositionedNames) {
+                                                    ExtendableObject.firstName = responsePredictions[0].firstName;
+                                                    ExtendableObject.lastName = responsePredictions[0].lastName;
+                                                } else {
+                                                    ExtendableObject.firstName = responsePredictions[0].lastName;
+                                                    ExtendableObject.lastName = responsePredictions[0].firstName;
+                                                }
+                                            } else {
                                                 ExtendableObject.firstName = responsePredictions[0].firstName;
                                                 ExtendableObject.lastName = responsePredictions[0].lastName;
-
-
-                                                ExtendableObject.firstNameStatus = ['first_name_correct'];
-                                                ExtendableObject.lastNameStatus = ['last_name_correct'];
-
-                                                if (ExtendableObject.isTitleRelevant()) {
-                                                    ExtendableObject.title = responsePredictions[0].title;
-
-                                                    if (responsePredictions[0].title !== '') {
-                                                        ExtendableObject.titleStatus = ['title_correct'];
-                                                    }
-                                                }
-
-
-                                            } else if (responseStatus.includes('name_transpositioned')) {
-                                                if (ExtendableObject.config.ux.correctTranspositionedNames) {
-                                                    ExtendableObject.lastName = responsePredictions[0].lastName;
-                                                    ExtendableObject.firstName = responsePredictions[0].firstName;
-                                                } else {
-                                                    ExtendableObject.lastName = responsePredictions[0].firstName;
-                                                    ExtendableObject.firstName = responsePredictions[0].lastName;
-                                                }
-
-                                                if (ExtendableObject.isTitleRelevant()) {
-                                                    ExtendableObject.title = responsePredictions[0].title;
-
-                                                    if (responsePredictions[0].title !== '') {
-                                                        ExtendableObject.titleStatus = ['title_correct'];
-                                                    }
-                                                }
-
-                                                ExtendableObject.firstNameStatus = ['first_name_correct'];
-                                                ExtendableObject.lastNameStatus = ['last_name_correct'];
                                             }
+                                            ExtendableObject.firstNameStatus = ['first_name_correct'];
+                                            ExtendableObject.lastNameStatus = ['last_name_correct'];
+                                            ExtendableObject._nameCorrected = true;
                                         }
 
                                         if (responseStatus.includes('name_correct')) {
-                                            ExtendableObject.firstNameStatus = ['first_name_correct'];
-                                            ExtendableObject.lastNameStatus = ['last_name_correct'];
+                                            ExtendableObject.firstNameStatus = ExtendableObject.firstName.trim()? ['first_name_correct'] : [];
+                                            ExtendableObject.lastNameStatus = ExtendableObject.lastName.trim()? ['last_name_correct'] : [];
+
                                             if (ExtendableObject.isTitleRelevant() && ExtendableObject.title !== '') {
                                                 ExtendableObject.titleStatus = ['title_correct'];
                                             }
@@ -373,13 +363,17 @@ var NameCheckExtension = {
 
                                         // Set statuscodes.
                                         if (salutationCopied) {
-                                            ExtendableObject.salutationStatus = ['salutation_correct'];
+                                            if (responsePredictions[0].salutation === 'x') {
+                                                ExtendableObject.salutationStatus = [];
+                                            } else {
+                                                ExtendableObject.salutationStatus = ['salutation_correct'];
+                                            }
                                         } else {
-                                            if (!responsePredictions[0].salutation) {
+                                            if (!responsePredictions[0].salutation || responsePredictions[0].salutation === 'x') {
                                                 ExtendableObject.salutationStatus = [];
                                             } else {
                                                 ExtendableObject.salutationStatus =
-                                                  (responseStatus.includes('salutation_needs_correction'))?['salutation_needs_correction']:['salutation_correct'];
+                                                    (responseStatus.includes('salutation_needs_correction')) ? ['salutation_needs_correction'] : ['salutation_correct'];
                                             }
                                         }
 
