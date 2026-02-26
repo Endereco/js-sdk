@@ -151,6 +151,7 @@
 			window.EnderecoIntegrator.config.ux.showPhoneFlag = true;
             window.EnderecoIntegrator.countryMappingUrl = '';
 			window.EnderecoIntegrator.config.useAutocomplete = true;
+			window.EnderecoIntegrator.config.ux.correctTranspositionedNames = true;
             window.EnderecoIntegrator.config.templates.primaryButtonClasses = 'btn btn-primary btn-lg';
             window.EnderecoIntegrator.config.templates.secondaryButtonClasses = 'btn btn-secondary btn-lg';
             window.EnderecoIntegrator.config.texts = {
@@ -478,6 +479,7 @@
 				<label class="label">
 					Anrede
 					<select name="salutation1">
+						<option value="x">Bitte auswählen</option>
 						<option value="m">Herr</option>
 						<option value="f">Frau</option>
 					</select>
@@ -522,6 +524,7 @@
 				<label class="label">
 					Anrede
 					<select name="salutation2">
+						<option value="x">Bitte auswählen</option>
 						<option value="m">Herr</option>
 						<option value="f">Frau</option>
 					</select>
