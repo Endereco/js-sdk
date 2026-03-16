@@ -292,18 +292,25 @@ const StreetNameExtension = {
                     ExtendableObject.resetStreetNamePredictions();
                     ExtendableObject.util.removeStreetNamePredictionsDropdown();
                 } else if (e.key === 'Tab') {
-                    if (ExtendableObject._streetNamePredictions.length > 0 && ExtendableObject._streetNamePredictionsIndex >= 0) {
+                    if (ExtendableObject._streetNamePredictions.length > 0) {
                         e.preventDefault();
 
                         (async () => {
-                            await ExtendableObject.cb.applyStreetNamePredictionSelection(
-                                ExtendableObject._streetNamePredictionsIndex,
-                                ExtendableObject._streetNamePredictions
-                            );
+                            const anythingSelected = ExtendableObject._streetNamePredictionsIndex >= 0;
+
+                            // Apply selection, if a suggestion was selected
+                            if (anythingSelected) {
+                                await ExtendableObject.cb.applyStreetNamePredictionSelection(
+                                    ExtendableObject._streetNamePredictionsIndex,
+                                    ExtendableObject._streetNamePredictions
+                                );
+                            }
+
+                            // Always reset and close on "Tab"
                             ExtendableObject.resetStreetNamePredictions();
                             ExtendableObject.util.removeStreetNamePredictionsDropdown();
 
-                            // Find next focusable element
+                            // Always find next focusable element on "Tab"
                             const focusableElements = Array.from(document.querySelectorAll(
                                 'input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])'
                             ));
