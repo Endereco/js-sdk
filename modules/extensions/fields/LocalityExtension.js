@@ -287,18 +287,25 @@ const LocalityExtension = {
                     ExtendableObject.resetLocalityPredictions();
                     ExtendableObject.util.removeLocalityPredictionsDropdown();
                 } else if (e.key === 'Tab') {
-                    if (ExtendableObject._localityPredictions.length > 0 && ExtendableObject._localityPredictionsIndex >= 0) {
+                    if (ExtendableObject._localityPredictions.length > 0) {
                         e.preventDefault();
 
                         (async () => {
-                            await ExtendableObject.cb.applyLocalityPredictionSelection(
-                                ExtendableObject._localityPredictionsIndex,
-                                ExtendableObject._localityPredictions
-                            );
+                            const anythingSelected = ExtendableObject._localityPredictionsIndex >= 0;
+
+                            // Apply selection, if a suggestion was selected
+                            if (anythingSelected) {
+                                await ExtendableObject.cb.applyLocalityPredictionSelection(
+                                    ExtendableObject._localityPredictionsIndex,
+                                    ExtendableObject._localityPredictions
+                                );
+                            }
+
+                            // Always reset and close on "Tab"
                             ExtendableObject.resetLocalityPredictions();
                             ExtendableObject.util.removeLocalityPredictionsDropdown();
 
-                            // Find next focusable element
+                            // Always find next focusable element on "Tab"
                             const focusableElements = Array.from(document.querySelectorAll(
                                 'input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])'
                             ));
