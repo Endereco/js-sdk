@@ -17,6 +17,7 @@ var NameCheckExtension = {
                 ExtendableObject._subscribers.titleStatus = [];
                 ExtendableObject._subscribers.nameScore = [];
                 ExtendableObject._nameCheckRequestIndex = 1;
+                ExtendableObject._nameCorrected = false;
 
                 // Add change event hadler.
                 ExtendableObject.cb.salutationStatusChange = function(subscriber) {
@@ -321,7 +322,7 @@ var NameCheckExtension = {
                                             salutationCopied = true;
                                         }
 
-                                        if (1 === ExtendableObject._nameCheckRequestIndex) {
+                                        if (!ExtendableObject._nameCorrected) {
                                             if (!responseStatus.includes('name_transpositioned')) {
                                                 ExtendableObject.firstName = responsePredictions[0].firstName;
                                                 ExtendableObject.lastName = responsePredictions[0].lastName;
@@ -359,6 +360,7 @@ var NameCheckExtension = {
                                                 ExtendableObject.firstNameStatus = ['first_name_correct'];
                                                 ExtendableObject.lastNameStatus = ['last_name_correct'];
                                             }
+                                            ExtendableObject._nameCorrected = true;
                                         }
 
                                         if (responseStatus.includes('name_correct')) {
