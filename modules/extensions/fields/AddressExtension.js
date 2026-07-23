@@ -145,7 +145,7 @@ const generateAddressCacheKey = (address) => {
     ];
 
     const values = fields.map(field =>
-        Object.prototype.hasOwnProperty.call(address, field) ? String(address[field]).trim() : '-'
+        Object.prototype.hasOwnProperty.call(address, field) ? String(address[field]) : '-'
     );
 
     return values.join('|');
