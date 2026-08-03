@@ -16,6 +16,9 @@ const DIFF_ADD = 2;
 const DIFF_REMOVE = 4;
 const DIFF_ALL = DIFF_NEUTRAL | DIFF_ADD | DIFF_REMOVE;
 
+const SELECTION_STATUS_CODES = ['address_selected_automatically', 'address_selected_by_customer'];
+const stripSelectionTags = (statuses) => statuses.filter((s) => !SELECTION_STATUS_CODES.includes(s));
+
 /**
  * Pauses execution for a specified number of milliseconds.
  * @param {number} ms - The number of milliseconds to sleep.
@@ -1437,9 +1440,7 @@ const AddressExtension = {
          * @returns {boolean} - True if the address check is finished, false otherwise.
          */
         ExtendableObject.util.isAddressCheckFinished = () => {
-            const validStatuses = ['address_selected_by_customer', 'address_selected_automatically'];
-
-            return validStatuses.some(status => ExtendableObject._addressStatus.includes(status));
+            return SELECTION_STATUS_CODES.some(status => ExtendableObject._addressStatus.includes(status));
         };
 
         /**
@@ -2062,7 +2063,7 @@ const AddressExtension = {
             ExtendableObject.addressCheckCache.cachedResults[cacheKey] = {
                 originalAddress: { ...ExtendableObject.address },
                 predictions: normalizedPredictions,
-                statuses: [...ExtendableObject.addressStatus],
+                statuses: stripSelectionTags(ExtendableObject.addressStatus),
                 requestStatus: 'success'
             };
         };
