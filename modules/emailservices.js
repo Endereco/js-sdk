@@ -8,7 +8,7 @@ import SessionExtension from './extensions/session/SessionExtension';
 
 function EnderecoEmail (customConfig = {}) {
     // Get base object, that will be extended.
-    var base = new EnderecoBase();
+    const base = new EnderecoBase();
 
     base.type = 'email';
     base.name = 'emailservices';

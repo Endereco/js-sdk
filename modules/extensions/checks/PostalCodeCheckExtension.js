@@ -1,7 +1,7 @@
-var PostalCodeCheckExtension = {
+const PostalCodeCheckExtension = {
     name: 'PostalCodeCheckExtension',
     extend: function (ExtendableObject) {
-        var $self = this;
+        const $self = this;
 
         return new ExtendableObject.util.Promise(function (resolve, reject) {
             ExtendableObject.waitForExtension('PostalCodeExtension').then(function () {
@@ -22,11 +22,11 @@ var PostalCodeCheckExtension = {
                         return this._postalCodeStatus;
                     },
                     set: function (value) {
-                        var oldValue = ExtendableObject._postalCodeStatus;
+                        const oldValue = ExtendableObject._postalCodeStatus;
 
                         ExtendableObject._awaits++;
                         ExtendableObject.util.Promise.resolve(value).then(function (value) {
-                            var newValue = value;
+                            const newValue = value;
 
                             if (oldValue !== newValue) {
                                 ExtendableObject._postalCodeStatus = newValue;

@@ -1,7 +1,7 @@
-var EmailExtension = {
+const EmailExtension = {
     name: 'EmailExtension',
     extend: function (ExtendableObject) {
-        var $self = this;
+        const $self = this;
 
         return new ExtendableObject.util.Promise(function (resolve, reject) {
             // Add email field.
@@ -21,11 +21,11 @@ var EmailExtension = {
                     return this._email;
                 },
                 set: function (value) {
-                    var oldValue = ExtendableObject._email;
+                    const oldValue = ExtendableObject._email;
 
                     ExtendableObject._awaits++;
                     ExtendableObject.util.Promise.resolve(value).then(function (value) {
-                        var newValue = value;
+                        const newValue = value;
 
                         if (oldValue !== newValue) {
                             ExtendableObject._email = newValue;
@@ -58,7 +58,7 @@ var EmailExtension = {
                                     ExtendableObject.emailStatus = [];
                                 } else {
                                     ExtendableObject.util.checkEmail().then(function (data) {
-                                        var statusCollector = {};
+                                        const statusCollector = {};
 
                                         if (data.status.includes('A1000')) {
                                             statusCollector.email_correct = true;

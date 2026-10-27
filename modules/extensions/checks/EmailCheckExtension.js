@@ -1,9 +1,9 @@
 import statusWrapper from '../../../templates/email_check_status_wrapper.html';
 
-var EmailCheckExtension = {
+const EmailCheckExtension = {
     name: 'EmailCheckExtension',
     extend: function (ExtendableObject) {
-        var $self = this;
+        const $self = this;
 
         return new ExtendableObject.util.Promise(function (resolve, reject) {
             ExtendableObject.waitForExtension('EmailExtension').then(function () {
@@ -33,7 +33,7 @@ var EmailCheckExtension = {
                         return this._emailStatus;
                     },
                     set: function (value) {
-                        var oldValue = ExtendableObject._emailStatus;
+                        const oldValue = ExtendableObject._emailStatus;
 
                         ExtendableObject._awaits++;
                         ExtendableObject.util.Promise.resolve(value).then(function (value) {
@@ -44,7 +44,7 @@ var EmailCheckExtension = {
                                     value = [value];
                                 }
                             }
-                            var newValue = value;
+                            const newValue = value;
 
                             if (oldValue !== newValue) {
                                 ExtendableObject._emailStatus = newValue;
@@ -80,7 +80,7 @@ var EmailCheckExtension = {
                 });
 
                 ExtendableObject.util.renderStatusMessages = function () {
-                    var statuses = [];
+                    const statuses = [];
 
                     ExtendableObject.emailStatus.forEach(function (emailStatus) {
                         if (ExtendableObject.config.texts.statuses[emailStatus]) {
@@ -98,15 +98,15 @@ var EmailCheckExtension = {
                     }
 
                     if (statuses.length > 0) {
-                        var wrapperHtml = ExtendableObject.util.Mustache.render(
+                        const wrapperHtml = ExtendableObject.util.Mustache.render(
                             ExtendableObject.config.templates.statusWrapper,
                             {
                                 ExtendableObject,
                                 statuses
                             }
                         );
-                        var messageContainer = document.querySelector(ExtendableObject.config.ux.errorContainer);
-                        var insertMode = ['beforebegin', 'afterbegin', 'beforeend', 'afterend'].includes(
+                        const messageContainer = document.querySelector(ExtendableObject.config.ux.errorContainer);
+                        const insertMode = ['beforebegin', 'afterbegin', 'beforeend', 'afterend'].includes(
                             ExtendableObject.config.ux.errorInsertMode
                         )
                             ? ExtendableObject.config.ux.errorInsertMode
@@ -123,14 +123,14 @@ var EmailCheckExtension = {
                 };
 
                 ExtendableObject.util.checkEmail = function (email = null) {
-                    var $self = this;
+                    const $self = this;
 
                     if (!email) {
                         email = ExtendableObject.email;
                     }
 
                     return new ExtendableObject.util.Promise(function (resolve, reject) {
-                        var message = {
+                        const message = {
                             jsonrpc: '2.0',
                             id: 1,
                             method: 'emailCheck',

@@ -1,7 +1,7 @@
-var SalutationExtension = {
+const SalutationExtension = {
     name: 'SalutationExtension',
     extend: function (ExtendableObject) {
-        var $self = this;
+        const $self = this;
 
         return new ExtendableObject.util.Promise(function (resolve, reject) {
             // Add email field.
@@ -38,11 +38,11 @@ var SalutationExtension = {
                     return this._salutation;
                 },
                 set: function (value) {
-                    var oldValue = ExtendableObject._salutation;
+                    const oldValue = ExtendableObject._salutation;
 
                     ExtendableObject._awaits++;
                     ExtendableObject.util.Promise.resolve(value).then(function (value) {
-                        var newValue = value;
+                        const newValue = value;
 
                         if (oldValue !== newValue) {
                             ExtendableObject._salutation = newValue;

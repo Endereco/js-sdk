@@ -1,7 +1,7 @@
-var SalutationCheckExtension = {
+const SalutationCheckExtension = {
     name: 'SalutationCheckExtension',
     extend: function (ExtendableObject) {
-        var $self = this;
+        const $self = this;
 
         return new ExtendableObject.util.Promise(function (resolve, reject) {
             ExtendableObject.waitForExtension(['SalutationExtension', 'FirstNameExtension']).then(function () {
@@ -22,11 +22,11 @@ var SalutationCheckExtension = {
                         return this._salutationStatus;
                     },
                     set: function (value) {
-                        var oldValue = ExtendableObject._salutationStatus;
+                        const oldValue = ExtendableObject._salutationStatus;
 
                         ExtendableObject._awaits++;
                         ExtendableObject.util.Promise.resolve(value).then(function (value) {
-                            var newValue = value;
+                            const newValue = value;
 
                             if (oldValue !== newValue) {
                                 ExtendableObject._salutationStatus = newValue;
@@ -58,14 +58,14 @@ var SalutationCheckExtension = {
                 });
 
                 ExtendableObject.util.checkSalutation = function (name = null) {
-                    var $self = this;
+                    const $self = this;
 
                     if (!name) {
                         name = ExtendableObject.firstName;
                     }
 
                     return new ExtendableObject.util.Promise(function (resolve, reject) {
-                        var message = {
+                        const message = {
                             jsonrpc: '2.0',
                             id: 1,
                             method: 'nameCheck',

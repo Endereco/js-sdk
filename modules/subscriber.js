@@ -3,7 +3,7 @@ import Promise from 'promise-polyfill';
 import 'custom-event-polyfill';
 
 function EnderecoSubscriber (propertyName, observableObject, options = {}) {
-    var defaultOptions = {
+    const defaultOptions = {
         valueContainer: 'value', // value, classList, innerHTML
         displayAutocompleteDropdown: false,
         showDebugInfo: false,
@@ -31,7 +31,7 @@ function EnderecoSubscriber (propertyName, observableObject, options = {}) {
     options = merge(defaultOptions, options);
 
     function setupValueChangeDetection (subscriber, callback, interval = 300) {
-        let element = subscriber.object;
+        const element = subscriber.object;
 
         subscriber.lastValue = subscriber.getDOMValue();
 
@@ -70,7 +70,7 @@ function EnderecoSubscriber (propertyName, observableObject, options = {}) {
     }
 
     function setupValueInputDetection (subscriber, callback, interval = 10) {
-        let element = subscriber.object;
+        const element = subscriber.object;
 
         subscriber.lastValue = subscriber.getDOMValue();
 
@@ -96,7 +96,7 @@ function EnderecoSubscriber (propertyName, observableObject, options = {}) {
     }
 
     function setupBlurDetection (subscriber, callback, interval = 10) {
-        let element = subscriber.object;
+        const element = subscriber.object;
         let isFocused = (document.activeElement === element);
         const checkForBlur = () => {
             const currentlyFocused = (document.activeElement === element);
@@ -184,7 +184,7 @@ function EnderecoSubscriber (propertyName, observableObject, options = {}) {
             this.cleanupFunctions = []; // Clear the array after cleanup
         },
         set subject (subject) {
-            let $self = this;
+            const $self = this;
 
             if (!subject) {
                 return;
@@ -266,18 +266,18 @@ function EnderecoSubscriber (propertyName, observableObject, options = {}) {
             }
 
             if (this.options.syncValue) {
-                var $this = this;
-                var $key = this.propertyName;
+                const $this = this;
+                const $key = this.propertyName;
 
                 Promise.resolve($this.value).then(function (subscriberValue) {
-                    var innerValue = subject[$key];
+                    let innerValue = subject[$key];
 
                     if (Array.isArray(innerValue)) {
                         innerValue = innerValue.join();
                     }
 
-                    var innerValueEmpty = !innerValue && innerValue !== 0;
-                    var subscriberValueEmpty = !subscriberValue && subscriberValue !== 0;
+                    const innerValueEmpty = !innerValue && innerValue !== 0;
+                    const subscriberValueEmpty = !subscriberValue && subscriberValue !== 0;
 
                     if (!subscriberValueEmpty && innerValueEmpty) {
                         subject[$key] = subscriberValue;
@@ -296,8 +296,8 @@ function EnderecoSubscriber (propertyName, observableObject, options = {}) {
             return this._subject;
         },
         get value () {
-            var $self = this;
-            var value = '';
+            const $self = this;
+            let value = '';
 
             if (this.options.valueContainer === 'classList') {
                 value = this.getClassList();
@@ -320,7 +320,7 @@ function EnderecoSubscriber (propertyName, observableObject, options = {}) {
             return this.options.readFilterCb(value, $self);
         },
         set value (value) {
-            var $self = this;
+            const $self = this;
 
             if ($self.object.disabled && value !== '') {
                 return;
@@ -428,15 +428,15 @@ function EnderecoSubscriber (propertyName, observableObject, options = {}) {
         },
         setClassList: function (value) {
             // Remove classes from element.
-            var $DOMElement = this.object;
-            var originalClasses = [];
-            var temp = $DOMElement.classList;
-            var i;
+            const $DOMElement = this.object;
+            const originalClasses = [];
+            const temp = $DOMElement.classList;
+            let i;
 
             for (i = 0; i < temp.length; i++) {
                 originalClasses.push(temp[i]);
             }
-            var toRemove = [];
+            const toRemove = [];
 
             originalClasses.forEach(function (className) {
                 if (className.indexOf('endereco-s--') !== -1) {
@@ -489,10 +489,10 @@ function EnderecoSubscriber (propertyName, observableObject, options = {}) {
             }
         },
         getClassList: function () {
-            var toReturn = [];
-            var originalClasses = [];
-            var temp = this.object.classList;
-            var i;
+            const toReturn = [];
+            const originalClasses = [];
+            const temp = this.object.classList;
+            let i;
 
             for (i = 0; i < temp.length; i++) {
                 originalClasses.push(temp[i]);

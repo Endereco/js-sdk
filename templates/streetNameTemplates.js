@@ -1,7 +1,7 @@
 import defaultTpl from './fullstreet/default.html';
 import frTpl from './fullstreet/fr.html';
 
-var templates = {
+const templates = {
     default: defaultTpl,
     de: defaultTpl,
     at: defaultTpl,

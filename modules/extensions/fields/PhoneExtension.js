@@ -1,7 +1,7 @@
-var PhoneExtension = {
+const PhoneExtension = {
     name: 'PhoneExtension',
     extend: function (ExtendableObject) {
-        var $self = this;
+        const $self = this;
 
         return new ExtendableObject.util.Promise(function (resolve, reject) {
             ExtendableObject._phone = '';
@@ -35,8 +35,8 @@ var PhoneExtension = {
                             ExtendableObject.onBlurTimeout = null;
                         }
                         ExtendableObject.onBlurTimeout = setTimeout(function () {
-                            var newStatus;
-                            var flagActive = ExtendableObject.isFlagActive && ExtendableObject.isFlagActive();
+                            let newStatus;
+                            const flagActive = ExtendableObject.isFlagActive && ExtendableObject.isFlagActive();
 
                             if (!ExtendableObject.anyActive() && !flagActive && ExtendableObject.util.shouldBeChecked() && !window.EnderecoIntegrator.hasSubmit) {
                                 // Second. Check Address.
@@ -108,10 +108,10 @@ var PhoneExtension = {
                     ExtendableObject.util.Promise.resolve(value).then(function (value) {
                         ExtendableObject._awaits++;
                         ExtendableObject.cb.setPhone(value).then(function (value) {
-                            var oldValue = ExtendableObject._phone;
-                            var newValue = value;
+                            const oldValue = ExtendableObject._phone;
+                            const newValue = value;
 
-                            var notSame = oldValue !== newValue;
+                            const notSame = oldValue !== newValue;
 
                             if (notSame) {
                                 ExtendableObject._phone = newValue;

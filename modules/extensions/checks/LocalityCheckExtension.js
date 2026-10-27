@@ -1,7 +1,7 @@
-var LocalityCheckExtension = {
+const LocalityCheckExtension = {
     name: 'LocalityCheckExtension',
     extend: function (ExtendableObject) {
-        var $self = this;
+        const $self = this;
 
         return new ExtendableObject.util.Promise(function (resolve, reject) {
             ExtendableObject.waitForExtension('LocalityExtension').then(function () {
@@ -22,11 +22,11 @@ var LocalityCheckExtension = {
                         return this._localityStatus;
                     },
                     set: function (value) {
-                        var oldValue = ExtendableObject._localityStatus;
+                        const oldValue = ExtendableObject._localityStatus;
 
                         ExtendableObject._awaits++;
                         ExtendableObject.util.Promise.resolve(value).then(function (value) {
-                            var newValue = value;
+                            const newValue = value;
 
                             if (oldValue !== newValue) {
                                 ExtendableObject._localityStatus = newValue;

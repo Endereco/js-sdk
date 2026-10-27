@@ -76,7 +76,7 @@ router.get('/', async (req, res) => {
 // Proxy file upload
 router.post('/proxyfile', async (req, res) => {
     const serverUrl = req.header('x-remote-api-url') ?? 'staging.endereco-service.de';
-    let postData = req.body;
+    const postData = req.body;
 
     const options = {
         hostname: serverUrl,

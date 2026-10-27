@@ -1,7 +1,7 @@
-var StreetNameCheckExtension = {
+const StreetNameCheckExtension = {
     name: 'StreetNameCheckExtension',
     extend: function (ExtendableObject) {
-        var $self = this;
+        const $self = this;
 
         return new ExtendableObject.util.Promise(function (resolve, reject) {
             ExtendableObject.waitForExtension('StreetNameExtension').then(function () {
@@ -22,11 +22,11 @@ var StreetNameCheckExtension = {
                         return this._streetNameStatus;
                     },
                     set: function (value) {
-                        var oldValue = ExtendableObject._streetNameStatus;
+                        const oldValue = ExtendableObject._streetNameStatus;
 
                         ExtendableObject._awaits++;
                         ExtendableObject.util.Promise.resolve(value).then(function (value) {
-                            var newValue = value;
+                            const newValue = value;
 
                             if (oldValue !== newValue) {
                                 ExtendableObject._streetNameStatus = newValue;

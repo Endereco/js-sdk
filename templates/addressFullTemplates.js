@@ -1,7 +1,7 @@
 import defaultTpl from './fulladdress/default.html';
 import frTpl from './fulladdress/fr.html';
 
-var templates = {
+const templates = {
     default: defaultTpl,
     de: defaultTpl,
     at: defaultTpl,

@@ -1,9 +1,9 @@
 import statusWrapper from '../../../templates/phone_check_status_wrapper.html';
 
-var PhoneCheckExtension = {
+const PhoneCheckExtension = {
     name: 'PhoneCheckExtension',
     extend: function (ExtendableObject) {
-        var $self = this;
+        const $self = this;
 
         return new ExtendableObject.util.Promise(function (resolve, reject) {
             ExtendableObject.waitForExtension('PhoneExtension').then(function () {
@@ -43,12 +43,12 @@ var PhoneCheckExtension = {
                         return this._phoneStatus;
                     },
                     set: function (value) {
-                        var oldValue = ExtendableObject._phoneStatus;
+                        const oldValue = ExtendableObject._phoneStatus;
 
                         ExtendableObject._awaits++;
                         ExtendableObject.util.Promise.resolve(value).then(function (value) {
-                            var index;
-                            var newValue = value;
+                            let index;
+                            const newValue = value;
 
                             if (oldValue !== newValue) {
                                 // Check if the type of phone is fitting in.
@@ -106,9 +106,9 @@ var PhoneCheckExtension = {
                 });
 
                 ExtendableObject.util.renderStatusMessages = function () {
-                    var statuses = [];
-                    var formatMessage = '';
-                    var uniqueContainer = {};
+                    let statuses = [];
+                    let formatMessage = '';
+                    const uniqueContainer = {};
 
                     if (!Array.isArray(ExtendableObject.phoneStatus)) {
                         return;
@@ -143,7 +143,7 @@ var PhoneCheckExtension = {
                             formatMessage = ExtendableObject.config.texts.requiredFormat[ExtendableObject.config.phoneFormat];
                         }
 
-                        var wrapperHtml = ExtendableObject.util.Mustache.render(
+                        const wrapperHtml = ExtendableObject.util.Mustache.render(
                             ExtendableObject.config.templates.statusWrapper,
                             {
                                 ExtendableObject,
@@ -159,7 +159,7 @@ var PhoneCheckExtension = {
                 };
 
                 ExtendableObject.util.checkPhone = function (phone = null) {
-                    var $self = this;
+                    const $self = this;
 
                     if (!phone) {
                         phone = ExtendableObject.phone;
@@ -168,7 +168,7 @@ var PhoneCheckExtension = {
                     ExtendableObject._phoneStatus = [];
 
                     return new ExtendableObject.util.Promise(function (resolve, reject) {
-                        var message = {
+                        const message = {
                             jsonrpc: '2.0',
                             id: ExtendableObject.phoneCheckRequestCounter,
                             method: 'phoneCheck',

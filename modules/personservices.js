@@ -11,7 +11,7 @@ import NameCheckExtension from './extensions/checks/NameCheckExtension';
 
 function EnderecoPerson (customConfig = {}) {
     // Get base object, that will be extended.
-    var base = new EnderecoBase();
+    const base = new EnderecoBase();
 
     base.type = 'person';
     base.name = 'personservices';

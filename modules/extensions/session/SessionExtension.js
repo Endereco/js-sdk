@@ -51,7 +51,7 @@ function createAccessor (ExtendableObject, propertyName) {
     Object.defineProperty(ExtendableObject, propertyName, {
         get: function () { return this[`_${propertyName}`]; },
         set: function (value) {
-            var oldValue = this[`_${propertyName}`];
+            const oldValue = this[`_${propertyName}`];
 
             this._awaits++;
             ExtendableObject.util.Promise.resolve(value)
@@ -109,7 +109,7 @@ function processFormsInterval (ExtendableObject) {
 
 function addInputIfNotExists (form, name, ExtendableObject) {
     if (!form.querySelector(`input[name="${name}"]`)) {
-        var inputHtml = ExtendableObject.util.Mustache.render('<input type="hidden" name="{{name}}" value="">', { name });
+        const inputHtml = ExtendableObject.util.Mustache.render('<input type="hidden" name="{{name}}" value="">', { name });
 
         form.insertAdjacentHTML('afterbegin', inputHtml);
     }
@@ -135,7 +135,7 @@ function subscribeToField (ExtendableObject, fieldName) {
         sessionId: 'session_id',
         sessionCounter: 'session_counter'
     };
-    var subscriber = new EnderecoSubscriber(
+    const subscriber = new EnderecoSubscriber(
         fieldName,
         document.querySelector(`[name="${ExtendableObject.fullName}_${fieldNameMapping[fieldName]}"]`)
     );

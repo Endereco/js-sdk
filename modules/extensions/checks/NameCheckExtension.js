@@ -1,7 +1,7 @@
-var NameCheckExtension = {
+const NameCheckExtension = {
     name: 'NameCheckExtension',
     extend: function (ExtendableObject) {
-        var $self = this;
+        const $self = this;
 
         return new ExtendableObject.util.Promise(function (resolve, reject) {
             ExtendableObject.waitForExtension(['SalutationExtension', 'FirstNameExtension', 'LastNameExtension', 'TitleExtension']).then(function () {
@@ -47,7 +47,7 @@ var NameCheckExtension = {
                 };
 
                 ExtendableObject.isTitleRelevant = function () {
-                    var isTitleRelevant = false;
+                    let isTitleRelevant = false;
 
                     if ((ExtendableObject._subscribers.title.length > 0)) {
                         ExtendableObject._subscribers.title.forEach(function (listener) {
@@ -67,11 +67,11 @@ var NameCheckExtension = {
                         return this._salutationStatus;
                     },
                     set: function (value) {
-                        var oldValue = ExtendableObject._salutationStatus;
+                        const oldValue = ExtendableObject._salutationStatus;
 
                         ExtendableObject._awaits++;
                         ExtendableObject.util.Promise.resolve(value).then(function (value) {
-                            var newValue = value;
+                            const newValue = value;
 
                             if (oldValue !== newValue) {
                                 ExtendableObject._salutationStatus = newValue;
@@ -106,11 +106,11 @@ var NameCheckExtension = {
                         return this._firstNameStatus;
                     },
                     set: function (value) {
-                        var oldValue = ExtendableObject._firstNameStatus;
+                        const oldValue = ExtendableObject._firstNameStatus;
 
                         ExtendableObject._awaits++;
                         ExtendableObject.util.Promise.resolve(value).then(function (value) {
-                            var newValue = value;
+                            const newValue = value;
 
                             if (oldValue !== newValue) {
                                 ExtendableObject._firstNameStatus = newValue;
@@ -145,11 +145,11 @@ var NameCheckExtension = {
                         return this._lastNameStatus;
                     },
                     set: function (value) {
-                        var oldValue = ExtendableObject._lastNameStatus;
+                        const oldValue = ExtendableObject._lastNameStatus;
 
                         ExtendableObject._awaits++;
                         ExtendableObject.util.Promise.resolve(value).then(function (value) {
-                            var newValue = value;
+                            const newValue = value;
 
                             if (oldValue !== newValue) {
                                 ExtendableObject._lastNameStatus = newValue;
@@ -184,11 +184,11 @@ var NameCheckExtension = {
                         return this._titleStatus;
                     },
                     set: function (value) {
-                        var oldValue = ExtendableObject._titleStatus;
+                        const oldValue = ExtendableObject._titleStatus;
 
                         ExtendableObject._awaits++;
                         ExtendableObject.util.Promise.resolve(value).then(function (value) {
-                            var newValue = value;
+                            const newValue = value;
 
                             if (oldValue !== newValue) {
                                 ExtendableObject._titleStatus = newValue;
@@ -223,11 +223,11 @@ var NameCheckExtension = {
                         return this._nameScore;
                     },
                     set: function (value) {
-                        var oldValue = ExtendableObject._nameScore;
+                        const oldValue = ExtendableObject._nameScore;
 
                         ExtendableObject._awaits++;
                         ExtendableObject.util.Promise.resolve(value).then(function (value) {
-                            var newValue = value;
+                            const newValue = value;
 
                             if (oldValue !== newValue) {
                                 ExtendableObject._nameScore = newValue;
@@ -266,7 +266,7 @@ var NameCheckExtension = {
                 };
 
                 ExtendableObject.util.checkPerson = function (person = null) {
-                    var $self = this;
+                    const $self = this;
 
                     if (!person) {
                         person = {
@@ -278,7 +278,7 @@ var NameCheckExtension = {
                     }
 
                     return new ExtendableObject.util.Promise(function (resolve, reject) {
-                        var message = {
+                        const message = {
                             jsonrpc: '2.0',
                             id: ExtendableObject._nameCheckRequestIndex,
                             method: 'nameCheck',
@@ -319,9 +319,9 @@ var NameCheckExtension = {
 
                                     // Process the response.
                                     // Rewrite input.
-                                    var responseStatus = response.data.result.status;
-                                    var responsePredictions = response.data.result.predictions;
-                                    var salutationCopied = false;
+                                    const responseStatus = response.data.result.status;
+                                    const responsePredictions = response.data.result.predictions;
+                                    let salutationCopied = false;
 
                                     if (responseStatus.includes('name_is_natural_person') &&
                                       (responseStatus.includes('name_needs_correction') || responseStatus.includes('name_correct'))

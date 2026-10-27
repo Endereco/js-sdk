@@ -1,7 +1,7 @@
-var SubdivisionCodeCheckExtension = {
+const SubdivisionCodeCheckExtension = {
     name: 'SubdivisionCodeCheckExtension',
     extend: function (ExtendableObject) {
-        var $self = this;
+        const $self = this;
 
         return new ExtendableObject.util.Promise(function (resolve, reject) {
             ExtendableObject.waitForExtension('SubdivisionCodeExtension').then(function () {
@@ -22,11 +22,11 @@ var SubdivisionCodeCheckExtension = {
                         return this._subdivisionCodeStatus;
                     },
                     set: function (value) {
-                        var oldValue = ExtendableObject._subdivisionCodeStatus;
+                        const oldValue = ExtendableObject._subdivisionCodeStatus;
 
                         ExtendableObject._awaits++;
                         ExtendableObject.util.Promise.resolve(value).then(function (value) {
-                            var newValue = value;
+                            const newValue = value;
 
                             if (oldValue !== newValue) {
                                 ExtendableObject._subdivisionCodeStatus = newValue;

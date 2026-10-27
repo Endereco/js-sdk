@@ -1,7 +1,7 @@
-var BuildingNumberCheckExtension = {
+const BuildingNumberCheckExtension = {
     name: 'BuildingNumberCheckExtension',
     extend: function (ExtendableObject) {
-        var $self = this;
+        const $self = this;
 
         return new ExtendableObject.util.Promise(function (resolve, reject) {
             ExtendableObject.waitForExtension('BuildingNumberExtension').then(function () {
@@ -22,11 +22,11 @@ var BuildingNumberCheckExtension = {
                         return this._buildingNumberStatus;
                     },
                     set: function (value) {
-                        var oldValue = ExtendableObject._buildingNumberStatus;
+                        const oldValue = ExtendableObject._buildingNumberStatus;
 
                         ExtendableObject._awaits++;
                         ExtendableObject.util.Promise.resolve(value).then(function (value) {
-                            var newValue = value;
+                            const newValue = value;
 
                             if (oldValue !== newValue) {
                                 ExtendableObject._buildingNumberStatus = newValue;

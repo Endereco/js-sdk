@@ -301,9 +301,9 @@ const EnderecoIntegrator = {
                 }
             },
             getBySalutation: function (salutation) {
-                var $return = '';
+                const $return = '';
 
-                for (var prop in this) {
+                for (const prop in this) {
                     if (Object.prototype.hasOwnProperty.call(this, prop)) {
                         if (this[prop] === salutation) {
                             return prop;
@@ -329,20 +329,20 @@ const EnderecoIntegrator = {
         }
 
         var $self = this;
-        var config = JSON.parse(JSON.stringify(this.config));
+        let config = JSON.parse(JSON.stringify(this.config));
 
         if (options.config) {
             config = merge(config, options.config);
         }
 
-        var originalPostfix = merge({}, $self.postfix.phs);
-        var postfix;
+        const originalPostfix = merge({}, $self.postfix.phs);
+        let postfix;
 
         if (typeof prefix === 'object') {
             postfix = merge(originalPostfix, prefix);
             prefix = '';
         } else {
-            var newObject = {};
+            const newObject = {};
 
             Object.keys(originalPostfix).forEach(function (key) {
                 newObject[key] = prefix + originalPostfix[key];
@@ -350,7 +350,7 @@ const EnderecoIntegrator = {
             postfix = merge(newObject, options.postfixCollection);
         }
 
-        var EPHSO = new EnderecoPhoneObject(config);
+        const EPHSO = new EnderecoPhoneObject(config);
 
         EPHSO.fullName = `${options.name}_${EPHSO.name}`;
 
@@ -370,7 +370,7 @@ const EnderecoIntegrator = {
                     document.querySelector($self.getSelector(postfix.phone)) &&
                   $self.dispatchEvent('endereco.ams.before-adding-phone-subscriber')
                 ) {
-                    var phoneSubscriberOptions = {};
+                    const phoneSubscriberOptions = {};
 
                     if ($self.resolvers.phoneWrite) {
                         phoneSubscriberOptions.writeFilterCb = function (value, subscriber) {
@@ -388,7 +388,7 @@ const EnderecoIntegrator = {
                         };
                     }
 
-                    var phoneSubscriber = new EnderecoSubscriber(
+                    const phoneSubscriber = new EnderecoSubscriber(
                         'phone',
                         document.querySelector($self.getSelector(postfix.phone)),
                         phoneSubscriberOptions
@@ -406,7 +406,7 @@ const EnderecoIntegrator = {
                     document.querySelector($self.getSelector(postfix.countryCode)) &&
                     $self.dispatchEvent('endereco.ams.before-adding-country-code-subscriber')
                 ) {
-                    var countryCodeSubscriberOptions = {};
+                    const countryCodeSubscriberOptions = {};
 
                     if ($self.resolvers.countryCodeWrite) {
                         countryCodeSubscriberOptions.writeFilterCb = function (value, subscriber) {
@@ -423,7 +423,7 @@ const EnderecoIntegrator = {
                             return $self.resolvers.countryCodeSetValue(subscriber, value);
                         };
                     }
-                    var countryCodeSubscriber = new EnderecoSubscriber(
+                    const countryCodeSubscriber = new EnderecoSubscriber(
                         'countryCode',
                         document.querySelector($self.getSelector(postfix.countryCode)),
                         countryCodeSubscriberOptions
@@ -630,17 +630,17 @@ const EnderecoIntegrator = {
             return;
         }
 
-        var $self = this;
-        var config = JSON.parse(JSON.stringify(this.config));
+        const $self = this;
+        const config = JSON.parse(JSON.stringify(this.config));
 
-        var originalPostfix = merge({}, $self.postfix.emailServices);
-        var postfix;
+        const originalPostfix = merge({}, $self.postfix.emailServices);
+        let postfix;
 
         if (typeof prefix === 'object') {
             postfix = merge(originalPostfix, prefix);
             prefix = '';
         } else {
-            var newObject = {};
+            const newObject = {};
 
             Object.keys(originalPostfix).forEach(function (key) {
                 newObject[key] = prefix + originalPostfix[key];
@@ -656,7 +656,7 @@ const EnderecoIntegrator = {
             config.ux.errorInsertMode = options.errorInsertMode;
         }
 
-        var EEO = new EnderecoEmailObject(config);
+        const EEO = new EnderecoEmailObject(config);
 
         EEO.fullName = `${options.name}_${EEO.name}`;
 
@@ -669,7 +669,7 @@ const EnderecoIntegrator = {
                     document.querySelector($self.getSelector(prefix + postfix.email)) &&
                     $self.dispatchEvent('endereco.es.before-adding-email-subscriber')
                 ) {
-                    var emailSubscriber = new EnderecoSubscriber(
+                    const emailSubscriber = new EnderecoSubscriber(
                         'email',
                         document.querySelector($self.getSelector(prefix + postfix.email)),
                         {
@@ -702,7 +702,7 @@ const EnderecoIntegrator = {
                     document.querySelector($self.getSelector(prefix + postfix.email)) &&
                     $self.dispatchEvent('endereco.es.before-adding-email-status-subscriber')
                 ) {
-                    var emailStatusSubscriber = new EnderecoSubscriber(
+                    const emailStatusSubscriber = new EnderecoSubscriber(
                         'emailStatus',
                         document.querySelector($self.getSelector(prefix + postfix.email)),
                         {
@@ -764,14 +764,14 @@ const EnderecoIntegrator = {
         }
 
         var $self = this;
-        var config = JSON.parse(JSON.stringify(this.config));
+        let config = JSON.parse(JSON.stringify(this.config));
 
         if (options.config) {
             config = merge(config, options.config);
         }
 
-        var originalPostfix = merge({}, $self.postfix.personServices);
-        var postfix;
+        const originalPostfix = merge({}, $self.postfix.personServices);
+        let postfix;
 
         if (typeof prefix === 'object') {
             postfix = merge(originalPostfix, prefix);
@@ -780,7 +780,7 @@ const EnderecoIntegrator = {
             postfix = merge(originalPostfix, options.postfixCollection);
         }
 
-        var EPO = new EnderecoPersonObject(config);
+        const EPO = new EnderecoPersonObject(config);
 
         EPO.fullName = `${options.name}_${EPO.name}`;
         EPO._awaits++;
@@ -794,7 +794,7 @@ const EnderecoIntegrator = {
                     document.querySelector($self.getSelector(prefix + postfix.salutation)) &&
                     $self.dispatchEvent('endereco.ps.before-adding-salutation-subscriber')
                 ) {
-                    var salutationSubscriberOptions = {};
+                    const salutationSubscriberOptions = {};
 
                     if ($self.resolvers.salutationWrite) {
                         salutationSubscriberOptions.writeFilterCb = function (value, subscriber) {
@@ -811,7 +811,7 @@ const EnderecoIntegrator = {
                             return $self.resolvers.salutationSetValue(subscriber, value);
                         };
                     }
-                    var salutationSubscriber = new EnderecoSubscriber(
+                    const salutationSubscriber = new EnderecoSubscriber(
                         'salutation',
                         document.querySelector($self.getSelector(prefix + postfix.salutation)),
                         salutationSubscriberOptions
@@ -826,7 +826,7 @@ const EnderecoIntegrator = {
                     document.querySelector($self.getSelector(prefix + postfix.firstName)) &&
                     $self.dispatchEvent('endereco.ps.before-adding-first-name-subscriber')
                 ) {
-                    var firstNameSubscriber = new EnderecoSubscriber(
+                    const firstNameSubscriber = new EnderecoSubscriber(
                         'firstName',
                         document.querySelector($self.getSelector(prefix + postfix.firstName)),
                         {
@@ -859,7 +859,7 @@ const EnderecoIntegrator = {
                     document.querySelector($self.getSelector(prefix + postfix.lastName)) &&
                   $self.dispatchEvent('endereco.ps.before-adding-last-name-subscriber')
                 ) {
-                    var lastNameSubscriberOptions = {};
+                    const lastNameSubscriberOptions = {};
 
                     if ($self.resolvers.lastNameWrite) {
                         lastNameSubscriberOptions.writeFilterCb = function (value, subscriber) {
@@ -876,7 +876,7 @@ const EnderecoIntegrator = {
                             return $self.resolvers.lastNameSetValue(subscriber, value);
                         };
                     }
-                    var lastNameSubscriber = new EnderecoSubscriber(
+                    const lastNameSubscriber = new EnderecoSubscriber(
                         'lastName',
                         document.querySelector($self.getSelector(prefix + postfix.lastName)),
                         lastNameSubscriberOptions
@@ -890,7 +890,7 @@ const EnderecoIntegrator = {
                     document.querySelector($self.getSelector(prefix + postfix.title)) &&
                   $self.dispatchEvent('endereco.ps.before-adding-title-subscriber')
                 ) {
-                    var titleSubscriberOptions = {};
+                    const titleSubscriberOptions = {};
 
                     if ($self.resolvers.titleWrite) {
                         titleSubscriberOptions.writeFilterCb = function (value, subscriber) {
@@ -907,7 +907,7 @@ const EnderecoIntegrator = {
                             return $self.resolvers.titleSetValue(subscriber, value);
                         };
                     }
-                    var titleSubscriber = new EnderecoSubscriber(
+                    const titleSubscriber = new EnderecoSubscriber(
                         'title',
                         document.querySelector($self.getSelector(prefix + postfix.title)),
                         titleSubscriberOptions
@@ -921,7 +921,7 @@ const EnderecoIntegrator = {
                     document.querySelector($self.getSelector(prefix + postfix.nameScore)) &&
                   $self.dispatchEvent('endereco.ps.before-adding-name-score-subscriber')
                 ) {
-                    var nameScoreSubscriberOptions = {};
+                    const nameScoreSubscriberOptions = {};
 
                     if ($self.resolvers.nameScoreWrite) {
                         nameScoreSubscriberOptions.writeFilterCb = function (value, subscriber) {
@@ -938,7 +938,7 @@ const EnderecoIntegrator = {
                             return $self.resolvers.nameScoreSetValue(subscriber, value);
                         };
                     }
-                    var nameScoreSubscriber = new EnderecoSubscriber(
+                    const nameScoreSubscriber = new EnderecoSubscriber(
                         'nameScore',
                         document.querySelector($self.getSelector(prefix + postfix.nameScore)),
                         nameScoreSubscriberOptions
@@ -968,7 +968,7 @@ const EnderecoIntegrator = {
         return EPO;
     },
     waitUntilReady: function () {
-        var $self = this;
+        const $self = this;
 
         return new Promise(function (resolve, reject) {
             var interval = setInterval(function () {
@@ -980,7 +980,7 @@ const EnderecoIntegrator = {
         });
     },
     getSelector: function (possibleSelector) {
-        var selector = '';
+        let selector = '';
 
         if (!possibleSelector) {
             selector = null;
@@ -1000,7 +1000,7 @@ const EnderecoIntegrator = {
     asyncCallbacks: [],
     addCss: function () {
         // Clean up beforehand (just in case)
-        var stylesDOM = document.getElementById('#endereco-styles-include');
+        const stylesDOM = document.getElementById('#endereco-styles-include');
 
         if (stylesDOM) {
             stylesDOM.remove();
@@ -1012,8 +1012,8 @@ const EnderecoIntegrator = {
             }
 
             const cssLink = this.config.ux.cssFilePath || `data:text/css;charset=UTF-8,${encodeURIComponent(this.css)}`;
-            var head = document.querySelector('head');
-            var linkElement = document.createElement('link');
+            const head = document.querySelector('head');
+            const linkElement = document.createElement('link');
 
             linkElement.setAttribute('id', 'endereco-styles-include');
             linkElement.setAttribute('rel', 'stylesheet');
@@ -1042,7 +1042,7 @@ const EnderecoIntegrator = {
             };
             while (1) {
                 if (collector[fieldName].parentLine[collector[fieldName].parentLine.length - 1].parentNode) {
-                    var temp = collector[fieldName].parentLine[collector[fieldName].parentLine.length - 1].parentNode;
+                    const temp = collector[fieldName].parentLine[collector[fieldName].parentLine.length - 1].parentNode;
 
                     collector[fieldName].parentLine.push(temp);
                 } else {
@@ -1060,11 +1060,11 @@ const EnderecoIntegrator = {
         }
 
         // Find commen parent.
-        var firstFieldData = collector[firstFieldName];
-        var firstFieldIndex = 0;
-        var secondFieldData = collector[secondFieldName];
-        var secondFieldIndex = 0;
-        var commonParentDOM = undefined;
+        const firstFieldData = collector[firstFieldName];
+        let firstFieldIndex = 0;
+        const secondFieldData = collector[secondFieldName];
+        let secondFieldIndex = 0;
+        let commonParentDOM;
 
         if (firstFieldData.parentLine && secondFieldData.parentLine) {
             firstFieldData.parentLine.forEach(function (firstFieldParentDOM) {
@@ -1101,7 +1101,7 @@ const EnderecoIntegrator = {
     },
     _test: {},
     changeFieldsOrder: function (collection, fieldNamesOrder = ['countryCode', 'subdivisionCode', 'postalCode', 'locality', 'streetFull', 'streetName', 'buildingNumber', 'additionalInfo']) {
-        var myStructure = {};
+        const myStructure = {};
 
         // Create parent line for additional info if it exists.
         this._createParentLine('additionalInfo', this._test, collection);
@@ -1114,9 +1114,9 @@ const EnderecoIntegrator = {
         this._createParentLine('subdivisionCode', this._test, collection);
 
         // Ensure position.
-        var reversedArray = new Array();
+        const reversedArray = new Array();
 
-        for (var i = fieldNamesOrder.length - 1; i >= 0; i--) {
+        for (let i = fieldNamesOrder.length - 1; i >= 0; i--) {
             // Filterout if not existing.
             if (
                 document.querySelector(
@@ -1128,7 +1128,7 @@ const EnderecoIntegrator = {
         }
 
         // Change positions in the DOM.
-        for (var j = 0; j < (reversedArray.length - 1); j++) {
+        for (let j = 0; j < (reversedArray.length - 1); j++) {
             this._firstBeforeSecond(reversedArray[j + 1], reversedArray[j], this._test);
         }
     }

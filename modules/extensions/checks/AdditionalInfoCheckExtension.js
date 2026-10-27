@@ -1,7 +1,7 @@
-var AdditionalInfoCheckExtension = {
+const AdditionalInfoCheckExtension = {
     name: 'AdditionalInfoCheckExtension',
     extend: function (ExtendableObject) {
-        var $self = this;
+        const $self = this;
 
         return new ExtendableObject.util.Promise(function (resolve, reject) {
             ExtendableObject.waitForExtension('AdditionalInfoExtension').then(function () {
@@ -22,11 +22,11 @@ var AdditionalInfoCheckExtension = {
                         return this._additionalInfoStatus;
                     },
                     set: function (value) {
-                        var oldValue = ExtendableObject._additionalInfoStatus;
+                        const oldValue = ExtendableObject._additionalInfoStatus;
 
                         ExtendableObject._awaits++;
                         ExtendableObject.util.Promise.resolve(value).then(function (value) {
-                            var newValue = value;
+                            const newValue = value;
 
                             if (oldValue !== newValue) {
                                 ExtendableObject._additionalInfoStatus = newValue;

@@ -63,7 +63,7 @@ function EnderecoBase () {
         _awaits: 0,
         _activePredictionApplications: [],
         waitForExtension: function (extensions, timeout = 10) {
-            var $self = this;
+            const $self = this;
 
             return new Promise(function (resolve, reject) {
                 if (typeof extensions === 'string') {
@@ -71,7 +71,7 @@ function EnderecoBase () {
                 }
 
                 var intervalObject = setInterval(function () {
-                    var allSet = true;
+                    let allSet = true;
 
                     extensions.forEach(function (extensionName) {
                         if (!$self.hasLoadedExtension(extensionName)) {
@@ -95,7 +95,7 @@ function EnderecoBase () {
             });
         },
         waitForAllExtension: function (timeout = 10) {
-            var $self = this;
+            const $self = this;
 
             this._awaits++;
 
@@ -119,7 +119,7 @@ function EnderecoBase () {
             });
         },
         waitForActive: function () {
-            var $self = this;
+            const $self = this;
 
             return new Promise(function (resolve, reject) {
                 var intervalObject = setInterval(function () {
@@ -131,7 +131,7 @@ function EnderecoBase () {
             });
         },
         waitUntilReady: function () {
-            var $self = this;
+            const $self = this;
 
             return new Promise(function (resolve, reject) {
                 var waitForAwaits = setInterval(function () {
@@ -150,8 +150,8 @@ function EnderecoBase () {
             return Promise.all(this._activePredictionApplications);
         },
         anyActive: function () {
-            var $self = this;
-            var hasAny = false;
+            const $self = this;
+            let hasAny = false;
 
             $self.fieldNames.forEach(function (fieldName) {
                 if ($self._subscribers[fieldName]) {
@@ -172,8 +172,8 @@ function EnderecoBase () {
             return hasAny;
         },
         anyMissing: function () {
-            var $self = this;
-            var hasAny = false;
+            const $self = this;
+            let hasAny = false;
 
             hasAny = false;
             $self.forms.forEach(function (form) {
@@ -193,7 +193,7 @@ function EnderecoBase () {
 
         onAfterCreate: [],
         created: function () {
-            var $self = this;
+            const $self = this;
 
             this.onAfterCreate.forEach(function (cb) {
                 cb($self);
@@ -201,7 +201,7 @@ function EnderecoBase () {
         },
         onCloseModal: [],
         modalClosed: function () {
-            var $self = this;
+            const $self = this;
 
             this.onCloseModal.forEach(function (cb) {
                 cb($self);
@@ -209,7 +209,7 @@ function EnderecoBase () {
         },
         onAddressSelect: [],
         addressSelected: function () {
-            var $self = this;
+            const $self = this;
 
             this.onAddressSelect.forEach(function (cb) {
                 cb($self);
@@ -217,7 +217,7 @@ function EnderecoBase () {
         },
         onBeforeSubmitResume: [],
         beforeSubmitResume: function () {
-            var $self = this;
+            const $self = this;
 
             this.onBeforeSubmitResume.forEach(function (cb) {
                 cb($self);
@@ -320,7 +320,7 @@ function EnderecoBase () {
         },
 
         getEnderecoAPI: function () {
-            var $self = this;
+            const $self = this;
 
             return {
                 sendRequestToAPI: async function (body, headers) {
@@ -339,7 +339,7 @@ function EnderecoBase () {
         // Event Handling.
         _subscribers: {},
         addSubscriber: function (EnderecoSubscriberObject) {
-            var $self = this;
+            const $self = this;
 
             $self._awaits++;
             this.waitForAllExtension().then(function () {
@@ -439,7 +439,7 @@ function EnderecoBase () {
             }
         },
         setField: function (fieldName, fieldValue, markAsChanged = true) {
-            var $self = this;
+            const $self = this;
 
             $self._awaits++;
             $self.util.Promise.resolve(fieldValue).then(function (value) {
@@ -473,7 +473,7 @@ function EnderecoBase () {
         ],
         loadedExtensions: {},
         loadExtensions: function () {
-            var $self = this;
+            const $self = this;
 
             this.extensions.forEach(function (extension) {
                 if (!$self.loadedExtensions[extension.name]) {
