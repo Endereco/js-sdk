@@ -1,7 +1,7 @@
 import EnderecoSubscriber from './../../subscriber';
 import { v4 as uuidv4 } from 'uuid';
 
-var SessionExtension = {
+const SessionExtension = {
     name: 'SessionExtension',
     extend: function (ExtendableObject) {
         return new ExtendableObject.util.Promise(function (resolve, reject) {

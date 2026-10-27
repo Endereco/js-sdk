@@ -163,7 +163,7 @@ window.EnderecoIntegrator.customFormReferenceResolvers.push((e, submitType) => {
     return null;
 });
 
-var $waitForConfig = setInterval(function () {
+const $waitForConfig = setInterval(function () {
     if (typeof enderecoLoadAMSConfig === 'function') {
         enderecoLoadAMSConfig();
         clearInterval($waitForConfig);
