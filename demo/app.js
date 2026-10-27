@@ -6,7 +6,7 @@ const cors = require('cors');
 const app = express();
 const host = 'localhost';
 const port = 8888;
-const sync_port = 3000;
+const syncPort = 3000;
 
 // Helper function to read a file
 async function readFile (filePath, res, contentType) {
@@ -126,5 +126,5 @@ app.use((err, req, res, next) => {
 
 // Start server
 app.listen(port, host, () => {
-    console.log(`Server is running on http://${host}:${port} and starts with browsersync from http://${host}:${sync_port}`);
+    console.log(`Server is running on http://${host}:${port} and starts with browsersync from http://${host}:${syncPort}`);
 });

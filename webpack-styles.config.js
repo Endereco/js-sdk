@@ -1,10 +1,11 @@
+const path = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 module.exports = {
     mode: 'production',
     entry: './themes/default-theme.scss',
     output: {
-        path: `${__dirname}/dist`
+        path: path.join(__dirname, 'dist')
     },
     module: {
         rules: [
