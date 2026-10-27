@@ -1,13 +1,12 @@
 const http = require('http');
 const fs = require('fs').promises;
-const url = require('url');
 const host = 'localhost';
 const port = 8000;
 
 const requestListener = async function (req, res) {
     try {
         // Serve files based on URL
-        const pathname = url.parse(req.url).pathname;
+        const pathname = new URL(req.url, `http://${host}:${port}`).pathname;
 
         if (req.method === 'POST' && pathname !== '/proxyfile') {
             // Handle POST request
@@ -53,19 +52,15 @@ async function serveFile (res, filePath, contentType) {
 }
 
 function processPostRequest (req, res) {
-    let postData = '';
-
     return new Promise((resolve, reject) => {
-        req.on('data', chunk => {
-            postData += chunk;
-        });
         req.on('end', () => {
-            // Process postData here if needed
             resolve();
         });
         req.on('error', (err) => {
             reject(err);
         });
+        // Discard the body, 'end' only fires once it has been consumed.
+        req.resume();
     });
 }
 
