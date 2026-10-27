@@ -323,7 +323,7 @@ function EnderecoBase () {
             const $self = this;
 
             return {
-                sendRequestToAPI: async function (body, headers) {
+                sendRequestToAPI: function (body, headers) {
                     return $self.util.axios.post(
                         $self.config.apiUrl,
                         body,
