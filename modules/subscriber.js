@@ -117,13 +117,10 @@ function EnderecoSubscriber (propertyName, observableObject, options = {}) {
     }
 
     function setupMutationObserver (element, intervalId) {
-        const observer = new MutationObserver(mutations => {
-            for (const mutation of mutations) {
-                if (!document.contains(element)) {
-                    clearInterval(intervalId);
-                    observer.disconnect();
-                    break;
-                }
+        const observer = new MutationObserver(() => {
+            if (!document.contains(element)) {
+                clearInterval(intervalId);
+                observer.disconnect();
             }
         });
 

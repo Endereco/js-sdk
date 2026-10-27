@@ -58,8 +58,6 @@ const SalutationCheckExtension = {
                 });
 
                 ExtendableObject.util.checkSalutation = function (name = null) {
-                    const $self = this;
-
                     if (!name) {
                         name = ExtendableObject.firstName;
                     }
