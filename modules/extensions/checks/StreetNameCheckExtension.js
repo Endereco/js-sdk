@@ -42,8 +42,8 @@ var StreetNameCheckExtension = {
                                         {
                                             detail: {
                                                 fieldName: 'streetNameStatus',
-                                                oldValue: oldValue,
-                                                newValue: newValue,
+                                                oldValue,
+                                                newValue,
                                                 object: ExtendableObject
                                             }
                                         }

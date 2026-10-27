@@ -42,8 +42,8 @@ var SubdivisionCodeCheckExtension = {
                                         {
                                             detail: {
                                                 fieldName: 'subdivisionCodeStatus',
-                                                oldValue: oldValue,
-                                                newValue: newValue,
+                                                oldValue,
+                                                newValue,
                                                 object: ExtendableObject
                                             }
                                         }

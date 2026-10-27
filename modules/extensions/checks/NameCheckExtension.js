@@ -87,8 +87,8 @@ var NameCheckExtension = {
                                         {
                                             detail: {
                                                 fieldName: 'salutationStatus',
-                                                oldValue: oldValue,
-                                                newValue: newValue,
+                                                oldValue,
+                                                newValue,
                                                 object: ExtendableObject
                                             }
                                         }
@@ -126,8 +126,8 @@ var NameCheckExtension = {
                                         {
                                             detail: {
                                                 fieldName: 'firstNameStatus',
-                                                oldValue: oldValue,
-                                                newValue: newValue,
+                                                oldValue,
+                                                newValue,
                                                 object: ExtendableObject
                                             }
                                         }
@@ -165,8 +165,8 @@ var NameCheckExtension = {
                                         {
                                             detail: {
                                                 fieldName: 'lastNameStatus',
-                                                oldValue: oldValue,
-                                                newValue: newValue,
+                                                oldValue,
+                                                newValue,
                                                 object: ExtendableObject
                                             }
                                         }
@@ -204,8 +204,8 @@ var NameCheckExtension = {
                                         {
                                             detail: {
                                                 fieldName: 'titleStatus',
-                                                oldValue: oldValue,
-                                                newValue: newValue,
+                                                oldValue,
+                                                newValue,
                                                 object: ExtendableObject
                                             }
                                         }
@@ -243,8 +243,8 @@ var NameCheckExtension = {
                                         {
                                             detail: {
                                                 fieldName: 'nameScore',
-                                                oldValue: oldValue,
-                                                newValue: newValue,
+                                                oldValue,
+                                                newValue,
                                                 object: ExtendableObject
                                             }
                                         }

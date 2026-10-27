@@ -170,11 +170,11 @@ const EnderecoIntegrator = {
     countryMapping: {},
     countryMappingReverse: {},
     constructors: {
-        EnderecoAddressObject: EnderecoAddressObject,
-        EnderecoSubscriber: EnderecoSubscriber,
-        EnderecoEmailObject: EnderecoEmailObject,
-        EnderecoPersonObject: EnderecoPersonObject,
-        EnderecoPhoneObject: EnderecoPhoneObject
+        EnderecoAddressObject,
+        EnderecoSubscriber,
+        EnderecoEmailObject,
+        EnderecoPersonObject,
+        EnderecoPhoneObject
     },
     globalSpace: {
         reloadPage: function () {

@@ -43,8 +43,8 @@ var SalutationCheckExtension = {
                                         {
                                             detail: {
                                                 fieldName: 'salutationStatus',
-                                                oldValue: oldValue,
-                                                newValue: newValue,
+                                                oldValue,
+                                                newValue,
                                                 object: ExtendableObject
                                             }
                                         }
@@ -70,7 +70,7 @@ var SalutationCheckExtension = {
                             id: 1,
                             method: 'nameCheck',
                             params: {
-                                name: name
+                                name
                             }
                         };
 

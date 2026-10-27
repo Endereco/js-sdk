@@ -61,8 +61,8 @@ var FirstNameExtension = {
                                         {
                                             detail: {
                                                 fieldName: 'firstName',
-                                                oldValue: oldValue,
-                                                newValue: newValue,
+                                                oldValue,
+                                                newValue,
                                                 object: ExtendableObject
                                             }
                                         }

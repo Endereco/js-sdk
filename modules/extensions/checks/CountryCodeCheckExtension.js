@@ -42,8 +42,8 @@ var CountryCodeCheckExtension = {
                                         {
                                             detail: {
                                                 fieldName: 'countryCodeStatus',
-                                                oldValue: oldValue,
-                                                newValue: newValue,
+                                                oldValue,
+                                                newValue,
                                                 object: ExtendableObject
                                             }
                                         }

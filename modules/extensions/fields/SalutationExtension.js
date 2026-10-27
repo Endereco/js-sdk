@@ -61,8 +61,8 @@ var SalutationExtension = {
                                         {
                                             detail: {
                                                 fieldName: 'salutation',
-                                                oldValue: oldValue,
-                                                newValue: newValue,
+                                                oldValue,
+                                                newValue,
                                                 object: ExtendableObject
                                             }
                                         }

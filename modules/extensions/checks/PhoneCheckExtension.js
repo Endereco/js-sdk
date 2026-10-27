@@ -87,8 +87,8 @@ var PhoneCheckExtension = {
                                         {
                                             detail: {
                                                 fieldName: 'phoneStatus',
-                                                oldValue: oldValue,
-                                                newValue: newValue,
+                                                oldValue,
+                                                newValue,
                                                 object: ExtendableObject
                                             }
                                         }
@@ -146,8 +146,8 @@ var PhoneCheckExtension = {
                         var wrapperHtml = ExtendableObject.util.Mustache.render(
                             ExtendableObject.config.templates.statusWrapper,
                             {
-                                ExtendableObject: ExtendableObject,
-                                statuses: statuses,
+                                ExtendableObject,
+                                statuses,
                                 requiredFormat: formatMessage
                             }
                         );
@@ -173,7 +173,7 @@ var PhoneCheckExtension = {
                             id: ExtendableObject.phoneCheckRequestCounter,
                             method: 'phoneCheck',
                             params: {
-                                phone: phone
+                                phone
                             }
                         };
 

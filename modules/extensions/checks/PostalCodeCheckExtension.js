@@ -42,8 +42,8 @@ var PostalCodeCheckExtension = {
                                         {
                                             detail: {
                                                 fieldName: 'postalCodeStatus',
-                                                oldValue: oldValue,
-                                                newValue: newValue,
+                                                oldValue,
+                                                newValue,
                                                 object: ExtendableObject
                                             }
                                         }

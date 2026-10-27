@@ -42,8 +42,8 @@ var BuildingNumberCheckExtension = {
                                         {
                                             detail: {
                                                 fieldName: 'buildingNumberStatus',
-                                                oldValue: oldValue,
-                                                newValue: newValue,
+                                                oldValue,
+                                                newValue,
                                                 object: ExtendableObject
                                             }
                                         }

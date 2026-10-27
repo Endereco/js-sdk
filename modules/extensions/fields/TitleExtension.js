@@ -61,8 +61,8 @@ var TitleExtension = {
                                         {
                                             detail: {
                                                 fieldName: 'title',
-                                                oldValue: oldValue,
-                                                newValue: newValue,
+                                                oldValue,
+                                                newValue,
                                                 object: ExtendableObject
                                             }
                                         }

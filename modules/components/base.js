@@ -231,13 +231,13 @@ function EnderecoBase () {
         },
 
         util: {
-            axios: axios,
-            Promise: Promise,
-            Mustache: Mustache,
-            levenstein: levenstein,
-            merge: merge,
-            isEqual: isEqual,
-            CustomEvent: CustomEvent,
+            axios,
+            Promise,
+            Mustache,
+            levenstein,
+            merge,
+            isEqual,
+            CustomEvent,
             generateId: function () {
                 return uuidv4();
             },

@@ -61,8 +61,8 @@ var EmailCheckExtension = {
                                         {
                                             detail: {
                                                 fieldName: 'emailStatus',
-                                                oldValue: oldValue,
-                                                newValue: newValue,
+                                                oldValue,
+                                                newValue,
                                                 object: ExtendableObject
                                             }
                                         }
@@ -101,8 +101,8 @@ var EmailCheckExtension = {
                         var wrapperHtml = ExtendableObject.util.Mustache.render(
                             ExtendableObject.config.templates.statusWrapper,
                             {
-                                ExtendableObject: ExtendableObject,
-                                statuses: statuses
+                                ExtendableObject,
+                                statuses
                             }
                         );
                         var messageContainer = document.querySelector(ExtendableObject.config.ux.errorContainer);
@@ -135,7 +135,7 @@ var EmailCheckExtension = {
                             id: 1,
                             method: 'emailCheck',
                             params: {
-                                email: email
+                                email
                             }
                         };
 

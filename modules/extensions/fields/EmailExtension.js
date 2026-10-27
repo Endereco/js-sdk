@@ -43,8 +43,8 @@ var EmailExtension = {
                                     {
                                         detail: {
                                             fieldName: 'email',
-                                            oldValue: oldValue,
-                                            newValue: newValue,
+                                            oldValue,
+                                            newValue,
                                             object: ExtendableObject
                                         }
                                     }

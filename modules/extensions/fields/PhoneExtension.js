@@ -129,8 +129,8 @@ var PhoneExtension = {
                                             {
                                                 detail: {
                                                     fieldName: 'phone',
-                                                    oldValue: oldValue,
-                                                    newValue: newValue,
+                                                    oldValue,
+                                                    newValue,
                                                     object: ExtendableObject
                                                 }
                                             }

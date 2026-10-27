@@ -42,8 +42,8 @@ var LocalityCheckExtension = {
                                         {
                                             detail: {
                                                 fieldName: 'localityStatus',
-                                                oldValue: oldValue,
-                                                newValue: newValue,
+                                                oldValue,
+                                                newValue,
                                                 object: ExtendableObject
                                             }
                                         }

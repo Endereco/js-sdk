@@ -138,10 +138,10 @@ function EnderecoSubscriber (propertyName, observableObject, options = {}) {
     }
 
     const subscriber = {
-        propertyName: propertyName,
+        propertyName,
         _subject: null,
         object: observableObject,
-        options: options,
+        options,
         cleanupFunctions: [],
         lastValue: undefined,
         _allowFieldInspection: true,
@@ -375,7 +375,7 @@ function EnderecoSubscriber (propertyName, observableObject, options = {}) {
             } catch (err) {
                 console.warn('Failed to update subscribed DOM element value', {
                     error: err,
-                    value: value
+                    value
                 });
             }
         },

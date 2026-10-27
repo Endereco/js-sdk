@@ -42,8 +42,8 @@ var AdditionalInfoCheckExtension = {
                                         {
                                             detail: {
                                                 fieldName: 'additionalInfoStatus',
-                                                oldValue: oldValue,
-                                                newValue: newValue,
+                                                oldValue,
+                                                newValue,
                                                 object: ExtendableObject
                                             }
                                         }
