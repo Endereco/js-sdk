@@ -1,3 +1,4 @@
+/* global enderecoLoadAMSConfig -- Provided by the shop integration. */
 import Promise from 'promise-polyfill';
 import merge from 'lodash.merge';
 import EnderecoIntegrator from './modules/integrator';
