@@ -1564,9 +1564,9 @@ function EnderecoPhone (customConfig = {}) {
 
             input.value = prefix + inputValue;
 
-            if (Boolean(window.jQuery) && Boolean(window.jQuery.trigger)) {
+            if (window.jQuery && window.jQuery.trigger) {
                 window.jQuery(input).trigger('change').trigger('blur');
-            } else if (Boolean(window.$) && Boolean(window.$.trigger)) {
+            } else if (window.$ && window.$.trigger) {
                 window.$(input).trigger('change').trigger('blue');
             } else {
                 input.dispatchEvent(new Event('change'));
@@ -1578,7 +1578,7 @@ function EnderecoPhone (customConfig = {}) {
     // Render flags method.
     base.renderFlags = function () {
         if (
-            Boolean(window.EnderecoIntegrator.config.ux.showPhoneFlag) &&
+            window.EnderecoIntegrator.config.ux.showPhoneFlag &&
             ['E164', 'INTERNATIONAL'].includes(window.EnderecoIntegrator.config.phoneFormat)
         ) {
             base._subscribers.phone.forEach(function (subscriber) {

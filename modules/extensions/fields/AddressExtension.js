@@ -2249,8 +2249,8 @@ const AddressExtension = {
             const preparedData = { ...address };
 
             // Enrich address with countryName
-            if (Boolean(window.EnderecoIntegrator.countryCodeToNameMapping) &&
-                Boolean(window.EnderecoIntegrator.countryCodeToNameMapping[address.countryCode.toUpperCase()])
+            if (window.EnderecoIntegrator.countryCodeToNameMapping &&
+                window.EnderecoIntegrator.countryCodeToNameMapping[address.countryCode.toUpperCase()]
             ) {
                 const textAreaForCountryName = document.createElement('textarea');
 
@@ -2265,8 +2265,8 @@ const AddressExtension = {
                 Object.prototype.hasOwnProperty.call(address, 'subdivisionCode') &&
                 typeof address.subdivisionCode === 'string'
             ) {
-                if (Boolean(window.EnderecoIntegrator.subdivisionCodeToNameMapping) &&
-                    Boolean(window.EnderecoIntegrator.subdivisionCodeToNameMapping[address.subdivisionCode.toUpperCase()])
+                if (window.EnderecoIntegrator.subdivisionCodeToNameMapping &&
+                    window.EnderecoIntegrator.subdivisionCodeToNameMapping[address.subdivisionCode.toUpperCase()]
                 ) {
                     const textAreaForSubdivision = document.createElement('textarea');
 

@@ -13,7 +13,7 @@ const requestListener = async function (req, res) {
             // Handle POST request
             await processPostRequest(req, res);
             // Redirect to the same page after processing the POST request
-            res.writeHead(302, { 'Location': '/' });
+            res.writeHead(302, { Location: '/' });
             res.end();
 
             return;

@@ -38,7 +38,7 @@ var EmailCheckExtension = {
                         ExtendableObject._awaits++;
                         ExtendableObject.util.Promise.resolve(value).then(function (value) {
                             if (typeof value === 'string') {
-                                if ('' === value) {
+                                if (value === '') {
                                     value = [];
                                 } else {
                                     value = [value];
@@ -83,7 +83,7 @@ var EmailCheckExtension = {
                     var statuses = [];
 
                     ExtendableObject.emailStatus.forEach(function (emailStatus) {
-                        if (!!ExtendableObject.config.texts.statuses[emailStatus]) {
+                        if (ExtendableObject.config.texts.statuses[emailStatus]) {
                             statuses.push({
                                 status: emailStatus,
                                 text: ExtendableObject.config.texts.statuses[emailStatus]
@@ -91,18 +91,18 @@ var EmailCheckExtension = {
                         }
                     });
 
-                    if (document.querySelectorAll('.endereco-status-wrapper[data-id="' + ExtendableObject.id + '"]')) {
-                        document.querySelectorAll('.endereco-status-wrapper[data-id="' + ExtendableObject.id + '"]').forEach(function (DOMElement) {
+                    if (document.querySelectorAll(`.endereco-status-wrapper[data-id="${ExtendableObject.id}"]`)) {
+                        document.querySelectorAll(`.endereco-status-wrapper[data-id="${ExtendableObject.id}"]`).forEach(function (DOMElement) {
                             DOMElement.remove();
                         });
                     }
 
-                    if (0 < statuses.length) {
+                    if (statuses.length > 0) {
                         var wrapperHtml = ExtendableObject.util.Mustache.render(
                             ExtendableObject.config.templates.statusWrapper,
                             {
-                                'ExtendableObject': ExtendableObject,
-                                'statuses': statuses
+                                ExtendableObject: ExtendableObject,
+                                statuses: statuses
                             }
                         );
                         var messageContainer = document.querySelector(ExtendableObject.config.ux.errorContainer);
@@ -112,7 +112,7 @@ var EmailCheckExtension = {
                             ? ExtendableObject.config.ux.errorInsertMode
                             : 'afterbegin';
 
-                        if (!!messageContainer) {
+                        if (messageContainer) {
                             messageContainer.insertAdjacentHTML(insertMode, wrapperHtml);
                         } else {
                             ExtendableObject._subscribers.email.forEach(function (subscriber) {
@@ -131,11 +131,11 @@ var EmailCheckExtension = {
 
                     return new ExtendableObject.util.Promise(function (resolve, reject) {
                         var message = {
-                            'jsonrpc': '2.0',
-                            'id': 1,
-                            'method': 'emailCheck',
-                            'params': {
-                                'email': email
+                            jsonrpc: '2.0',
+                            id: 1,
+                            method: 'emailCheck',
+                            params: {
+                                email: email
                             }
                         };
 

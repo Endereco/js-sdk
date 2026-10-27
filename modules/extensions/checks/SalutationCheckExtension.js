@@ -66,11 +66,11 @@ var SalutationCheckExtension = {
 
                     return new ExtendableObject.util.Promise(function (resolve, reject) {
                         var message = {
-                            'jsonrpc': '2.0',
-                            'id': 1,
-                            'method': 'nameCheck',
-                            'params': {
-                                'name': name
+                            jsonrpc: '2.0',
+                            id: 1,
+                            method: 'nameCheck',
+                            params: {
+                                name: name
                             }
                         };
 

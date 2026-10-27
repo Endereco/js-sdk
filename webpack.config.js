@@ -4,7 +4,7 @@ var TerserPlugin = require('terser-webpack-plugin');
 module.exports = {
     mode: process.env.NODE_ENV,
     entry: {
-        'endereco': './bundle.js'
+        endereco: './bundle.js'
     },
     output: {
         filename: 'endereco.min.js',

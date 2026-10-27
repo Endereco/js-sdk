@@ -49,15 +49,15 @@ function definePropertyAccessors (ExtendableObject) {
 
 function createAccessor (ExtendableObject, propertyName) {
     Object.defineProperty(ExtendableObject, propertyName, {
-        get: function () { return this['_' + propertyName]; },
+        get: function () { return this[`_${propertyName}`]; },
         set: function (value) {
-            var oldValue = this['_' + propertyName];
+            var oldValue = this[`_${propertyName}`];
 
             this._awaits++;
             ExtendableObject.util.Promise.resolve(value)
                 .then(newValue => {
                     if (oldValue !== newValue) {
-                        this['_' + propertyName] = newValue;
+                        this[`_${propertyName}`] = newValue;
                         notifySubscribers(ExtendableObject, propertyName, newValue);
                         fireChangeEvent(ExtendableObject, propertyName, oldValue, newValue);
                     }
@@ -94,8 +94,8 @@ function processFormsInterval (ExtendableObject) {
         if (ExtendableObject.forms.length !== ExtendableObject.formsWithSession.length) {
             ExtendableObject.forms.forEach(form => {
                 if (!ExtendableObject.formsWithSession.includes(form)) {
-                    addInputIfNotExists(form, ExtendableObject.fullName + '_session_id', ExtendableObject);
-                    addInputIfNotExists(form, ExtendableObject.fullName + '_session_counter', ExtendableObject);
+                    addInputIfNotExists(form, `${ExtendableObject.fullName}_session_id`, ExtendableObject);
+                    addInputIfNotExists(form, `${ExtendableObject.fullName}_session_counter`, ExtendableObject);
                     // Subscribe to own fields
                     subscribeToField(ExtendableObject, 'sessionId');
                     subscribeToField(ExtendableObject, 'sessionCounter');
@@ -132,8 +132,8 @@ function handleAfterCreate (ExtendableObject) {
 
 function subscribeToField (ExtendableObject, fieldName) {
     const fieldNameMapping = {
-        'sessionId': 'session_id',
-        'sessionCounter': 'session_counter'
+        sessionId: 'session_id',
+        sessionCounter: 'session_counter'
     };
     var subscriber = new EnderecoSubscriber(
         fieldName,

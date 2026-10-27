@@ -191,7 +191,7 @@ function EnderecoSubscriber (propertyName, observableObject, options = {}) {
             }
             this._subject = subject;
 
-            const changeCallbackGenerator = this.propertyName + 'Change';
+            const changeCallbackGenerator = `${this.propertyName}Change`;
 
             if (this._subject.cb[changeCallbackGenerator]) {
                 const callbackForChange = this._subject.cb[changeCallbackGenerator](this);
@@ -200,7 +200,7 @@ function EnderecoSubscriber (propertyName, observableObject, options = {}) {
                 this.cleanupFunctions.push(cleanupChangeListener);
             }
 
-            const inputCallbackGenerator = this.propertyName + 'Input';
+            const inputCallbackGenerator = `${this.propertyName}Input`;
 
             if (this._subject.cb[inputCallbackGenerator]) {
                 const callbackForInput = this._subject.cb[inputCallbackGenerator](this);
@@ -209,7 +209,7 @@ function EnderecoSubscriber (propertyName, observableObject, options = {}) {
                 this.cleanupFunctions.push(cleanupInputListener);
             }
 
-            const blurCallbackGenerator = this.propertyName + 'Blur';
+            const blurCallbackGenerator = `${this.propertyName}Blur`;
 
             if (undefined !== this._subject.cb[blurCallbackGenerator]) {
                 const callbackForBlur = this._subject.cb[blurCallbackGenerator](this);
@@ -218,7 +218,7 @@ function EnderecoSubscriber (propertyName, observableObject, options = {}) {
                 this.cleanupFunctions.push(cleanupBlurListener);
             }
 
-            const keydownCallbackGenerator = this.propertyName + 'Keydown';
+            const keydownCallbackGenerator = `${this.propertyName}Keydown`;
 
             if (undefined !== this._subject.cb[keydownCallbackGenerator]) {
                 const keydownCBFunc = this._subject.cb[keydownCallbackGenerator](this);
@@ -237,7 +237,7 @@ function EnderecoSubscriber (propertyName, observableObject, options = {}) {
                 subscriber.options.displayAutocompleteDropdown
             ) {
                 if (/chrom(e|ium)/.test(navigator.userAgent.toLowerCase())) {
-                    this.object.setAttribute('autocomplete', 'autocomplete_' + Math.random().toString(36).substring(2) + Date.now());
+                    this.object.setAttribute('autocomplete', `autocomplete_${Math.random().toString(36).substring(2)}${Date.now()}`);
                 } else {
                     this.object.setAttribute('autocomplete', 'off');
                 }
@@ -251,12 +251,12 @@ function EnderecoSubscriber (propertyName, observableObject, options = {}) {
             }, 100);
 
             // Skip for hidden type inputs.
-            if (!!this.object && ('hidden' !== this.object.type)) {
+            if (this.object && (this.object.type !== 'hidden')) {
                 // Subscribe to status.
                 // If is fieldName -> subscribe to next visible parent.
                 if (subject.fieldNames.includes(this.propertyName) && this.options.autosubscribeToStatus) {
                     subject.addSubscriber(new EnderecoSubscriber(
-                        this.propertyName + 'Status',
+                        `${this.propertyName}Status`,
                         this.object.parentNode, // Subscribe to the parent,
                         {
                             valueContainer: 'classList'
@@ -276,8 +276,8 @@ function EnderecoSubscriber (propertyName, observableObject, options = {}) {
                         innerValue = innerValue.join();
                     }
 
-                    var innerValueEmpty = !innerValue && 0 !== innerValue;
-                    var subscriberValueEmpty = !subscriberValue && 0 !== subscriberValue;
+                    var innerValueEmpty = !innerValue && innerValue !== 0;
+                    var subscriberValueEmpty = !subscriberValue && subscriberValue !== 0;
 
                     if (!subscriberValueEmpty && innerValueEmpty) {
                         subject[$key] = subscriberValue;
@@ -299,15 +299,15 @@ function EnderecoSubscriber (propertyName, observableObject, options = {}) {
             var $self = this;
             var value = '';
 
-            if ('classList' === this.options.valueContainer) {
+            if (this.options.valueContainer === 'classList') {
                 value = this.getClassList();
-            } else if ('innerHTML' === this.options.valueContainer) {
+            } else if (this.options.valueContainer === 'innerHTML') {
                 value = this.getInnerHTML();
-            } else if ('value' === this.options.valueContainer) {
+            } else if (this.options.valueContainer === 'value') {
                 if ($self.object.disabled) {
                     value = '';
                 } else {
-                    if (!!$self.options.customGetValue) {
+                    if ($self.options.customGetValue) {
                         value = $self.options.customGetValue($self);
                     } else {
                         value = $self.getValue();
@@ -326,17 +326,17 @@ function EnderecoSubscriber (propertyName, observableObject, options = {}) {
                 return;
             }
 
-            if (!!$self._subject) {
+            if ($self._subject) {
                 $self._subject._awaits++;
             }
             this.options.writeFilterCb(value, $self)
                 .then(function (value) {
-                    if ('classList' === $self.options.valueContainer) {
+                    if ($self.options.valueContainer === 'classList') {
                         return $self.setClassList(value);
-                    } else if ('innerHTML' === $self.options.valueContainer) {
+                    } else if ($self.options.valueContainer === 'innerHTML') {
                         return $self.setInnerHTML(value);
-                    } else if ('value' === $self.options.valueContainer) {
-                        if (!!$self.options.customSetValue) {
+                    } else if ($self.options.valueContainer === 'value') {
+                        if ($self.options.customSetValue) {
                             return $self.options.customSetValue($self, value);
                         } else {
                             return $self.setValue(value);
@@ -347,7 +347,7 @@ function EnderecoSubscriber (propertyName, observableObject, options = {}) {
                 })
                 .catch(function (e) {})
                 .finally(function () {
-                    if (!!$self._subject) {
+                    if ($self._subject) {
                         $self._subject._awaits--;
                     }
                 });
@@ -359,11 +359,11 @@ function EnderecoSubscriber (propertyName, observableObject, options = {}) {
             try {
                 const resolvedValue = await subscriber.options.writeFilterCb(value, subscriber);
 
-                if ('classList' === subscriber.options.valueContainer) {
+                if (subscriber.options.valueContainer === 'classList') {
                     subscriber.setClassList(resolvedValue);
-                } else if ('innerHTML' === subscriber.options.valueContainer) {
+                } else if (subscriber.options.valueContainer === 'innerHTML') {
                     subscriber.setInnerHTML(resolvedValue);
-                } else if ('value' === subscriber.options.valueContainer) {
+                } else if (subscriber.options.valueContainer === 'value') {
                     if (subscriber.options.customSetValue) {
                         subscriber.options.customSetValue(subscriber, resolvedValue);
                     } else {
@@ -383,15 +383,15 @@ function EnderecoSubscriber (propertyName, observableObject, options = {}) {
         getDOMValue: () => {
             let value = '';
 
-            if ('classList' === subscriber.options.valueContainer) {
+            if (subscriber.options.valueContainer === 'classList') {
                 value = subscriber.getClassList();
-            } else if ('innerHTML' === subscriber.options.valueContainer) {
+            } else if (subscriber.options.valueContainer === 'innerHTML') {
                 value = subscriber.getInnerHTML();
-            } else if ('value' === subscriber.options.valueContainer) {
+            } else if (subscriber.options.valueContainer === 'value') {
                 if (subscriber.object.disabled) {
                     value = '';
                 } else {
-                    if (!!subscriber.options.customGetValue) {
+                    if (subscriber.options.customGetValue) {
                         value = subscriber.options.customGetValue(subscriber);
                     } else {
                         value = subscriber.getValue();
@@ -450,11 +450,11 @@ function EnderecoSubscriber (propertyName, observableObject, options = {}) {
             // Add classes.
             if (Array.isArray(value)) {
                 value.forEach(function (singleValue) {
-                    $DOMElement.classList.add('endereco-s--' + singleValue);
+                    $DOMElement.classList.add(`endereco-s--${singleValue}`);
                 });
             } else {
                 // Assume string.
-                $DOMElement.classList.add('endereco-s--' + value);
+                $DOMElement.classList.add(`endereco-s--${value}`);
             }
         },
         setInnerHTML: function (value) {
@@ -504,9 +504,9 @@ function EnderecoSubscriber (propertyName, observableObject, options = {}) {
                 }
             });
 
-            if (1 < toReturn.length) {
+            if (toReturn.length > 1) {
                 return toReturn;
-            } else if (1 === toReturn.length) {
+            } else if (toReturn.length === 1) {
                 return toReturn[0];
             } else {
                 return '';

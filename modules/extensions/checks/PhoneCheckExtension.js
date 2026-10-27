@@ -52,7 +52,7 @@ var PhoneCheckExtension = {
 
                             if (oldValue !== newValue) {
                                 // Check if the type of phone is fitting in.
-                                if ('mobile' === ExtendableObject.numberType &&
+                                if (ExtendableObject.numberType === 'mobile' &&
                                     !newValue.includes('phone_is_mobile') &&
                                     newValue.length > 0
                                 ) {
@@ -62,7 +62,7 @@ var PhoneCheckExtension = {
                                     }
                                     newValue.push('phone_wrong_type');
                                     newValue.push('phone_should_be_mobile');
-                                } else if ('fixedLine' === ExtendableObject.numberType &&
+                                } else if (ExtendableObject.numberType === 'fixedLine' &&
                                     !newValue.includes('phone_is_fixed_line') &&
                                     newValue.length > 0
                                 ) {
@@ -114,7 +114,7 @@ var PhoneCheckExtension = {
                         return;
                     }
                     ExtendableObject.phoneStatus.forEach(function (phoneStatus) {
-                        if (!!ExtendableObject.config.texts.statuses[phoneStatus] &&
+                        if (ExtendableObject.config.texts.statuses[phoneStatus] &&
                             !uniqueContainer[phoneStatus]
                         ) {
                             statuses.push({
@@ -129,13 +129,13 @@ var PhoneCheckExtension = {
                         return self.indexOf(value) === index;
                     });
 
-                    if (document.querySelectorAll('.endereco-status-wrapper[data-id="' + ExtendableObject.id + '"]')) {
-                        document.querySelectorAll('.endereco-status-wrapper[data-id="' + ExtendableObject.id + '"]').forEach(function (DOMElement) {
+                    if (document.querySelectorAll(`.endereco-status-wrapper[data-id="${ExtendableObject.id}"]`)) {
+                        document.querySelectorAll(`.endereco-status-wrapper[data-id="${ExtendableObject.id}"]`).forEach(function (DOMElement) {
                             DOMElement.remove();
                         });
                     }
 
-                    if (0 < statuses.length) {
+                    if (statuses.length > 0) {
                         if (ExtendableObject.config.phoneFormat &&
                           ExtendableObject.config.texts.requiredFormat[ExtendableObject.config.phoneFormat] &&
                             ExtendableObject.phoneStatus.includes('phone_format_needs_correction')
@@ -146,9 +146,9 @@ var PhoneCheckExtension = {
                         var wrapperHtml = ExtendableObject.util.Mustache.render(
                             ExtendableObject.config.templates.statusWrapper,
                             {
-                                'ExtendableObject': ExtendableObject,
-                                'statuses': statuses,
-                                'requiredFormat': formatMessage
+                                ExtendableObject: ExtendableObject,
+                                statuses: statuses,
+                                requiredFormat: formatMessage
                             }
                         );
 
@@ -169,15 +169,15 @@ var PhoneCheckExtension = {
 
                     return new ExtendableObject.util.Promise(function (resolve, reject) {
                         var message = {
-                            'jsonrpc': '2.0',
-                            'id': ExtendableObject.phoneCheckRequestCounter,
-                            'method': 'phoneCheck',
-                            'params': {
-                                'phone': phone
+                            jsonrpc: '2.0',
+                            id: ExtendableObject.phoneCheckRequestCounter,
+                            method: 'phoneCheck',
+                            params: {
+                                phone: phone
                             }
                         };
 
-                        if (!!ExtendableObject.countryCode) {
+                        if (ExtendableObject.countryCode) {
                             message.params.countryCode = ExtendableObject.countryCode;
                         } else {
                             message.params.countryCode = window.EnderecoIntegrator.defaultCountry ?? 'DE';

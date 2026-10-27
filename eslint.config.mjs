@@ -38,6 +38,7 @@ export default [
             'no-return-await': 'error', // Avoid unnecessary return await
             'require-await': 'error', // Ensure async functions use await
             'no-promise-executor-return': 'error', // Prevent returning values from Promise executors
+            'no-extra-boolean-cast': ['error', { enforceForLogicalOperands: true }], // Disallow redundant !! also inside && and ||
 
             // Improved readability
             'max-len': ['warn', { // Keep line length reasonable

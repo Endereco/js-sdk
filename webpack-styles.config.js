@@ -4,7 +4,7 @@ module.exports = {
     mode: 'production',
     entry: './themes/default-theme.scss',
     output: {
-        path: __dirname + '/dist'
+        path: `${__dirname}/dist`
     },
     module: {
         rules: [

@@ -85,7 +85,7 @@ var templates = {
     zw: frTpl,
     getTemplate: function (countryCode) {
         countryCode = countryCode.toLowerCase();
-        if (!!this[countryCode]) {
+        if (this[countryCode]) {
             return this[countryCode];
         } else {
             return this.default;

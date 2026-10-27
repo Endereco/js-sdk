@@ -53,7 +53,7 @@ var PhoneExtension = {
                                                 newStatus = data.status;
 
                                                 newStatus.push('phone_correct');
-                                                newStatus.push('phone_format_' + ExtendableObject.config.phoneFormat.toLowerCase());
+                                                newStatus.push(`phone_format_${ExtendableObject.config.phoneFormat.toLowerCase()}`);
 
                                                 if (newStatus.indexOf('phone_format_unknown') !== -1) {
                                                     newStatus.splice(

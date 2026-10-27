@@ -49,7 +49,7 @@ var NameCheckExtension = {
                 ExtendableObject.isTitleRelevant = function () {
                     var isTitleRelevant = false;
 
-                    if ((0 < ExtendableObject._subscribers.title.length)) {
+                    if ((ExtendableObject._subscribers.title.length > 0)) {
                         ExtendableObject._subscribers.title.forEach(function (listener) {
                             if (!listener.object.disabled &&
                                 listener.object.isConnected) {
@@ -279,17 +279,17 @@ var NameCheckExtension = {
 
                     return new ExtendableObject.util.Promise(function (resolve, reject) {
                         var message = {
-                            'jsonrpc': '2.0',
-                            'id': ExtendableObject._nameCheckRequestIndex,
-                            'method': 'nameCheck',
-                            'params': {
-                                'firstName': person.firstName,
-                                'lastName': person.lastName,
-                                'salutation': person.salutation
+                            jsonrpc: '2.0',
+                            id: ExtendableObject._nameCheckRequestIndex,
+                            method: 'nameCheck',
+                            params: {
+                                firstName: person.firstName,
+                                lastName: person.lastName,
+                                salutation: person.salutation
                             }
                         };
 
-                        if ((0 < ExtendableObject._subscribers.title.length)) {
+                        if ((ExtendableObject._subscribers.title.length > 0)) {
                             ExtendableObject._subscribers.title.forEach(function (listener) {
                                 if (!listener.object.disabled &&
                                     listener.object.isConnected) {
@@ -329,7 +329,7 @@ var NameCheckExtension = {
                                         ExtendableObject.firstNameStatus = [];
                                         ExtendableObject.lastNameStatus = [];
 
-                                        if (!['m', 'f', 'd'].includes(ExtendableObject.salutation) && !!responsePredictions[0].salutation) {
+                                        if (!['m', 'f', 'd'].includes(ExtendableObject.salutation) && responsePredictions[0].salutation) {
                                             ExtendableObject.salutation = responsePredictions[0].salutation;
                                             salutationCopied = true;
                                         }

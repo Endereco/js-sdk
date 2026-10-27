@@ -66,7 +66,7 @@ function EnderecoBase () {
             var $self = this;
 
             return new Promise(function (resolve, reject) {
-                if ('string' === typeof extensions) {
+                if (typeof extensions === 'string') {
                     extensions = [extensions];
                 }
 
@@ -135,7 +135,7 @@ function EnderecoBase () {
 
             return new Promise(function (resolve, reject) {
                 var waitForAwaits = setInterval(function () {
-                    if (0 === $self._awaits) {
+                    if ($self._awaits === 0) {
                         clearInterval(waitForAwaits);
                         resolve();
                     }
@@ -156,14 +156,14 @@ function EnderecoBase () {
             $self.fieldNames.forEach(function (fieldName) {
                 if ($self._subscribers[fieldName]) {
                     $self._subscribers[fieldName].forEach(function (subscriber) {
-                        if (null !== subscriber.object.offsetParent && document.activeElement === subscriber.object) {
+                        if (subscriber.object.offsetParent !== null && document.activeElement === subscriber.object) {
                             hasAny = true;
                         }
                     });
                 }
             });
 
-            if (!!window.EnderecoIntegrator.$globalFilters && !!window.EnderecoIntegrator.$globalFilters.anyActive) {
+            if (window.EnderecoIntegrator.$globalFilters && window.EnderecoIntegrator.$globalFilters.anyActive) {
                 window.EnderecoIntegrator.$globalFilters.anyActive.forEach(function (callback) {
                     hasAny = callback(hasAny, $self);
                 });
@@ -182,7 +182,7 @@ function EnderecoBase () {
                 }
             });
 
-            if (!!window.EnderecoIntegrator.$globalFilters && !!window.EnderecoIntegrator.$globalFilters.anyMissing) {
+            if (window.EnderecoIntegrator.$globalFilters && window.EnderecoIntegrator.$globalFilters.anyMissing) {
                 window.EnderecoIntegrator.$globalFilters.anyMissing.forEach(function (callback) {
                     hasAny = callback(hasAny, $self);
                 });
@@ -357,8 +357,8 @@ function EnderecoBase () {
 
                 // Check if has form. Add to forms.
                 if (
-                    !!EnderecoSubscriberObject.object &&
-                    !!EnderecoSubscriberObject.object.form
+                    EnderecoSubscriberObject.object &&
+                    EnderecoSubscriberObject.object.form
                 ) {
                     if (
                         undefined !== $self.forms &&
@@ -437,8 +437,6 @@ function EnderecoBase () {
                 console.warn('Syncing value failed', err);
                 throw err; // Re-throw to allow upstream error handling
             }
-
-            return;
         },
         setField: function (fieldName, fieldValue, markAsChanged = true) {
             var $self = this;
@@ -446,7 +444,7 @@ function EnderecoBase () {
             $self._awaits++;
             $self.util.Promise.resolve(fieldValue).then(function (value) {
                 // Set inner value.
-                $self['_' + fieldName] = fieldValue;
+                $self[`_${fieldName}`] = fieldValue;
                 $self._subscribers[fieldName].forEach(function (subscriber) {
                     subscriber.value = value;
                 });
