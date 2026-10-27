@@ -265,6 +265,48 @@ const NameCheckExtension = {
                     return true;
                 };
 
+                // Copy the predicted title, if the title field is in use.
+                const applyPredictedTitle = function (prediction) {
+                    if (!ExtendableObject.isTitleRelevant()) {
+                        return;
+                    }
+
+                    ExtendableObject.title = prediction.title;
+
+                    if (prediction.title !== '') {
+                        ExtendableObject.titleStatus = ['title_correct'];
+                    }
+                };
+
+                // Copy the predicted first and last name. Transpositioned names keep the
+                // order the customer entered, unless correctTranspositionedNames is set.
+                const applyPredictedNames = function (prediction, isTranspositioned) {
+                    if (!isTranspositioned) {
+                        ExtendableObject.firstName = prediction.firstName;
+                        ExtendableObject.lastName = prediction.lastName;
+
+                        ExtendableObject.firstNameStatus = ['first_name_correct'];
+                        ExtendableObject.lastNameStatus = ['last_name_correct'];
+
+                        applyPredictedTitle(prediction);
+
+                        return;
+                    }
+
+                    if (ExtendableObject.config.ux.correctTranspositionedNames) {
+                        ExtendableObject.lastName = prediction.lastName;
+                        ExtendableObject.firstName = prediction.firstName;
+                    } else {
+                        ExtendableObject.lastName = prediction.firstName;
+                        ExtendableObject.firstName = prediction.lastName;
+                    }
+
+                    applyPredictedTitle(prediction);
+
+                    ExtendableObject.firstNameStatus = ['first_name_correct'];
+                    ExtendableObject.lastNameStatus = ['last_name_correct'];
+                };
+
                 ExtendableObject.util.checkPerson = function (person = null) {
                     if (!person) {
                         person = {
@@ -333,40 +375,7 @@ const NameCheckExtension = {
                                         }
 
                                         if (!ExtendableObject._nameCorrected) {
-                                            if (!responseStatus.includes('name_transpositioned')) {
-                                                ExtendableObject.firstName = responsePredictions[0].firstName;
-                                                ExtendableObject.lastName = responsePredictions[0].lastName;
-
-                                                ExtendableObject.firstNameStatus = ['first_name_correct'];
-                                                ExtendableObject.lastNameStatus = ['last_name_correct'];
-
-                                                if (ExtendableObject.isTitleRelevant()) {
-                                                    ExtendableObject.title = responsePredictions[0].title;
-
-                                                    if (responsePredictions[0].title !== '') {
-                                                        ExtendableObject.titleStatus = ['title_correct'];
-                                                    }
-                                                }
-                                            } else if (responseStatus.includes('name_transpositioned')) {
-                                                if (ExtendableObject.config.ux.correctTranspositionedNames) {
-                                                    ExtendableObject.lastName = responsePredictions[0].lastName;
-                                                    ExtendableObject.firstName = responsePredictions[0].firstName;
-                                                } else {
-                                                    ExtendableObject.lastName = responsePredictions[0].firstName;
-                                                    ExtendableObject.firstName = responsePredictions[0].lastName;
-                                                }
-
-                                                if (ExtendableObject.isTitleRelevant()) {
-                                                    ExtendableObject.title = responsePredictions[0].title;
-
-                                                    if (responsePredictions[0].title !== '') {
-                                                        ExtendableObject.titleStatus = ['title_correct'];
-                                                    }
-                                                }
-
-                                                ExtendableObject.firstNameStatus = ['first_name_correct'];
-                                                ExtendableObject.lastNameStatus = ['last_name_correct'];
-                                            }
+                                            applyPredictedNames(responsePredictions[0], responseStatus.includes('name_transpositioned'));
                                             ExtendableObject._nameCorrected = true;
                                         }
 
