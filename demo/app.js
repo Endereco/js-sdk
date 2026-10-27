@@ -44,7 +44,7 @@ app.use('/assets', express.static(path.join(__dirname, 'assets')));
 const router = express.Router();
 
 // Handle POST requests to /use-cases
-router.post('/use-cases/:usecase', async (req, res) => {
+router.post('/use-cases/:usecase', (req, res) => {
     // Handle your POST request here
     // You can access the posted data with req.body
     const filePath = path.join(__dirname, `/use-cases/${req.params.usecase}/index.html`);
@@ -53,7 +53,7 @@ router.post('/use-cases/:usecase', async (req, res) => {
 });
 
 // Handle GET requests to /use-cases
-router.get('/use-cases/:usecase', async (req, res) => {
+router.get('/use-cases/:usecase', (req, res) => {
     const filePath = path.join(__dirname, `/use-cases/${req.params.usecase}/index.html`);
 
     readFile(filePath, res, 'text/html');
@@ -74,7 +74,7 @@ router.get('/', async (req, res) => {
 });
 
 // Proxy file upload
-router.post('/proxyfile', async (req, res) => {
+router.post('/proxyfile', (req, res) => {
     const serverUrl = req.header('x-remote-api-url') ?? 'staging.endereco-service.de';
     const postData = req.body;
 
@@ -111,7 +111,7 @@ router.post('/proxyfile', async (req, res) => {
 });
 
 // Catch all other routes
-router.post('*', async (req, res) => {
+router.post('*', (req, res) => {
     res.redirect('/');
 });
 

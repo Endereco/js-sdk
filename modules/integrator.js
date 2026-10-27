@@ -9,7 +9,7 @@ import 'core-js/fn/promise/finally';
 import { attachSubmitListenersToForm } from '../src/helper/form';
 import ProcessQueue from '../src/services/ProcessQueue';
 
-const bindFieldsToAddressObject = async (addressObject, fieldSelectors, EnderecoIntegrator) => {
+const bindFieldsToAddressObject = (addressObject, fieldSelectors, EnderecoIntegrator) => {
     const autocompletableFields = ['postalCode', 'locality', 'streetName', 'streetFull'];
 
     for (const [fieldName, selector] of Object.entries(fieldSelectors)) {
@@ -188,6 +188,7 @@ const EnderecoIntegrator = {
         // To be overridden in system specific implementation.
         return true;
     },
+    // eslint-disable-next-line require-await -- Extension point, overrides may be async.
     isPopupAreaFree: async (EAO) => {
         // To be overridden in system specific implementation.
         return true;
@@ -497,7 +498,7 @@ const EnderecoIntegrator = {
         }
 
         // Bind all address-related fields to the address object
-        await bindFieldsToAddressObject(addressObject, fieldSelectors, integrator);
+        bindFieldsToAddressObject(addressObject, fieldSelectors, integrator);
 
         await addressObject.waitUntilReady();
         await addressObject.syncValues();
