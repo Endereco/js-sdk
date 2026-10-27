@@ -70,7 +70,7 @@ function EnderecoBase () {
                     extensions = [extensions];
                 }
 
-                var intervalObject = setInterval(function () {
+                const intervalObject = setInterval(function () {
                     let allSet = true;
 
                     extensions.forEach(function (extensionName) {
@@ -86,7 +86,7 @@ function EnderecoBase () {
                     }
                 }, 100);
 
-                var timeoutObject = setTimeout(function () {
+                const timeoutObject = setTimeout(function () {
                     clearTimeout(timeoutObject);
                     clearInterval(intervalObject);
                     console.log('Timeout!');
@@ -100,7 +100,7 @@ function EnderecoBase () {
             this._awaits++;
 
             return new Promise(function (resolve, reject) {
-                var intervalObject = setInterval(function () {
+                const intervalObject = setInterval(function () {
                     if (Object.keys($self.loadedExtensions).length === $self.extensions.length) {
                         clearTimeout(timeoutObject);
                         clearInterval(intervalObject);
@@ -109,7 +109,7 @@ function EnderecoBase () {
                     }
                 }, 100);
 
-                var timeoutObject = setTimeout(function () {
+                const timeoutObject = setTimeout(function () {
                     clearTimeout(timeoutObject);
                     clearInterval(intervalObject);
                     console.log('Timeout!');
@@ -122,7 +122,7 @@ function EnderecoBase () {
             const $self = this;
 
             return new Promise(function (resolve, reject) {
-                var intervalObject = setInterval(function () {
+                const intervalObject = setInterval(function () {
                     if ($self.active) {
                         clearInterval(intervalObject);
                         resolve();
@@ -134,7 +134,7 @@ function EnderecoBase () {
             const $self = this;
 
             return new Promise(function (resolve, reject) {
-                var waitForAwaits = setInterval(function () {
+                const waitForAwaits = setInterval(function () {
                     if ($self._awaits === 0) {
                         clearInterval(waitForAwaits);
                         resolve();

@@ -969,7 +969,7 @@ const EnderecoIntegrator = {
     },
     waitUntilReady: function () {
         return new Promise(function (resolve, reject) {
-            var interval = setInterval(function () {
+            const interval = setInterval(function () {
                 if (window.EnderecoIntegrator.ready) {
                     clearInterval(interval);
                     resolve();
