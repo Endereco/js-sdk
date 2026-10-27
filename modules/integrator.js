@@ -379,7 +379,7 @@ const EnderecoIntegrator = {
                         };
                     }
                     if ($self.resolvers.phoneRead) {
-                        phoneSubscriberOptions.readFilterCb = function (value) {
+                        phoneSubscriberOptions.readFilterCb = function (value, subscriber) {
                             return $self.resolvers.phoneRead(value, subscriber);
                         };
                     }
