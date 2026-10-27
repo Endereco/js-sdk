@@ -123,8 +123,6 @@ const EmailCheckExtension = {
                 };
 
                 ExtendableObject.util.checkEmail = function (email = null) {
-                    const $self = this;
-
                     if (!email) {
                         email = ExtendableObject.email;
                     }

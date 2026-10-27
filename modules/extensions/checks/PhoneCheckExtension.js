@@ -159,8 +159,6 @@ const PhoneCheckExtension = {
                 };
 
                 ExtendableObject.util.checkPhone = function (phone = null) {
-                    const $self = this;
-
                     if (!phone) {
                         phone = ExtendableObject.phone;
                     }

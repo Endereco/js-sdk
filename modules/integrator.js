@@ -596,7 +596,7 @@ const EnderecoIntegrator = {
     findForms: (subscriberCollection) => {
         const forms = [];
 
-        for (const [fieldName, subscribers] of Object.entries(subscriberCollection)) {
+        for (const subscribers of Object.values(subscriberCollection)) {
             if (subscribers.length === 0) {
                 continue;
             }
@@ -968,8 +968,6 @@ const EnderecoIntegrator = {
         return EPO;
     },
     waitUntilReady: function () {
-        const $self = this;
-
         return new Promise(function (resolve, reject) {
             var interval = setInterval(function () {
                 if (window.EnderecoIntegrator.ready) {
@@ -1101,8 +1099,6 @@ const EnderecoIntegrator = {
     },
     _test: {},
     changeFieldsOrder: function (collection, fieldNamesOrder = ['countryCode', 'subdivisionCode', 'postalCode', 'locality', 'streetFull', 'streetName', 'buildingNumber', 'additionalInfo']) {
-        const myStructure = {};
-
         // Create parent line for additional info if it exists.
         this._createParentLine('additionalInfo', this._test, collection);
         this._createParentLine('buildingNumber', this._test, collection);
@@ -1114,7 +1110,7 @@ const EnderecoIntegrator = {
         this._createParentLine('subdivisionCode', this._test, collection);
 
         // Ensure position.
-        const reversedArray = new Array();
+        const reversedArray = [];
 
         for (let i = fieldNamesOrder.length - 1; i >= 0; i--) {
             // Filterout if not existing.

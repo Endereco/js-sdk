@@ -266,8 +266,6 @@ const NameCheckExtension = {
                 };
 
                 ExtendableObject.util.checkPerson = function (person = null) {
-                    const $self = this;
-
                     if (!person) {
                         person = {
                             title: ExtendableObject.title,
