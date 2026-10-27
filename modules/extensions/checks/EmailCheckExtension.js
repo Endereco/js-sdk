@@ -1,12 +1,12 @@
-import statusWrapper from "../../../templates/email_check_status_wrapper.html";
+import statusWrapper from '../../../templates/email_check_status_wrapper.html';
 
 var EmailCheckExtension = {
     name: 'EmailCheckExtension',
-    extend: function(ExtendableObject) {
+    extend: function (ExtendableObject) {
         var $self = this;
 
-        return new ExtendableObject.util.Promise(function(resolve, reject) {
-            ExtendableObject.waitForExtension('EmailExtension').then(function() {
+        return new ExtendableObject.util.Promise(function (resolve, reject) {
+            ExtendableObject.waitForExtension('EmailExtension').then(function () {
                 // Add email field.
                 ExtendableObject._emailStatus = '';
                 ExtendableObject._subscribers.emailStatus = [];
@@ -18,10 +18,10 @@ var EmailCheckExtension = {
                 }
 
                 // Add change event hadler.
-                ExtendableObject.cb.emailStatusChange = function(subscriber) {
-                    return function(e) {
+                ExtendableObject.cb.emailStatusChange = function (subscriber) {
+                    return function (e) {
                         ExtendableObject.emailStatus = subscriber.value;
-                    }
+                    };
                 };
 
                 ExtendableObject.cb.onEmailChecked = [];
@@ -29,13 +29,14 @@ var EmailCheckExtension = {
 
                 // Add the "emaiL" property
                 Object.defineProperty(ExtendableObject, 'emailStatus', {
-                    get: function() {
+                    get: function () {
                         return this._emailStatus;
                     },
-                    set: function(value) {
+                    set: function (value) {
                         var oldValue = ExtendableObject._emailStatus;
+
                         ExtendableObject._awaits++;
-                        ExtendableObject.util.Promise.resolve(value).then(function(value) {
+                        ExtendableObject.util.Promise.resolve(value).then(function (value) {
                             if (typeof value === 'string') {
                                 if ('' === value) {
                                     value = [];
@@ -44,6 +45,7 @@ var EmailCheckExtension = {
                                 }
                             }
                             var newValue = value;
+
                             if (oldValue !== newValue) {
                                 ExtendableObject._emailStatus = newValue;
                                 ExtendableObject._changed = false;
@@ -71,27 +73,26 @@ var EmailCheckExtension = {
                                     ExtendableObject.util.renderStatusMessages();
                                 }
                             }
-                        }).catch().finally(function() {
+                        }).catch().finally(function () {
                             ExtendableObject._awaits--;
                         });
-
                     }
                 });
 
-                ExtendableObject.util.renderStatusMessages = function() {
+                ExtendableObject.util.renderStatusMessages = function () {
                     var statuses = [];
 
-                    ExtendableObject.emailStatus.forEach( function(emailStatus) {
+                    ExtendableObject.emailStatus.forEach(function (emailStatus) {
                         if (!!ExtendableObject.config.texts.statuses[emailStatus]) {
                             statuses.push({
                                 status: emailStatus,
                                 text: ExtendableObject.config.texts.statuses[emailStatus]
-                            })
+                            });
                         }
-                    })
+                    });
 
                     if (document.querySelectorAll('.endereco-status-wrapper[data-id="' + ExtendableObject.id + '"]')) {
-                        document.querySelectorAll('.endereco-status-wrapper[data-id="' + ExtendableObject.id + '"]').forEach( function(DOMElement) {
+                        document.querySelectorAll('.endereco-status-wrapper[data-id="' + ExtendableObject.id + '"]').forEach(function (DOMElement) {
                             DOMElement.remove();
                         });
                     }
@@ -103,29 +104,32 @@ var EmailCheckExtension = {
                                 'ExtendableObject': ExtendableObject,
                                 'statuses': statuses
                             }
-                        )
+                        );
                         var messageContainer = document.querySelector(ExtendableObject.config.ux.errorContainer);
-                        var insertMode = ["beforebegin", "afterbegin","beforeend","afterend"].includes(
+                        var insertMode = ['beforebegin', 'afterbegin', 'beforeend', 'afterend'].includes(
                             ExtendableObject.config.ux.errorInsertMode
-                        ) ? ExtendableObject.config.ux.errorInsertMode : "afterbegin";
+                        )
+                            ? ExtendableObject.config.ux.errorInsertMode
+                            : 'afterbegin';
 
                         if (!!messageContainer) {
                             messageContainer.insertAdjacentHTML(insertMode, wrapperHtml);
                         } else {
-                            ExtendableObject._subscribers.email.forEach( function(subscriber) {
+                            ExtendableObject._subscribers.email.forEach(function (subscriber) {
                                 subscriber.object.insertAdjacentHTML('afterend', wrapperHtml);
                             });
                         }
                     }
+                };
 
-                }
-
-                ExtendableObject.util.checkEmail = function(email = null) {
+                ExtendableObject.util.checkEmail = function (email = null) {
                     var $self = this;
+
                     if (!email) {
                         email = ExtendableObject.email;
                     }
-                    return new ExtendableObject.util.Promise(function(resolve, reject) {
+
+                    return new ExtendableObject.util.Promise(function (resolve, reject) {
                         var message = {
                             'jsonrpc': '2.0',
                             'id': 1,
@@ -144,55 +148,53 @@ var EmailCheckExtension = {
                                 'X-Agent': ExtendableObject.config.agentName,
                                 'X-Remote-Api-Url': ExtendableObject.config.remoteApiUrl,
                                 'X-Transaction-Referer': window.location.href,
-                                'X-Transaction-Id': (ExtendableObject.hasLoadedExtension('SessionExtension'))?ExtendableObject.sessionId:'not_required'
+                                'X-Transaction-Id': (ExtendableObject.hasLoadedExtension('SessionExtension')) ? ExtendableObject.sessionId : 'not_required'
                             }
                         })
-                            .then(function(response) {
+                            .then(function (response) {
                                 if (undefined !== response.data.result) {
                                     // If session counter is set, increase it.
                                     if (ExtendableObject.hasLoadedExtension('SessionExtension')) {
                                         ExtendableObject.sessionCounter++;
                                     }
 
-                                    ExtendableObject.cb.onEmailChecked.forEach( function(cb) {
+                                    ExtendableObject.cb.onEmailChecked.forEach(function (cb) {
                                         cb(ExtendableObject, response.data);
                                     });
 
                                     resolve(response.data.result);
                                 } else {
-                                    ExtendableObject.cb.onEmailCheckFailed.forEach( function(cb) {
+                                    ExtendableObject.cb.onEmailCheckFailed.forEach(function (cb) {
                                         cb(ExtendableObject, response.data);
                                     });
 
-                                    reject(response.data)
+                                    reject(response.data);
                                 }
                             })
-                            .catch(function(e) {
-                                ExtendableObject.cb.onEmailCheckFailed.forEach( function(cb) {
+                            .catch(function (e) {
+                                ExtendableObject.cb.onEmailCheckFailed.forEach(function (cb) {
                                     cb(ExtendableObject, e.response);
                                 });
 
                                 reject(e.response);
                             })
-                            .finally( function() {
+                            .finally(function () {
                                 ExtendableObject._awaits--;
                             });
-                    })
-                }
-
+                    });
+                };
 
                 if (ExtendableObject.config.showDebugInfo) {
                     console.log('EmailCheckExtension applied');
                 }
 
                 resolve($self);
-            }).catch(function() {
+            }).catch(function () {
                 console.log('Failed to load because of timeout');
                 reject($self);
-            })
-
+            });
         });
     }
-}
+};
 
-export default EmailCheckExtension
+export default EmailCheckExtension;

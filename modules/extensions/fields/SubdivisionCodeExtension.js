@@ -59,6 +59,7 @@ const SubdivisionCodeExtension = {
                 if (needToNotify) {
                     // Inform all subscribers about the change.
                     const notificationProcesses = [];
+
                     ExtendableObject._subscribers.subdivisionCode.forEach((subscriber) => {
                         notificationProcesses.push(subscriber.updateDOMValue(resolvedValue));
                     });

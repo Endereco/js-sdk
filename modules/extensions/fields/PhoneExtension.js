@@ -1,42 +1,43 @@
-
 var PhoneExtension = {
     name: 'PhoneExtension',
-    extend: function(ExtendableObject) {
+    extend: function (ExtendableObject) {
         var $self = this;
-        return new ExtendableObject.util.Promise(function(resolve, reject) {
+
+        return new ExtendableObject.util.Promise(function (resolve, reject) {
             ExtendableObject._phone = '';
             ExtendableObject._subscribers.phone = [];
 
-            ExtendableObject.cb.setPhone = function(phone) {
-                return new ExtendableObject.util.Promise(function(resolve, reject) {
+            ExtendableObject.cb.setPhone = function (phone) {
+                return new ExtendableObject.util.Promise(function (resolve, reject) {
                     resolve(phone);
                 });
             };
 
-            ExtendableObject.cb.phoneChange = function(subscriber) {
-                return function(e) {
+            ExtendableObject.cb.phoneChange = function (subscriber) {
+                return function (e) {
                     ExtendableObject.phone = subscriber.value;
                     ExtendableObject._changed = true;
-                }
+                };
             };
 
-            ExtendableObject.cb.phoneInput = function(subscriber) {
-                return function(e) {
+            ExtendableObject.cb.phoneInput = function (subscriber) {
+                return function (e) {
                     ExtendableObject.phone = subscriber.value;
                     ExtendableObject._changed = true;
-                }
+                };
             };
 
-            ExtendableObject.cb.phoneBlur = function(subscriber) {
-                return function(subscriber) {
-                    ExtendableObject.waitUntilReady().then(function() {
+            ExtendableObject.cb.phoneBlur = function (subscriber) {
+                return function (subscriber) {
+                    ExtendableObject.waitUntilReady().then(function () {
                         if (ExtendableObject.onBlurTimeout) {
                             clearTimeout(ExtendableObject.onBlurTimeout);
                             ExtendableObject.onBlurTimeout = null;
                         }
-                        ExtendableObject.onBlurTimeout = setTimeout( function() {
+                        ExtendableObject.onBlurTimeout = setTimeout(function () {
                             var newStatus;
                             var flagActive = ExtendableObject.isFlagActive && ExtendableObject.isFlagActive();
+
                             if (!ExtendableObject.anyActive() && !flagActive && ExtendableObject.util.shouldBeChecked() && !window.EnderecoIntegrator.hasSubmit) {
                                 // Second. Check Address.
                                 clearTimeout(ExtendableObject.onBlurTimeout);
@@ -45,14 +46,14 @@ var PhoneExtension = {
                                 if (ExtendableObject.active && ExtendableObject.hasLoadedExtension('PhoneCheckExtension')) {
                                     ExtendableObject._awaits++;
                                     ExtendableObject.phoneStatus = [];
-                                    ExtendableObject.util.checkPhone().then(function(data) {
+                                    ExtendableObject.util.checkPhone().then(function (data) {
                                         // If format is defined, rewrite field.
                                         if (ExtendableObject.config.phoneFormat) {
                                             if (data.status.includes('phone_format_needs_correction')) {
                                                 newStatus = data.status;
 
                                                 newStatus.push('phone_correct');
-                                                newStatus.push('phone_format_'+ExtendableObject.config.phoneFormat.toLowerCase());
+                                                newStatus.push('phone_format_' + ExtendableObject.config.phoneFormat.toLowerCase());
 
                                                 if (newStatus.indexOf('phone_format_unknown') !== -1) {
                                                     newStatus.splice(
@@ -83,31 +84,30 @@ var PhoneExtension = {
                                         } else {
                                             ExtendableObject.phoneStatus = data.status;
                                         }
-
-                                    }).catch(function(e) {
+                                    }).catch(function (e) {
                                         ExtendableObject.phoneStatus = [];
                                         console.log('Failed checking phone', e, ExtendableObject);
-                                    }).finally(function() {
+                                    }).finally(function () {
                                         ExtendableObject._awaits--;
                                         ExtendableObject._changed = false;
-                                    })
+                                    });
                                 }
                             }
                         }, 300);
-                    }).catch()
-                }
+                    }).catch();
+                };
             };
 
             // Add getter and setter for fields.
             Object.defineProperty(ExtendableObject, 'phone', {
-                get: function() {
+                get: function () {
                     return this._phone;
                 },
-                set: function(value) {
+                set: function (value) {
                     ExtendableObject._awaits++;
-                    ExtendableObject.util.Promise.resolve(value).then(function(value) {
+                    ExtendableObject.util.Promise.resolve(value).then(function (value) {
                         ExtendableObject._awaits++;
-                        ExtendableObject.cb.setPhone(value).then( function(value) {
+                        ExtendableObject.cb.setPhone(value).then(function (value) {
                             var oldValue = ExtendableObject._phone;
                             var newValue = value;
 
@@ -138,15 +138,14 @@ var PhoneExtension = {
                                     );
                                 }
                             }
-
-                        }).catch(function(e) {
+                        }).catch(function (e) {
                             if (ExtendableObject.config.showDebugInfo) {
                                 console.log('Error resolving phoneFull', e);
                             }
-                        }).finally(function() {
+                        }).finally(function () {
                             ExtendableObject._awaits--;
                         });
-                    }).catch().finally(function() {
+                    }).catch().finally(function () {
                         ExtendableObject._awaits--;
                     });
                 }
@@ -161,6 +160,6 @@ var PhoneExtension = {
             resolve($self);
         });
     }
-}
+};
 
-export default PhoneExtension
+export default PhoneExtension;

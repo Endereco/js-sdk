@@ -6,11 +6,11 @@ import merge from 'lodash.merge';
 import isEqual from 'lodash.isequal';
 import { v4 as uuidv4 } from 'uuid';
 
-function EnderecoBase() {
+function EnderecoBase () {
     const BaseObject = {
         id: uuidv4(),
         config: {
-            agentName: "DefaultAgent v1.0.0",
+            agentName: 'DefaultAgent v1.0.0',
             showDebugInfo: true,
             lang: 'de',
             splitStreet: true,
@@ -51,10 +51,10 @@ function EnderecoBase() {
         states: {},
 
         active: false,
-        activate: function() {
+        activate: function () {
             this.active = true;
         },
-        deactivate: function() {
+        deactivate: function () {
             this.active = false;
         },
 
@@ -62,20 +62,22 @@ function EnderecoBase() {
 
         _awaits: 0,
         _activePredictionApplications: [],
-        waitForExtension: function(extensions, timeout= 10) {
+        waitForExtension: function (extensions, timeout = 10) {
             var $self = this;
-            return new Promise(function(resolve, reject) {
+
+            return new Promise(function (resolve, reject) {
                 if ('string' === typeof extensions) {
                     extensions = [extensions];
                 }
 
-                var intervalObject = setInterval( function() {
+                var intervalObject = setInterval(function () {
                     var allSet = true;
-                    extensions.forEach(function(extensionName) {
+
+                    extensions.forEach(function (extensionName) {
                         if (!$self.hasLoadedExtension(extensionName)) {
                             allSet = false;
                         }
-                    })
+                    });
 
                     if (allSet) {
                         clearTimeout(timeoutObject);
@@ -84,19 +86,21 @@ function EnderecoBase() {
                     }
                 }, 100);
 
-                var timeoutObject = setTimeout( function() {
+                var timeoutObject = setTimeout(function () {
                     clearTimeout(timeoutObject);
                     clearInterval(intervalObject);
                     console.log('Timeout!');
                     reject();
                 }, timeout * 1000); // Transform seconds to milliseconds.
-            })
+            });
         },
-        waitForAllExtension: function(timeout = 10) {
+        waitForAllExtension: function (timeout = 10) {
             var $self = this;
+
             this._awaits++;
-            return new Promise(function(resolve, reject) {
-                var intervalObject = setInterval( function() {
+
+            return new Promise(function (resolve, reject) {
+                var intervalObject = setInterval(function () {
                     if (Object.keys($self.loadedExtensions).length === $self.extensions.length) {
                         clearTimeout(timeoutObject);
                         clearInterval(intervalObject);
@@ -105,50 +109,53 @@ function EnderecoBase() {
                     }
                 }, 100);
 
-                var timeoutObject = setTimeout( function() {
+                var timeoutObject = setTimeout(function () {
                     clearTimeout(timeoutObject);
                     clearInterval(intervalObject);
                     console.log('Timeout!');
                     $self._awaits--;
                     reject($self);
                 }, timeout * 1000); // Transform seconds to milliseconds.
-            })
+            });
         },
-        waitForActive: function() {
+        waitForActive: function () {
             var $self = this;
-            return new Promise(function(resolve, reject) {
-                var intervalObject = setInterval( function() {
+
+            return new Promise(function (resolve, reject) {
+                var intervalObject = setInterval(function () {
                     if ($self.active) {
                         clearInterval(intervalObject);
                         resolve();
                     }
                 }, 100);
-            })
+            });
         },
-        waitUntilReady: function() {
+        waitUntilReady: function () {
             var $self = this;
-            return new Promise(function(resolve, reject) {
-                var waitForAwaits = setInterval(function() {
-                    if(0 === $self._awaits) {
+
+            return new Promise(function (resolve, reject) {
+                var waitForAwaits = setInterval(function () {
+                    if (0 === $self._awaits) {
                         clearInterval(waitForAwaits);
                         resolve();
                     }
                 }, 100);
-            })
+            });
         },
-        waitForPredictionApplication: function() {
+        waitForPredictionApplication: function () {
             if (this._activePredictionApplications.length === 0) {
                 return Promise.resolve();
             }
+
             return Promise.all(this._activePredictionApplications);
         },
-        anyActive: function() {
+        anyActive: function () {
             var $self = this;
             var hasAny = false;
 
-            $self.fieldNames.forEach( function(fieldName) {
+            $self.fieldNames.forEach(function (fieldName) {
                 if ($self._subscribers[fieldName]) {
-                    $self._subscribers[fieldName].forEach( function(subscriber) {
+                    $self._subscribers[fieldName].forEach(function (subscriber) {
                         if (null !== subscriber.object.offsetParent && document.activeElement === subscriber.object) {
                             hasAny = true;
                         }
@@ -157,26 +164,26 @@ function EnderecoBase() {
             });
 
             if (!!window.EnderecoIntegrator.$globalFilters && !!window.EnderecoIntegrator.$globalFilters.anyActive) {
-                window.EnderecoIntegrator.$globalFilters.anyActive.forEach( function(callback) {
+                window.EnderecoIntegrator.$globalFilters.anyActive.forEach(function (callback) {
                     hasAny = callback(hasAny, $self);
                 });
             }
 
             return hasAny;
         },
-        anyMissing: function() {
+        anyMissing: function () {
             var $self = this;
             var hasAny = false;
 
             hasAny = false;
-            $self.forms.forEach( function(form) {
+            $self.forms.forEach(function (form) {
                 if (form.isConnected) {
                     hasAny = true;
                 }
             });
 
             if (!!window.EnderecoIntegrator.$globalFilters && !!window.EnderecoIntegrator.$globalFilters.anyMissing) {
-                window.EnderecoIntegrator.$globalFilters.anyMissing.forEach( function(callback) {
+                window.EnderecoIntegrator.$globalFilters.anyMissing.forEach(function (callback) {
                     hasAny = callback(hasAny, $self);
                 });
             }
@@ -185,36 +192,40 @@ function EnderecoBase() {
         },
 
         onAfterCreate: [],
-        created: function() {
+        created: function () {
             var $self = this;
-            this.onAfterCreate.forEach( function(cb) {
+
+            this.onAfterCreate.forEach(function (cb) {
                 cb($self);
-            })
+            });
         },
         onCloseModal: [],
-        modalClosed: function() {
+        modalClosed: function () {
             var $self = this;
-            this.onCloseModal.forEach( function(cb) {
+
+            this.onCloseModal.forEach(function (cb) {
                 cb($self);
-            })
+            });
         },
         onAddressSelect: [],
-        addressSelected: function() {
+        addressSelected: function () {
             var $self = this;
-            this.onAddressSelect.forEach( function(cb) {
+
+            this.onAddressSelect.forEach(function (cb) {
                 cb($self);
-            })
+            });
         },
         onBeforeSubmitResume: [],
-        beforeSubmitResume: function() {
+        beforeSubmitResume: function () {
             var $self = this;
-            this.onBeforeSubmitResume.forEach( function(cb) {
+
+            this.onBeforeSubmitResume.forEach(function (cb) {
                 cb($self);
-            })
+            });
         },
 
         cb: {
-            onFormSubmit: function(e) {
+            onFormSubmit: function (e) {
                 // Do nothing.
             }
         },
@@ -227,7 +238,7 @@ function EnderecoBase() {
             merge: merge,
             isEqual: isEqual,
             CustomEvent: CustomEvent,
-            generateId: function() {
+            generateId: function () {
                 return uuidv4();
             },
             /**
@@ -235,22 +246,22 @@ function EnderecoBase() {
              * @param {string} prefix - Optional prefix for the ID (default: 'endereco')
              * @returns {string} - A unique ID
              */
-            generateUniqueId: function(prefix = 'endereco') {
+            generateUniqueId: function (prefix = 'endereco') {
                 let id;
                 let attempts = 0;
                 const maxAttempts = 100;
-                
+
                 do {
                     id = `${prefix}-${uuidv4()}`;
                     attempts++;
-                    
+
                     if (attempts >= maxAttempts) {
                         console.warn('Max attempts reached generating unique ID, using timestamp fallback');
                         id = `${prefix}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
                         break;
                     }
                 } while (document.getElementById(id));
-                
+
                 return id;
             },
             /**
@@ -308,10 +319,11 @@ function EnderecoBase() {
 
         },
 
-        getEnderecoAPI: function() {
+        getEnderecoAPI: function () {
             var $self = this;
+
             return {
-                sendRequestToAPI: async function(body, headers) {
+                sendRequestToAPI: async function (body, headers) {
                     return $self.util.axios.post(
                         $self.config.apiUrl,
                         body,
@@ -328,10 +340,12 @@ function EnderecoBase() {
         _subscribers: {},
         addSubscriber: function (EnderecoSubscriberObject) {
             var $self = this;
+
             $self._awaits++;
-            this.waitForAllExtension().then(function() {
+            this.waitForAllExtension().then(function () {
                 if (!EnderecoSubscriberObject) {
                     console.log('No EnderecoSubscriber');
+
                     return null;
                 }
 
@@ -360,15 +374,16 @@ function EnderecoBase() {
                 if ($self.config.showDebugInfo) {
                     console.log('Add Subscriber ', EnderecoSubscriberObject);
                 }
-            }).catch().finally(function() {
+            }).catch().finally(function () {
                 $self._awaits--;
-            })
+            });
         },
-        removeSubscriber: function(EnderecoSubscriber) {
+        removeSubscriber: function (EnderecoSubscriber) {
             // TODO: remove subscriber from subscribers list.
         },
         syncValues: async (specificKeys) => {
             const fieldNamesToSync = specificKeys || Object.keys(BaseObject._subscribers);
+
             try {
                 // Use Promise.all to wait for all async operations to complete
                 await Promise.all(fieldNamesToSync.map(async (fieldName) => {
@@ -383,6 +398,7 @@ function EnderecoBase() {
                         // Get the value using getter if available
                         const getterMethodName = `get${fieldName.charAt(0).toUpperCase() + fieldName.slice(1)}`;
                         let innerValue;
+
                         if (typeof BaseObject[getterMethodName] === 'function') {
                             innerValue = await BaseObject[getterMethodName]();
                         } else {
@@ -391,6 +407,7 @@ function EnderecoBase() {
 
                         // Fix: Declare these variables properly in their respective scopes
                         let resolvedInnerValue;
+
                         if (Array.isArray(innerValue)) {
                             resolvedInnerValue = innerValue.join();
                         } else {
@@ -403,6 +420,7 @@ function EnderecoBase() {
                         if (!subscriberValueEmpty && innerValueEmpty) {
                             // Use setter if available
                             const setterMethodName = `set${fieldName.charAt(0).toUpperCase() + fieldName.slice(1)}`;
+
                             if (typeof BaseObject[setterMethodName] === 'function') {
                                 await BaseObject[setterMethodName](resolvedSubscriberValue);
                             } else {
@@ -416,16 +434,17 @@ function EnderecoBase() {
                     }));
                 }));
             } catch (err) {
-                console.warn("Syncing value failed", err);
+                console.warn('Syncing value failed', err);
                 throw err; // Re-throw to allow upstream error handling
             }
 
             return;
         },
-        setField: function(fieldName, fieldValue, markAsChanged=true) {
+        setField: function (fieldName, fieldValue, markAsChanged = true) {
             var $self = this;
+
             $self._awaits++;
-            $self.util.Promise.resolve(fieldValue).then(function(value) {
+            $self.util.Promise.resolve(fieldValue).then(function (value) {
                 // Set inner value.
                 $self['_' + fieldName] = fieldValue;
                 $self._subscribers[fieldName].forEach(function (subscriber) {
@@ -434,7 +453,7 @@ function EnderecoBase() {
                 if (markAsChanged) {
                     $self._changed = true;
                 }
-            }).catch().finally(function() {
+            }).catch().finally(function () {
                 $self._awaits--;
             });
         },
@@ -457,22 +476,23 @@ function EnderecoBase() {
         loadedExtensions: {},
         loadExtensions: function () {
             var $self = this;
+
             this.extensions.forEach(function (extension) {
                 if (!$self.loadedExtensions[extension.name]) {
                     $self._awaits++;
-                    extension.extend($self).then(function(extension) {
+                    extension.extend($self).then(function (extension) {
                         $self.loadedExtensions[extension.name] = extension;
-                    }).catch(function(e) {
+                    }).catch(function (e) {
                         if ($self.config.showDebugInfo) {
                             console.log('Failed to load extension', e, extension);
                         }
-                    }).finally(function() {
+                    }).finally(function () {
                         $self._awaits--;
-                    }) ;
+                    });
                 }
-            })
+            });
         },
-        hasLoadedExtension: function(extensionName) {
+        hasLoadedExtension: function (extensionName) {
             return undefined !== this.loadedExtensions[extensionName];
         },
 
@@ -484,15 +504,15 @@ function EnderecoBase() {
             if (undefined !== this._listeners[event.type]) {
                 this._listeners[event.type].forEach(function (listener) {
                     listener(event.detail);
-                })
+                });
             }
         },
         trigger: function (eventName, eventArgs) {
 
         }
-    }
+    };
 
     return BaseObject;
 }
 
-export default EnderecoBase
+export default EnderecoBase;

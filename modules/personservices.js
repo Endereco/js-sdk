@@ -1,18 +1,18 @@
 import merge from 'lodash.merge';
-import EnderecoBase from './components/base.js'
+import EnderecoBase from './components/base.js';
 
 // Extensions.
 import SalutationExtension from './extensions/fields/SalutationExtension.js';
 import LastNameExtension from './extensions/fields/LastNameExtension.js';
-import FirstNameExtension from "./extensions/fields/FirstNameExtension.js";
-import TitleExtension from "./extensions/fields/TitleExtension.js";
-import SessionExtension from "./extensions/session/SessionExtension";
-import NameCheckExtension from "./extensions/checks/NameCheckExtension";
+import FirstNameExtension from './extensions/fields/FirstNameExtension.js';
+import TitleExtension from './extensions/fields/TitleExtension.js';
+import SessionExtension from './extensions/session/SessionExtension';
+import NameCheckExtension from './extensions/checks/NameCheckExtension';
 
-function EnderecoPerson(customConfig={}) {
-
+function EnderecoPerson (customConfig = {}) {
     // Get base object, that will be extended.
     var base = new EnderecoBase();
+
     base.type = 'person';
     base.name = 'personservices';
 
@@ -27,7 +27,7 @@ function EnderecoPerson(customConfig={}) {
         TitleExtension,
         SessionExtension,
         NameCheckExtension
-    ]
+    ];
 
     // Load extesions.
     base.loadExtensions();
@@ -38,4 +38,4 @@ function EnderecoPerson(customConfig={}) {
     return base;
 }
 
-export default EnderecoPerson
+export default EnderecoPerson;

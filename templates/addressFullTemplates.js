@@ -84,14 +84,14 @@ var templates = {
     zm: frTpl,
     zw: frTpl,
 
-    getTemplate: function(countryCode) {
+    getTemplate: function (countryCode) {
         countryCode = countryCode.toLowerCase();
-        if(!!this[countryCode]) {
+        if (!!this[countryCode]) {
             return this[countryCode];
         } else {
             return this.default;
         }
     }
-}
+};
 
-export default templates
+export default templates;

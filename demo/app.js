@@ -9,10 +9,11 @@ const port = 8888;
 const sync_port = 3000;
 
 // Helper function to read a file
-async function readFile(filePath, res, contentType) {
+async function readFile (filePath, res, contentType) {
     try {
         const contents = await fs.readFile(filePath);
-        res.setHeader("Content-Type", contentType);
+
+        res.setHeader('Content-Type', contentType);
         res.status(200).send(contents);
     } catch (error) {
         res.status(404).send('Datei nicht gefunden');
@@ -47,13 +48,15 @@ router.post('/use-cases/:usecase', async (req, res) => {
     // Handle your POST request here
     // You can access the posted data with req.body
     const filePath = path.join(__dirname, `/use-cases/${req.params.usecase}/index.html`);
-    readFile(filePath, res, "text/html");
+
+    readFile(filePath, res, 'text/html');
 });
 
 // Handle GET requests to /use-cases
 router.get('/use-cases/:usecase', async (req, res) => {
     const filePath = path.join(__dirname, `/use-cases/${req.params.usecase}/index.html`);
-    readFile(filePath, res, "text/html");
+
+    readFile(filePath, res, 'text/html');
 });
 
 // Serve index page
@@ -61,10 +64,12 @@ router.get('/', async (req, res) => {
     const usecases = await fs.readdir(path.join(__dirname, 'use-cases'));
     const directories = await Promise.all(usecases.map(async (file) => {
         const stat = await fs.stat(path.join(__dirname, 'use-cases', file));
+
         return stat.isDirectory() ? file : null;
     }));
 
     const links = directories.filter(Boolean).map(dir => `<a href="/use-cases/${dir}">${dir}</a>`);
+
     res.send(`Verfügbare Testfälle: ${links.join(', ')}`);
 });
 
@@ -86,11 +91,12 @@ router.post('/proxyfile', async (req, res) => {
 
     const proxyReq = https.request(options, proxyRes => {
         let body = '';
+
         proxyRes.on('data', d => {
             body += d;
         });
         proxyRes.on('end', function () {
-            res.setHeader("Content-Type", "application/json");
+            res.setHeader('Content-Type', 'application/json');
             res.status(200).send(body);
         });
     });
@@ -120,5 +126,5 @@ app.use((err, req, res, next) => {
 
 // Start server
 app.listen(port, host, () => {
-  console.log(`Server is running on http://${host}:${port} and starts with browsersync from http://${host}:${sync_port}`);
+    console.log(`Server is running on http://${host}:${port} and starts with browsersync from http://${host}:${sync_port}`);
 });

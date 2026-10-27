@@ -1,31 +1,33 @@
 var AdditionalInfoCheckExtension = {
     name: 'AdditionalInfoCheckExtension',
-    extend: function(ExtendableObject) {
+    extend: function (ExtendableObject) {
         var $self = this;
 
-        return new ExtendableObject.util.Promise(function(resolve, reject) {
-            ExtendableObject.waitForExtension('AdditionalInfoExtension').then(function() {
+        return new ExtendableObject.util.Promise(function (resolve, reject) {
+            ExtendableObject.waitForExtension('AdditionalInfoExtension').then(function () {
                 // Add email field.
                 ExtendableObject._additionalInfoStatus = '';
                 ExtendableObject._subscribers.additionalInfoStatus = [];
 
                 // Add change event hadler.
-                ExtendableObject.cb.additionalInfoStatusChange = function(subscriber) {
-                    return function(e) {
+                ExtendableObject.cb.additionalInfoStatusChange = function (subscriber) {
+                    return function (e) {
                         ExtendableObject.additionalInfoStatus = subscriber.value;
-                    }
+                    };
                 };
 
                 // Add the "emaiL" property
                 Object.defineProperty(ExtendableObject, 'additionalInfoStatus', {
-                    get: function() {
+                    get: function () {
                         return this._additionalInfoStatus;
                     },
-                    set: function(value) {
+                    set: function (value) {
                         var oldValue = ExtendableObject._additionalInfoStatus;
+
                         ExtendableObject._awaits++;
-                        ExtendableObject.util.Promise.resolve(value).then(function(value) {
+                        ExtendableObject.util.Promise.resolve(value).then(function (value) {
                             var newValue = value;
+
                             if (oldValue !== newValue) {
                                 ExtendableObject._additionalInfoStatus = newValue;
 
@@ -48,7 +50,7 @@ var AdditionalInfoCheckExtension = {
                                     )
                                 );
                             }
-                        }).catch().finally(function() {
+                        }).catch().finally(function () {
                             ExtendableObject._awaits--;
                         });
                     }
@@ -59,13 +61,12 @@ var AdditionalInfoCheckExtension = {
                 }
 
                 resolve($self);
-            }).catch(function() {
+            }).catch(function () {
                 console.log('Failed to load because of timeout');
                 reject($self);
-            })
-
+            });
         });
     }
-}
+};
 
-export default AdditionalInfoCheckExtension
+export default AdditionalInfoCheckExtension;

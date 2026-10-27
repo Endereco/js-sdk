@@ -1,23 +1,23 @@
 var FirstNameExtension = {
     name: 'FirstNameExtension',
-    extend: function(ExtendableObject) {
+    extend: function (ExtendableObject) {
         var $self = this;
-        return new ExtendableObject.util.Promise(function(resolve, reject) {
 
+        return new ExtendableObject.util.Promise(function (resolve, reject) {
             // Add email field.
             ExtendableObject._firstName = '';
             ExtendableObject._subscribers.firstName = [];
 
             // Add change event hadler.
-            ExtendableObject.cb.firstNameBlur = function(subscriber) {
-                return function(e) {
+            ExtendableObject.cb.firstNameBlur = function (subscriber) {
+                return function (e) {
                     ExtendableObject.firstName = subscriber.value;
-                    ExtendableObject.waitUntilReady().then(function() {
+                    ExtendableObject.waitUntilReady().then(function () {
                         if (ExtendableObject.onBlurTimeout) {
                             clearTimeout(ExtendableObject.onBlurTimeout);
                             ExtendableObject.onBlurTimeout = null;
                         }
-                        ExtendableObject.onBlurTimeout = setTimeout( function() {
+                        ExtendableObject.onBlurTimeout = setTimeout(function () {
                             if (!ExtendableObject.anyActive() && ExtendableObject.util.shouldBeChecked() && !window.EnderecoIntegrator.hasSubmit) {
                                 // Second. Check Address.
                                 ExtendableObject.onBlurTimeout = null;
@@ -28,20 +28,22 @@ var FirstNameExtension = {
                                     });
                             }
                         }, 300);
-                    }).catch()
-                }
+                    }).catch();
+                };
             };
 
             // Add the "emaiL" property
             Object.defineProperty(ExtendableObject, 'firstName', {
-                get: function() {
+                get: function () {
                     return this._firstName;
                 },
-                set: function(value) {
+                set: function (value) {
                     var oldValue = ExtendableObject._firstName;
+
                     ExtendableObject._awaits++;
-                    ExtendableObject.util.Promise.resolve(value).then(function(value) {
+                    ExtendableObject.util.Promise.resolve(value).then(function (value) {
                         var newValue = value;
+
                         if (oldValue !== newValue) {
                             ExtendableObject._firstName = newValue;
                             ExtendableObject._changed = true;
@@ -68,7 +70,7 @@ var FirstNameExtension = {
                                 );
                             }
                         }
-                    }).catch().finally(function() {
+                    }).catch().finally(function () {
                         ExtendableObject._awaits--;
                     });
                 }
@@ -83,6 +85,6 @@ var FirstNameExtension = {
             resolve($self);
         });
     }
-}
+};
 
-export default FirstNameExtension
+export default FirstNameExtension;

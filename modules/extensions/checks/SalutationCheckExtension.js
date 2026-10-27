@@ -1,31 +1,33 @@
 var SalutationCheckExtension = {
     name: 'SalutationCheckExtension',
-    extend: function(ExtendableObject) {
+    extend: function (ExtendableObject) {
         var $self = this;
 
-        return new ExtendableObject.util.Promise(function(resolve, reject) {
-            ExtendableObject.waitForExtension(['SalutationExtension', 'FirstNameExtension']).then(function() {
+        return new ExtendableObject.util.Promise(function (resolve, reject) {
+            ExtendableObject.waitForExtension(['SalutationExtension', 'FirstNameExtension']).then(function () {
                 // Add email field.
                 ExtendableObject._salutationStatus = '';
                 ExtendableObject._subscribers.salutationStatus = [];
 
                 // Add change event hadler.
-                ExtendableObject.cb.salutationStatusChange = function(subscriber) {
-                    return function(e) {
+                ExtendableObject.cb.salutationStatusChange = function (subscriber) {
+                    return function (e) {
                         ExtendableObject.salutationStatus = subscriber.value;
-                    }
+                    };
                 };
 
                 // Add the "emaiL" property
                 Object.defineProperty(ExtendableObject, 'salutationStatus', {
-                    get: function() {
+                    get: function () {
                         return this._salutationStatus;
                     },
-                    set: function(value) {
+                    set: function (value) {
                         var oldValue = ExtendableObject._salutationStatus;
+
                         ExtendableObject._awaits++;
-                        ExtendableObject.util.Promise.resolve(value).then(function(value) {
+                        ExtendableObject.util.Promise.resolve(value).then(function (value) {
                             var newValue = value;
+
                             if (oldValue !== newValue) {
                                 ExtendableObject._salutationStatus = newValue;
                                 ExtendableObject._changed = false;
@@ -49,20 +51,20 @@ var SalutationCheckExtension = {
                                     )
                                 );
                             }
-                        }).catch().finally(function() {
+                        }).catch().finally(function () {
                             ExtendableObject._awaits--;
                         });
-
                     }
                 });
 
-                ExtendableObject.util.checkSalutation = function(name = null) {
+                ExtendableObject.util.checkSalutation = function (name = null) {
                     var $self = this;
+
                     if (!name) {
                         name = ExtendableObject.firstName;
                     }
 
-                    return new ExtendableObject.util.Promise(function(resolve, reject) {
+                    return new ExtendableObject.util.Promise(function (resolve, reject) {
                         var message = {
                             'jsonrpc': '2.0',
                             'id': 1,
@@ -81,10 +83,10 @@ var SalutationCheckExtension = {
                                 'X-Agent': ExtendableObject.config.agentName,
                                 'X-Remote-Api-Url': ExtendableObject.config.remoteApiUrl,
                                 'X-Transaction-Referer': window.location.href,
-                                'X-Transaction-Id': (ExtendableObject.hasLoadedExtension('SessionExtension'))?ExtendableObject.sessionId:'not_required'
+                                'X-Transaction-Id': (ExtendableObject.hasLoadedExtension('SessionExtension')) ? ExtendableObject.sessionId : 'not_required'
                             }
                         })
-                            .then(function(response) {
+                            .then(function (response) {
                                 if (undefined !== response.data.result) {
                                     // If session counter is set, increase it.
                                     if (ExtendableObject.hasLoadedExtension('SessionExtension')) {
@@ -93,31 +95,29 @@ var SalutationCheckExtension = {
 
                                     resolve(response.data.result);
                                 } else {
-                                    reject(response.data)
+                                    reject(response.data);
                                 }
                             })
-                            .catch(function(e) {
-                                reject(e.response)
+                            .catch(function (e) {
+                                reject(e.response);
                             })
-                            .finally( function() {
+                            .finally(function () {
                                 ExtendableObject._awaits--;
                             });
-                    })
-                }
-
+                    });
+                };
 
                 if (ExtendableObject.config.showDebugInfo) {
                     console.log('SalutationCheckExtension applied');
                 }
 
                 resolve($self);
-            }).catch(function() {
+            }).catch(function () {
                 console.log('Failed to load because of timeout');
                 reject($self);
-            })
-
+            });
         });
     }
-}
+};
 
-export default SalutationCheckExtension
+export default SalutationCheckExtension;

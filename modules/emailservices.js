@@ -1,15 +1,15 @@
 import merge from 'lodash.merge';
-import EnderecoBase from "./components/base";
+import EnderecoBase from './components/base';
 
 // Extensions.
 import EmailExtension from './extensions/fields/EmailExtension.js';
 import EmailCheckExtension from './extensions/checks/EmailCheckExtension.js';
-import SessionExtension from "./extensions/session/SessionExtension";
+import SessionExtension from './extensions/session/SessionExtension';
 
-function EnderecoEmail(customConfig={}) {
-
+function EnderecoEmail (customConfig = {}) {
     // Get base object, that will be extended.
     var base = new EnderecoBase();
+
     base.type = 'email';
     base.name = 'emailservices';
 
@@ -21,7 +21,7 @@ function EnderecoEmail(customConfig={}) {
         EmailCheckExtension,
         EmailExtension,
         SessionExtension
-    ]
+    ];
 
     // Load extesions.
     base.loadExtensions();
@@ -32,4 +32,4 @@ function EnderecoEmail(customConfig={}) {
     return base;
 }
 
-export default EnderecoEmail
+export default EnderecoEmail;

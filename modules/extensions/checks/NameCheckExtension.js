@@ -1,10 +1,10 @@
 var NameCheckExtension = {
     name: 'NameCheckExtension',
-    extend: function(ExtendableObject) {
+    extend: function (ExtendableObject) {
         var $self = this;
 
-        return new ExtendableObject.util.Promise(function(resolve, reject) {
-            ExtendableObject.waitForExtension(['SalutationExtension', 'FirstNameExtension', 'LastNameExtension', 'TitleExtension']).then(function() {
+        return new ExtendableObject.util.Promise(function (resolve, reject) {
+            ExtendableObject.waitForExtension(['SalutationExtension', 'FirstNameExtension', 'LastNameExtension', 'TitleExtension']).then(function () {
                 // Add email field.
                 ExtendableObject._salutationStatus = '';
                 ExtendableObject._firstNameStatus = '';
@@ -20,55 +20,59 @@ var NameCheckExtension = {
                 ExtendableObject._nameCorrected = false;
 
                 // Add change event hadler.
-                ExtendableObject.cb.salutationStatusChange = function(subscriber) {
-                    return function(e) {
+                ExtendableObject.cb.salutationStatusChange = function (subscriber) {
+                    return function (e) {
                         ExtendableObject.salutationStatus = subscriber.value;
-                    }
+                    };
                 };
-                ExtendableObject.cb.firstNameStatusChange = function(subscriber) {
-                    return function(e) {
+                ExtendableObject.cb.firstNameStatusChange = function (subscriber) {
+                    return function (e) {
                         ExtendableObject.firstNameStatus = subscriber.value;
-                    }
+                    };
                 };
-                ExtendableObject.cb.lastNameStatusChange = function(subscriber) {
-                    return function(e) {
+                ExtendableObject.cb.lastNameStatusChange = function (subscriber) {
+                    return function (e) {
                         ExtendableObject.lastNameStatus = subscriber.value;
-                    }
+                    };
                 };
-                ExtendableObject.cb.nameScoreStatusChange = function(subscriber) {
-                    return function(e) {
+                ExtendableObject.cb.nameScoreStatusChange = function (subscriber) {
+                    return function (e) {
                         ExtendableObject.nameScoreStatus = subscriber.value;
-                    }
+                    };
                 };
-                ExtendableObject.cb.titleStatusChange = function(subscriber) {
-                    return function(e) {
+                ExtendableObject.cb.titleStatusChange = function (subscriber) {
+                    return function (e) {
                         ExtendableObject.titleStatus = subscriber.value;
-                    }
+                    };
                 };
 
-                ExtendableObject.isTitleRelevant = function() {
+                ExtendableObject.isTitleRelevant = function () {
                     var isTitleRelevant = false;
+
                     if ((0 < ExtendableObject._subscribers.title.length)) {
-                        ExtendableObject._subscribers.title.forEach( function(listener) {
-                            if (!listener.object.disabled
-                                && listener.object.isConnected) {
+                        ExtendableObject._subscribers.title.forEach(function (listener) {
+                            if (!listener.object.disabled &&
+                                listener.object.isConnected) {
                                 isTitleRelevant = true;
                             }
                         });
                     }
+
                     return isTitleRelevant;
-                }
+                };
 
                 // Add the "emaiL" property
                 Object.defineProperty(ExtendableObject, 'salutationStatus', {
-                    get: function() {
+                    get: function () {
                         return this._salutationStatus;
                     },
-                    set: function(value) {
+                    set: function (value) {
                         var oldValue = ExtendableObject._salutationStatus;
+
                         ExtendableObject._awaits++;
-                        ExtendableObject.util.Promise.resolve(value).then(function(value) {
+                        ExtendableObject.util.Promise.resolve(value).then(function (value) {
                             var newValue = value;
+
                             if (oldValue !== newValue) {
                                 ExtendableObject._salutationStatus = newValue;
 
@@ -91,21 +95,23 @@ var NameCheckExtension = {
                                     )
                                 );
                             }
-                        }).catch().finally(function() {
+                        }).catch().finally(function () {
                             ExtendableObject._awaits--;
                         });
                     }
                 });
 
                 Object.defineProperty(ExtendableObject, 'firstNameStatus', {
-                    get: function() {
+                    get: function () {
                         return this._firstNameStatus;
                     },
-                    set: function(value) {
+                    set: function (value) {
                         var oldValue = ExtendableObject._firstNameStatus;
+
                         ExtendableObject._awaits++;
-                        ExtendableObject.util.Promise.resolve(value).then(function(value) {
+                        ExtendableObject.util.Promise.resolve(value).then(function (value) {
                             var newValue = value;
+
                             if (oldValue !== newValue) {
                                 ExtendableObject._firstNameStatus = newValue;
 
@@ -115,34 +121,36 @@ var NameCheckExtension = {
                                 });
 
                                 ExtendableObject.fire(
-                                  new ExtendableObject.util.CustomEvent(
-                                    'change',
-                                    {
-                                        detail: {
-                                            fieldName: 'firstNameStatus',
-                                            oldValue: oldValue,
-                                            newValue: newValue,
-                                            object: ExtendableObject
+                                    new ExtendableObject.util.CustomEvent(
+                                        'change',
+                                        {
+                                            detail: {
+                                                fieldName: 'firstNameStatus',
+                                                oldValue: oldValue,
+                                                newValue: newValue,
+                                                object: ExtendableObject
+                                            }
                                         }
-                                    }
-                                  )
+                                    )
                                 );
                             }
-                        }).catch().finally(function() {
+                        }).catch().finally(function () {
                             ExtendableObject._awaits--;
                         });
                     }
                 });
 
                 Object.defineProperty(ExtendableObject, 'lastNameStatus', {
-                    get: function() {
+                    get: function () {
                         return this._lastNameStatus;
                     },
-                    set: function(value) {
+                    set: function (value) {
                         var oldValue = ExtendableObject._lastNameStatus;
+
                         ExtendableObject._awaits++;
-                        ExtendableObject.util.Promise.resolve(value).then(function(value) {
+                        ExtendableObject.util.Promise.resolve(value).then(function (value) {
                             var newValue = value;
+
                             if (oldValue !== newValue) {
                                 ExtendableObject._lastNameStatus = newValue;
 
@@ -152,34 +160,36 @@ var NameCheckExtension = {
                                 });
 
                                 ExtendableObject.fire(
-                                  new ExtendableObject.util.CustomEvent(
-                                    'change',
-                                    {
-                                        detail: {
-                                            fieldName: 'lastNameStatus',
-                                            oldValue: oldValue,
-                                            newValue: newValue,
-                                            object: ExtendableObject
+                                    new ExtendableObject.util.CustomEvent(
+                                        'change',
+                                        {
+                                            detail: {
+                                                fieldName: 'lastNameStatus',
+                                                oldValue: oldValue,
+                                                newValue: newValue,
+                                                object: ExtendableObject
+                                            }
                                         }
-                                    }
-                                  )
+                                    )
                                 );
                             }
-                        }).catch().finally(function() {
+                        }).catch().finally(function () {
                             ExtendableObject._awaits--;
                         });
                     }
                 });
 
                 Object.defineProperty(ExtendableObject, 'titleStatus', {
-                    get: function() {
+                    get: function () {
                         return this._titleStatus;
                     },
-                    set: function(value) {
+                    set: function (value) {
                         var oldValue = ExtendableObject._titleStatus;
+
                         ExtendableObject._awaits++;
-                        ExtendableObject.util.Promise.resolve(value).then(function(value) {
+                        ExtendableObject.util.Promise.resolve(value).then(function (value) {
                             var newValue = value;
+
                             if (oldValue !== newValue) {
                                 ExtendableObject._titleStatus = newValue;
 
@@ -189,34 +199,36 @@ var NameCheckExtension = {
                                 });
 
                                 ExtendableObject.fire(
-                                  new ExtendableObject.util.CustomEvent(
-                                    'change',
-                                    {
-                                        detail: {
-                                            fieldName: 'titleStatus',
-                                            oldValue: oldValue,
-                                            newValue: newValue,
-                                            object: ExtendableObject
+                                    new ExtendableObject.util.CustomEvent(
+                                        'change',
+                                        {
+                                            detail: {
+                                                fieldName: 'titleStatus',
+                                                oldValue: oldValue,
+                                                newValue: newValue,
+                                                object: ExtendableObject
+                                            }
                                         }
-                                    }
-                                  )
+                                    )
                                 );
                             }
-                        }).catch().finally(function() {
+                        }).catch().finally(function () {
                             ExtendableObject._awaits--;
                         });
                     }
                 });
 
                 Object.defineProperty(ExtendableObject, 'nameScore', {
-                    get: function() {
+                    get: function () {
                         return this._nameScore;
                     },
-                    set: function(value) {
+                    set: function (value) {
                         var oldValue = ExtendableObject._nameScore;
+
                         ExtendableObject._awaits++;
-                        ExtendableObject.util.Promise.resolve(value).then(function(value) {
+                        ExtendableObject.util.Promise.resolve(value).then(function (value) {
                             var newValue = value;
+
                             if (oldValue !== newValue) {
                                 ExtendableObject._nameScore = newValue;
 
@@ -226,34 +238,36 @@ var NameCheckExtension = {
                                 });
 
                                 ExtendableObject.fire(
-                                  new ExtendableObject.util.CustomEvent(
-                                    'change',
-                                    {
-                                        detail: {
-                                            fieldName: 'nameScore',
-                                            oldValue: oldValue,
-                                            newValue: newValue,
-                                            object: ExtendableObject
+                                    new ExtendableObject.util.CustomEvent(
+                                        'change',
+                                        {
+                                            detail: {
+                                                fieldName: 'nameScore',
+                                                oldValue: oldValue,
+                                                newValue: newValue,
+                                                object: ExtendableObject
+                                            }
                                         }
-                                    }
-                                  )
+                                    )
                                 );
                             }
-                        }).catch().finally(function() {
+                        }).catch().finally(function () {
                             ExtendableObject._awaits--;
                         });
                     }
                 });
 
-                ExtendableObject.util.shouldBeChecked = function() {
+                ExtendableObject.util.shouldBeChecked = function () {
                     if (!ExtendableObject._changed) {
                         return false;
                     }
-                    return true;
-                }
 
-                ExtendableObject.util.checkPerson = function(person = null) {
+                    return true;
+                };
+
+                ExtendableObject.util.checkPerson = function (person = null) {
                     var $self = this;
+
                     if (!person) {
                         person = {
                             title: ExtendableObject.title,
@@ -263,8 +277,7 @@ var NameCheckExtension = {
                         };
                     }
 
-                    return new ExtendableObject.util.Promise(function(resolve, reject) {
-
+                    return new ExtendableObject.util.Promise(function (resolve, reject) {
                         var message = {
                             'jsonrpc': '2.0',
                             'id': ExtendableObject._nameCheckRequestIndex,
@@ -277,9 +290,9 @@ var NameCheckExtension = {
                         };
 
                         if ((0 < ExtendableObject._subscribers.title.length)) {
-                            ExtendableObject._subscribers.title.forEach( function(listener) {
-                                if (!listener.object.disabled
-                                    && listener.object.isConnected) {
+                            ExtendableObject._subscribers.title.forEach(function (listener) {
+                                if (!listener.object.disabled &&
+                                    listener.object.isConnected) {
                                     message.params.title = person.title;
                                 }
                             });
@@ -294,10 +307,10 @@ var NameCheckExtension = {
                                 'X-Agent': ExtendableObject.config.agentName,
                                 'X-Remote-Api-Url': ExtendableObject.config.remoteApiUrl,
                                 'X-Transaction-Referer': window.location.href,
-                                'X-Transaction-Id': (ExtendableObject.hasLoadedExtension('SessionExtension'))?ExtendableObject.sessionId:'not_required'
+                                'X-Transaction-Id': (ExtendableObject.hasLoadedExtension('SessionExtension')) ? ExtendableObject.sessionId : 'not_required'
                             }
                         })
-                            .then(function(response) {
+                            .then(function (response) {
                                 if (undefined !== response.data.result) {
                                     // If session counter is set, increase it.
                                     if (ExtendableObject.hasLoadedExtension('SessionExtension')) {
@@ -310,10 +323,9 @@ var NameCheckExtension = {
                                     var responsePredictions = response.data.result.predictions;
                                     var salutationCopied = false;
 
-                                    if (responseStatus.includes('name_is_natural_person')
-                                      && (responseStatus.includes('name_needs_correction') || responseStatus.includes('name_correct'))
+                                    if (responseStatus.includes('name_is_natural_person') &&
+                                      (responseStatus.includes('name_needs_correction') || responseStatus.includes('name_correct'))
                                     ) {
-
                                         ExtendableObject.firstNameStatus = [];
                                         ExtendableObject.lastNameStatus = [];
 
@@ -327,7 +339,6 @@ var NameCheckExtension = {
                                                 ExtendableObject.firstName = responsePredictions[0].firstName;
                                                 ExtendableObject.lastName = responsePredictions[0].lastName;
 
-
                                                 ExtendableObject.firstNameStatus = ['first_name_correct'];
                                                 ExtendableObject.lastNameStatus = ['last_name_correct'];
 
@@ -338,8 +349,6 @@ var NameCheckExtension = {
                                                         ExtendableObject.titleStatus = ['title_correct'];
                                                     }
                                                 }
-
-
                                             } else if (responseStatus.includes('name_transpositioned')) {
                                                 if (ExtendableObject.config.ux.correctTranspositionedNames) {
                                                     ExtendableObject.lastName = responsePredictions[0].lastName;
@@ -381,10 +390,9 @@ var NameCheckExtension = {
                                                 ExtendableObject.salutationStatus = [];
                                             } else {
                                                 ExtendableObject.salutationStatus =
-                                                  (responseStatus.includes('salutation_needs_correction'))?['salutation_needs_correction']:['salutation_correct'];
+                                                  (responseStatus.includes('salutation_needs_correction')) ? ['salutation_needs_correction'] : ['salutation_correct'];
                                             }
                                         }
-
                                     } else if (responseStatus.includes('name_not_found')) {
                                         ExtendableObject.salutationStatus = ['salutation_needs_correction'];
                                         ExtendableObject.firstNameStatus = ['first_name_needs_correction'];
@@ -396,39 +404,37 @@ var NameCheckExtension = {
                                     }
 
                                     if (undefined !== response.data.result.score) {
-                                        ExtendableObject.nameScore = response.data.result.score
+                                        ExtendableObject.nameScore = response.data.result.score;
                                     } else {
                                         ExtendableObject.nameScore = 1.0;
                                     }
 
                                     resolve();
                                 } else {
-                                    reject(response.data)
+                                    reject(response.data);
                                 }
                             })
-                            .catch(function(e) {
-                                reject(e.response)
+                            .catch(function (e) {
+                                reject(e.response);
                             })
-                            .finally( function() {
+                            .finally(function () {
                                 ExtendableObject._awaits--;
                                 ExtendableObject._nameCheckRequestIndex++;
                             });
-                    })
-                }
-
+                    });
+                };
 
                 if (ExtendableObject.config.showDebugInfo) {
                     console.log('NameCheckExtension applied');
                 }
 
                 resolve($self);
-            }).catch(function() {
+            }).catch(function () {
                 console.log('Failed to load because of timeout');
                 reject($self);
-            })
-
+            });
         });
     }
-}
+};
 
-export default NameCheckExtension
+export default NameCheckExtension;

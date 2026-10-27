@@ -1,31 +1,33 @@
 var CountryCodeCheckExtension = {
     name: 'CountryCodeCheckExtension',
-    extend: function(ExtendableObject) {
+    extend: function (ExtendableObject) {
         var $self = this;
 
-        return new ExtendableObject.util.Promise(function(resolve, reject) {
-            ExtendableObject.waitForExtension('CountryCodeExtension').then(function() {
+        return new ExtendableObject.util.Promise(function (resolve, reject) {
+            ExtendableObject.waitForExtension('CountryCodeExtension').then(function () {
                 // Add email field.
                 ExtendableObject._countryCodeStatus = '';
                 ExtendableObject._subscribers.countryCodeStatus = [];
 
                 // Add change event hadler.
-                ExtendableObject.cb.countryCodeStatusChange = function(subscriber) {
-                    return function(e) {
+                ExtendableObject.cb.countryCodeStatusChange = function (subscriber) {
+                    return function (e) {
                         ExtendableObject.countryCodeStatus = subscriber.value;
-                    }
+                    };
                 };
 
                 // Add the "emaiL" property
                 Object.defineProperty(ExtendableObject, 'countryCodeStatus', {
-                    get: function() {
+                    get: function () {
                         return this._countryCodeStatus;
                     },
-                    set: function(value) {
+                    set: function (value) {
                         var oldValue = ExtendableObject._countryCodeStatus;
+
                         ExtendableObject._awaits++;
-                        ExtendableObject.util.Promise.resolve(value).then(function(value) {
+                        ExtendableObject.util.Promise.resolve(value).then(function (value) {
                             var newValue = value;
+
                             if (oldValue !== newValue) {
                                 ExtendableObject._countryCodeStatus = newValue;
 
@@ -48,7 +50,7 @@ var CountryCodeCheckExtension = {
                                     )
                                 );
                             }
-                        }).catch().finally(function() {
+                        }).catch().finally(function () {
                             ExtendableObject._awaits--;
                         });
                     }
@@ -59,13 +61,12 @@ var CountryCodeCheckExtension = {
                 }
 
                 resolve($self);
-            }).catch(function() {
+            }).catch(function () {
                 console.log('Failed to load because of timeout');
                 reject($self);
-            })
-
+            });
         });
     }
-}
+};
 
-export default CountryCodeCheckExtension
+export default CountryCodeCheckExtension;

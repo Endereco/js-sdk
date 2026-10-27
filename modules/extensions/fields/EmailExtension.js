@@ -1,30 +1,32 @@
 var EmailExtension = {
     name: 'EmailExtension',
-    extend: function(ExtendableObject) {
+    extend: function (ExtendableObject) {
         var $self = this;
-        return new ExtendableObject.util.Promise(function(resolve, reject) {
 
+        return new ExtendableObject.util.Promise(function (resolve, reject) {
             // Add email field.
             ExtendableObject._email = '';
             ExtendableObject._subscribers.email = [];
 
             // Add change event hadler.
-            ExtendableObject.cb.emailChange = function(subscriber) {
-                return function(e) {
+            ExtendableObject.cb.emailChange = function (subscriber) {
+                return function (e) {
                     ExtendableObject.email = subscriber.value;
-                }
+                };
             };
 
             // Add the "emaiL" property
             Object.defineProperty(ExtendableObject, 'email', {
-                get: function() {
+                get: function () {
                     return this._email;
                 },
-                set: function(value) {
+                set: function (value) {
                     var oldValue = ExtendableObject._email;
+
                     ExtendableObject._awaits++;
-                    ExtendableObject.util.Promise.resolve(value).then(function(value) {
+                    ExtendableObject.util.Promise.resolve(value).then(function (value) {
                         var newValue = value;
+
                         if (oldValue !== newValue) {
                             ExtendableObject._email = newValue;
                             ExtendableObject._changed = true;
@@ -55,7 +57,7 @@ var EmailExtension = {
                                 if ('' === value.trim()) {
                                     ExtendableObject.emailStatus = [];
                                 } else {
-                                    ExtendableObject.util.checkEmail().then(function(data) {
+                                    ExtendableObject.util.checkEmail().then(function (data) {
                                         var statusCollector = {};
 
                                         if (data.status.includes('A1000')) {
@@ -124,20 +126,19 @@ var EmailExtension = {
                                             statusCollector['email_could_not_be_verified'] = true;
                                         }
                                         ExtendableObject.emailStatus = ExtendableObject.util.merge(data.status, Object.keys(statusCollector));
-                                    }).catch(function(e) {
+                                    }).catch(function (e) {
                                         ExtendableObject.emailStatus = [];
                                         console.log('Failed checking email', e, ExtendableObject);
-                                    }).finally(function() {
+                                    }).finally(function () {
                                         ExtendableObject._awaits--;
                                         ExtendableObject._changed = false;
-                                    })
+                                    });
                                 }
                             }
                         }
-                    }).catch().finally(function() {
+                    }).catch().finally(function () {
                         ExtendableObject._awaits--;
                     });
-
                 }
             });
 
@@ -150,6 +151,6 @@ var EmailExtension = {
             resolve($self);
         });
     }
-}
+};
 
-export default EmailExtension
+export default EmailExtension;

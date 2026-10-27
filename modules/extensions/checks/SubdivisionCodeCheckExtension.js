@@ -1,31 +1,33 @@
 var SubdivisionCodeCheckExtension = {
     name: 'SubdivisionCodeCheckExtension',
-    extend: function(ExtendableObject) {
+    extend: function (ExtendableObject) {
         var $self = this;
 
-        return new ExtendableObject.util.Promise(function(resolve, reject) {
-            ExtendableObject.waitForExtension('SubdivisionCodeExtension').then(function() {
+        return new ExtendableObject.util.Promise(function (resolve, reject) {
+            ExtendableObject.waitForExtension('SubdivisionCodeExtension').then(function () {
                 // Add email field.
                 ExtendableObject._subdivisionCodeStatus = '';
                 ExtendableObject._subscribers.subdivisionCodeStatus = [];
 
                 // Add change event hadler.
-                ExtendableObject.cb.subdivisionCodeStatusChange = function(subscriber) {
-                    return function(e) {
+                ExtendableObject.cb.subdivisionCodeStatusChange = function (subscriber) {
+                    return function (e) {
                         ExtendableObject.subdivisionCodeStatus = subscriber.value;
-                    }
+                    };
                 };
 
                 // Add the "emaiL" property
                 Object.defineProperty(ExtendableObject, 'subdivisionCodeStatus', {
-                    get: function() {
+                    get: function () {
                         return this._subdivisionCodeStatus;
                     },
-                    set: function(value) {
+                    set: function (value) {
                         var oldValue = ExtendableObject._subdivisionCodeStatus;
+
                         ExtendableObject._awaits++;
-                        ExtendableObject.util.Promise.resolve(value).then(function(value) {
+                        ExtendableObject.util.Promise.resolve(value).then(function (value) {
                             var newValue = value;
+
                             if (oldValue !== newValue) {
                                 ExtendableObject._subdivisionCodeStatus = newValue;
 
@@ -48,7 +50,7 @@ var SubdivisionCodeCheckExtension = {
                                     )
                                 );
                             }
-                        }).catch().finally(function() {
+                        }).catch().finally(function () {
                             ExtendableObject._awaits--;
                         });
                     }
@@ -59,13 +61,12 @@ var SubdivisionCodeCheckExtension = {
                 }
 
                 resolve($self);
-            }).catch(function() {
+            }).catch(function () {
                 console.log('Failed to load because of timeout');
                 reject($self);
-            })
-
+            });
         });
     }
-}
+};
 
-export default SubdivisionCodeCheckExtension
+export default SubdivisionCodeCheckExtension;

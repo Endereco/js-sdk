@@ -1,14 +1,13 @@
-import merge from "lodash.merge";
-import EnderecoAddressObject from "./ams";
-import EnderecoSubscriber from "./subscriber";
-import EnderecoEmailObject from "./emailservices";
-import EnderecoPersonObject from "./personservices";
-import EnderecoPhoneObject from "./phoneservices";
+import merge from 'lodash.merge';
+import EnderecoAddressObject from './ams';
+import EnderecoSubscriber from './subscriber';
+import EnderecoEmailObject from './emailservices';
+import EnderecoPersonObject from './personservices';
+import EnderecoPhoneObject from './phoneservices';
 import 'core-js/fn/promise/finally';
 
 import { attachSubmitListenersToForm } from '../src/helper/form';
 import ProcessQueue from '../src/services/ProcessQueue';
-
 
 const bindFieldsToAddressObject = async (addressObject, fieldSelectors, EnderecoIntegrator) => {
     const autocompletableFields = ['postalCode', 'locality', 'streetName', 'streetFull'];
@@ -25,46 +24,48 @@ const bindFieldsToAddressObject = async (addressObject, fieldSelectors, Endereco
         }
 
         const options = {};
+
         if (autocompletableFields.includes(fieldName) && EnderecoIntegrator.config.useAutocomplete) {
             options.displayAutocompleteDropdown = true;
         }
 
         if (EnderecoIntegrator.resolvers && EnderecoIntegrator.resolvers[`${fieldName}Write`]) {
-            options.writeFilterCb = function(value, subscriber) {
+            options.writeFilterCb = function (value, subscriber) {
                 return EnderecoIntegrator.resolvers[`${fieldName}Write`](value, subscriber);
             };
         }
 
         if (EnderecoIntegrator.resolvers && EnderecoIntegrator.resolvers[`${fieldName}Read`]) {
-            options.readFilterCb = function(value, subscriber) {
+            options.readFilterCb = function (value, subscriber) {
                 return EnderecoIntegrator.resolvers[`${fieldName}Read`](value, subscriber);
             };
         }
 
         if (EnderecoIntegrator.resolvers && EnderecoIntegrator.resolvers[`${fieldName}SetValue`]) {
-            options.customSetValue = function(subscriber, value) {
+            options.customSetValue = function (subscriber, value) {
                 return EnderecoIntegrator.resolvers[`${fieldName}SetValue`](subscriber, value);
             };
         }
 
         if (EnderecoIntegrator.resolvers && EnderecoIntegrator.resolvers[`${fieldName}GetValue`]) {
-            options.customGetValue = function(subscriber) {
+            options.customGetValue = function (subscriber) {
                 return EnderecoIntegrator.resolvers[`${fieldName}GetValue`](subscriber);
             };
         }
 
-        elements.forEach( (DOMElement) => {
+        elements.forEach((DOMElement) => {
             const subscriber = new EnderecoSubscriber(
                 fieldName,
                 DOMElement,
                 options
-            )
+            );
+
             addressObject.addSubscriber(subscriber);
 
-            EnderecoIntegrator.prepareDOMElement(DOMElement, addressObject)
-        })
+            EnderecoIntegrator.prepareDOMElement(DOMElement, addressObject);
+        });
     }
-}
+};
 
 /**
  * @function checkSelectValuesAgainstMapping
@@ -109,6 +110,7 @@ const checkSelectValuesAgainstMapping = (domElementOfSelect, mappingObject) => {
     // Process all valid options
     for (let i = 0; i < options.length; i++) {
         const option = options[i];
+
         if (option.value && !option.disabled) {
             result.hasValidOptions = true;
             optionValues.push(option.value);
@@ -130,7 +132,7 @@ const checkSelectValuesAgainstMapping = (domElementOfSelect, mappingObject) => {
     }
 
     return result;
-}
+};
 
 const EnderecoIntegrator = {
     amsFilters: {
@@ -145,7 +147,7 @@ const EnderecoIntegrator = {
      *
      * @returns {number} - The current process level (default: 0)
      */
-    getProcessLevel: function() {
+    getProcessLevel: function () {
         // Default implementation returns level 0
         // Can be overridden in custom integrations to return higher levels
         // when processes are spawned from user interactions (e.g., modal submissions)
@@ -168,14 +170,14 @@ const EnderecoIntegrator = {
     countryMapping: {},
     countryMappingReverse: {},
     constructors: {
-        "EnderecoAddressObject": EnderecoAddressObject,
-        "EnderecoSubscriber": EnderecoSubscriber,
-        "EnderecoEmailObject": EnderecoEmailObject,
-        "EnderecoPersonObject": EnderecoPersonObject,
-        "EnderecoPhoneObject": EnderecoPhoneObject
+        'EnderecoAddressObject': EnderecoAddressObject,
+        'EnderecoSubscriber': EnderecoSubscriber,
+        'EnderecoEmailObject': EnderecoEmailObject,
+        'EnderecoPersonObject': EnderecoPersonObject,
+        'EnderecoPhoneObject': EnderecoPhoneObject
     },
     globalSpace: {
-        reloadPage: function() {
+        reloadPage: function () {
             location.reload();
         }
     },
@@ -194,10 +196,10 @@ const EnderecoIntegrator = {
         apiUrl: '',
         remoteApiUrl: '',
         apiKey: '',
-        lang: ( function() {
+        lang: (function () {
             if (document.querySelector('html').lang) {
                 // TODO: check if the language is in the list of possible languages and return "de" if not.
-                return document.documentElement.lang.slice(0,2);
+                return document.documentElement.lang.slice(0, 2);
             } else {
                 return 'de';
             }
@@ -254,7 +256,7 @@ const EnderecoIntegrator = {
             addressStatus: '',
             addressTimestamp: '',
             addressPredictions: '',
-            additionalInfo: '',
+            additionalInfo: ''
         },
         emailServices: {
             email: ''
@@ -271,7 +273,7 @@ const EnderecoIntegrator = {
         emailService: true,
         personService: true
     },
-    checkAllCallback: function() {
+    checkAllCallback: function () {
         return;
     },
     hasActiveSubscriber: (fieldName, domElement, dataObject) => {
@@ -281,6 +283,7 @@ const EnderecoIntegrator = {
                 domElement,
                 window.EnderecoIntegrator.subdivisionMappingReverse
             );
+
             return selectState.hasValidOptions && selectState.allValuesInMapping;
         }
 
@@ -290,15 +293,16 @@ const EnderecoIntegrator = {
         gender: {
             'M': 'mr',
             'F': 'ms',
-            getByCode: function(code) {
+            getByCode: function (code) {
                 if (this[code]) {
-                    return this[code]
+                    return this[code];
                 } else {
                     return '';
                 }
             },
-            getBySalutation: function(salutation) {
+            getBySalutation: function (salutation) {
                 var $return = '';
+
                 for (var prop in this) {
                     if (Object.prototype.hasOwnProperty.call(this, prop)) {
                         if (this[prop] === salutation) {
@@ -306,17 +310,18 @@ const EnderecoIntegrator = {
                         }
                     }
                 }
+
                 return $return;
             }
         }
     },
     resolvers: {},
-    initPhoneServices: function(
-      prefix,
-      options= {
-          postfixCollection: {},
-          name: 'default'
-      }
+    initPhoneServices: function (
+        prefix,
+        options = {
+            postfixCollection: {},
+            name: 'default'
+        }
     ) {
         $self = this;
         if (!this.activeServices.phs) {
@@ -338,55 +343,57 @@ const EnderecoIntegrator = {
             prefix = '';
         } else {
             var newObject = {};
-            Object.keys(originalPostfix).forEach(function(key) {
-                newObject[key] = prefix + originalPostfix[key];
 
+            Object.keys(originalPostfix).forEach(function (key) {
+                newObject[key] = prefix + originalPostfix[key];
             });
             postfix = merge(newObject, options.postfixCollection);
         }
 
         var EPHSO = new EnderecoPhoneObject(config);
+
         EPHSO.fullName = options.name + '_' + EPHSO.name;
 
         // Start setting default values.
         if (!!options.numberType) {
-            EPHSO.numberType = options.numberType
+            EPHSO.numberType = options.numberType;
         }
 
-        EPHSO.waitForAllExtension().then( function() {
+        EPHSO.waitForAllExtension().then(function () {
             // Add subscribers.
             if (
-              $self.dispatchEvent('endereco.ams.before-adding-subscribers')
+                $self.dispatchEvent('endereco.ams.before-adding-subscribers')
             ) {
-
                 // In general with every subscriber we first check, if the html element exists
                 // Then we trigger an event.
                 if (
-                  document.querySelector($self.getSelector(postfix.phone)) &&
+                    document.querySelector($self.getSelector(postfix.phone)) &&
                   $self.dispatchEvent('endereco.ams.before-adding-phone-subscriber')
                 ) {
                     var phoneSubscriberOptions = {};
+
                     if (!!$self.resolvers.phoneWrite) {
-                        phoneSubscriberOptions['writeFilterCb'] = function(value, subscriber) {
+                        phoneSubscriberOptions['writeFilterCb'] = function (value, subscriber) {
                             return $self.resolvers.phoneWrite(value, subscriber);
-                        }
+                        };
                     }
                     if (!!$self.resolvers.phoneRead) {
-                        phoneSubscriberOptions['readFilterCb'] = function(value) {
+                        phoneSubscriberOptions['readFilterCb'] = function (value) {
                             return $self.resolvers.phoneRead(value, subscriber);
-                        }
+                        };
                     }
                     if (!!$self.resolvers.phoneSetValue) {
-                        phoneSubscriberOptions['customSetValue'] = function(subscriber, value) {
+                        phoneSubscriberOptions['customSetValue'] = function (subscriber, value) {
                             return $self.resolvers.phoneSetValue(subscriber, value);
-                        }
+                        };
                     }
 
                     var phoneSubscriber = new EnderecoSubscriber(
-                      'phone',
-                      document.querySelector($self.getSelector(postfix.phone)),
-                      phoneSubscriberOptions
-                    )
+                        'phone',
+                        document.querySelector($self.getSelector(postfix.phone)),
+                        phoneSubscriberOptions
+                    );
+
                     EPHSO.addSubscriber(phoneSubscriber);
 
                     $self.dispatchEvent('endereco.ams.after-adding-phone-subscriber'); // Add after hook.
@@ -395,44 +402,46 @@ const EnderecoIntegrator = {
                 // In general with every subscriber we first check, if the html element exists
                 // Then we trigger an event.
                 if (
-                    !! postfix.countryCode &&
+                    !!postfix.countryCode &&
                     document.querySelector($self.getSelector(postfix.countryCode)) &&
                     $self.dispatchEvent('endereco.ams.before-adding-country-code-subscriber')
                 ) {
                     var countryCodeSubscriberOptions = {};
+
                     if (!!$self.resolvers.countryCodeWrite) {
-                        countryCodeSubscriberOptions['writeFilterCb'] = function(value, subscriber) {
+                        countryCodeSubscriberOptions['writeFilterCb'] = function (value, subscriber) {
                             return $self.resolvers.countryCodeWrite(value, subscriber);
-                        }
+                        };
                     }
                     if (!!$self.resolvers.countryCodeRead) {
-                        countryCodeSubscriberOptions['readFilterCb'] = function(value, subscriber) {
+                        countryCodeSubscriberOptions['readFilterCb'] = function (value, subscriber) {
                             return $self.resolvers.countryCodeRead(value, subscriber);
-                        }
+                        };
                     }
                     if (!!$self.resolvers.countryCodeSetValue) {
-                        countryCodeSubscriberOptions['customSetValue'] = function(subscriber, value) {
+                        countryCodeSubscriberOptions['customSetValue'] = function (subscriber, value) {
                             return $self.resolvers.countryCodeSetValue(subscriber, value);
-                        }
+                        };
                     }
                     var countryCodeSubscriber = new EnderecoSubscriber(
                         'countryCode',
                         document.querySelector($self.getSelector(postfix.countryCode)),
                         countryCodeSubscriberOptions
-                    )
+                    );
+
                     EPHSO.addSubscriber(countryCodeSubscriber);
 
                     $self.dispatchEvent('endereco.ams.after-adding-country-code-subscriber'); // Add after hook.
                 }
 
-                $self.dispatchEvent('endereco.ams.after-adding-subscribers')
+                $self.dispatchEvent('endereco.ams.after-adding-subscribers');
 
-                EPHSO.waitUntilReady().then(function() {
-                    EPHSO.syncValues().then(function() {
-                        EPHSO.waitUntilReady().then(function() {
+                EPHSO.waitUntilReady().then(function () {
+                    EPHSO.syncValues().then(function () {
+                        EPHSO.waitUntilReady().then(function () {
                             // Start setting default values.
                             if (!!options.numberType) {
-                                EPHSO.numberType = options.numberType
+                                EPHSO.numberType = options.numberType;
                             } else if (!!window.EnderecoIntegrator.config.defaultPhoneType) {
                                 EPHSO.numberType = window.EnderecoIntegrator.config.defaultPhoneType;
                             }
@@ -443,23 +452,24 @@ const EnderecoIntegrator = {
                             EPHSO.activate();
 
                             if (!!$self.afterPHSActivation) {
-                                $self.afterPHSActivation.forEach( function(callback) {
+                                $self.afterPHSActivation.forEach(function (callback) {
                                     callback(EPHSO);
-                                })
+                                });
                             }
                         }).catch();
-                    }).catch()
+                    }).catch();
                 }).catch();
             }
         }).catch();
 
         this.integratedObjects[EPHSO.fullName] = EPHSO;
+
         return EPHSO;
     },
     test: {},
-    initAMS: async(
+    initAMS: async (
         fieldSelectors,
-        options= {
+        options = {
             addressType: 'general_address',
             name: 'default',
             beforeActivation: undefined,
@@ -471,10 +481,11 @@ const EnderecoIntegrator = {
         if (!window.EnderecoIntegrator.activeServices.ams) {
             return;
         }
-        
+
         const integrator = window.EnderecoIntegrator;
         // Create the object
         const addressObject = await new EnderecoAddressObject(integrator.config);
+
         await addressObject.waitForAllExtension();
         addressObject.fullName = options.name;
 
@@ -482,14 +493,14 @@ const EnderecoIntegrator = {
         if (integrator.config.ux.changeFieldsOrder &&
             integrator.config.useAutocomplete
         ) {
-            EnderecoIntegrator.changeFieldsOrder(fieldSelectors)
+            EnderecoIntegrator.changeFieldsOrder(fieldSelectors);
         }
 
         // Bind all address-related fields to the address object
         await bindFieldsToAddressObject(addressObject, fieldSelectors, integrator);
 
         await addressObject.waitUntilReady();
-        await addressObject.syncValues()
+        await addressObject.syncValues();
 
         addressObject.setIntent(options.intent);
 
@@ -498,7 +509,7 @@ const EnderecoIntegrator = {
         addressObject.setInsertPosition(options.insertPosition);
 
         if (!!options.addressType) {
-            await addressObject.setAddressType(options.addressType)
+            await addressObject.setAddressType(options.addressType);
         }
 
         if (!!options.beforeActivation) {
@@ -514,19 +525,19 @@ const EnderecoIntegrator = {
             await addressObject.setCountryCode(integrator.defaultCountry);
         }
 
-        integrator.afterAMSActivation.forEach( (callback) => {
+        integrator.afterAMSActivation.forEach((callback) => {
             callback(addressObject);
-        })
+        });
 
         await addressObject.waitUntilReady();
-        
+
         if (!addressObject.util.isAddressCheckFinished()) {
             addressObject.util.markAddressDirty();
         }
 
         addressObject.util.preheatCache();
         if (addressObject.util.isReviewIntent() && addressObject.util.shouldBeChecked()) {
-            addressObject.util.checkAddress()
+            addressObject.util.checkAddress();
         } else {
             addressObject.util.indicateStatuscodes(
                 addressObject.addressStatus
@@ -536,13 +547,14 @@ const EnderecoIntegrator = {
         integrator.integratedObjects[addressObject.fullName] = addressObject;
 
         // Connect to form
-        integrator.subscribeToSubmit(addressObject)
+        integrator.subscribeToSubmit(addressObject);
 
         return addressObject;
     },
     unblockSubmitButton: (form) => {
         if (!form || !(form instanceof HTMLElement)) {
             console.warn('Invalid form element provided to unblockSubmitButton');
+
             return;
         }
 
@@ -554,6 +566,7 @@ const EnderecoIntegrator = {
             }
 
             const disabledClasses = ['disabled', 'btn-disabled', 'is-disabled', 'form-disabled'];
+
             disabledClasses.forEach(className => {
                 if (button.classList.contains(className)) {
                     button.classList.remove(className);
@@ -568,9 +581,10 @@ const EnderecoIntegrator = {
 
         // Check if submit listener is present
         const forms = integrator.findForms(dataObject._subscribers);
-        forms.forEach( (form) => {
-            integrator.addSubmitListener(form, dataObject, integrator)
-        })
+
+        forms.forEach((form) => {
+            integrator.addSubmitListener(form, dataObject, integrator);
+        });
     },
     addSubmitListener: (form, dataObject, integrator) => {
         if (!integrator.formSubmitListeners.has(form)) {
@@ -581,6 +595,7 @@ const EnderecoIntegrator = {
     },
     findForms: (subscriberCollection) => {
         const forms = [];
+
         for (const [fieldName, subscribers] of Object.entries(subscriberCollection)) {
             if (subscribers.length === 0) {
                 continue;
@@ -591,10 +606,12 @@ const EnderecoIntegrator = {
             }
 
             const closestForm = subscribers[0].object.closest('form');
+
             if (closestForm && !forms.includes(closestForm)) {
                 forms.push(closestForm);
             }
         }
+
         return forms;
     },
     formSubmitListeners: new Map(),
@@ -602,7 +619,7 @@ const EnderecoIntegrator = {
     customSubmitButtonHandlers: [],
     customFormReferenceResolvers: [],
     onAjaxFormHandler: [],
-    initEmailServices: function(
+    initEmailServices: function (
         prefix,
         options = {
             postfixCollection: {},
@@ -624,26 +641,27 @@ const EnderecoIntegrator = {
             prefix = '';
         } else {
             var newObject = {};
-            Object.keys(originalPostfix).forEach(function(key) {
-                newObject[key] = prefix + originalPostfix[key];
 
+            Object.keys(originalPostfix).forEach(function (key) {
+                newObject[key] = prefix + originalPostfix[key];
             });
             postfix = merge(newObject, options.postfixCollection);
         }
 
         if (!!options.errorContainer) {
-            config.ux.errorContainer = options.errorContainer
+            config.ux.errorContainer = options.errorContainer;
         }
 
         if (!!options.errorInsertMode) {
-            config.ux.errorInsertMode = options.errorInsertMode
+            config.ux.errorInsertMode = options.errorInsertMode;
         }
 
         var EEO = new EnderecoEmailObject(config);
+
         EEO.fullName = options.name + '_' + EEO.name;
 
         EEO._awaits++;
-        EEO.waitForAllExtension().then( function() {
+        EEO.waitForAllExtension().then(function () {
             if (
                 $self.dispatchEvent('endereco.es.before-adding-subscribers')
             ) {
@@ -655,26 +673,27 @@ const EnderecoIntegrator = {
                         'email',
                         document.querySelector($self.getSelector(prefix + postfix.email)),
                         {
-                            writeFilterCb: function(value, subscriber) {
+                            writeFilterCb: function (value, subscriber) {
                                 if (!!$self.resolvers.emailWrite) {
                                     return $self.resolvers.emailWrite(value, subscriber);
                                 } else {
-                                    return new EEO.util.Promise(function(resolve, reject) {
+                                    return new EEO.util.Promise(function (resolve, reject) {
                                         resolve(value);
                                     });
                                 }
                             },
-                            readFilterCb: function(value, subscriber) {
+                            readFilterCb: function (value, subscriber) {
                                 if (!!$self.resolvers.emailRead) {
                                     return $self.resolvers.emailRead(value, subscriber);
                                 } else {
-                                    return new EEO.util.Promise(function(resolve, reject) {
+                                    return new EEO.util.Promise(function (resolve, reject) {
                                         resolve(value);
                                     });
                                 }
                             }
                         }
-                    )
+                    );
+
                     EEO.addSubscriber(emailSubscriber);
                     $self.dispatchEvent('endereco.es.after-adding-email-subscriber'); // Add after hook.
                 }
@@ -687,52 +706,54 @@ const EnderecoIntegrator = {
                         'emailStatus',
                         document.querySelector($self.getSelector(prefix + postfix.email)),
                         {
-                            writeFilterCb: function(value, subscriber) {
+                            writeFilterCb: function (value, subscriber) {
                                 if (!!$self.resolvers.emailStatusWrite) {
                                     return $self.resolvers.emailStatusWrite(value, subscriber);
                                 } else {
-                                    return new EEO.util.Promise(function(resolve, reject) {
+                                    return new EEO.util.Promise(function (resolve, reject) {
                                         resolve(value);
                                     });
                                 }
                             },
-                            readFilterCb: function(value, subscriber) {
+                            readFilterCb: function (value, subscriber) {
                                 if (!!$self.resolvers.emailStatusRead) {
                                     return $self.resolvers.emailStatusRead(value, subscriber);
                                 } else {
-                                    return new EEO.util.Promise(function(resolve, reject) {
+                                    return new EEO.util.Promise(function (resolve, reject) {
                                         resolve(value);
                                     });
                                 }
                             },
                             valueContainer: 'classList'
                         }
-                    )
+                    );
+
                     EEO.addSubscriber(emailStatusSubscriber);
                     $self.dispatchEvent('endereco.es.after-adding-email-status-subscriber'); // Add after hook.
                 }
 
-                $self.dispatchEvent('endereco.es.after-adding-subscribers')
+                $self.dispatchEvent('endereco.es.after-adding-subscribers');
             }
 
             EEO._awaits--;
         }).catch();
 
-        EEO.waitUntilReady().then(function() {
-            EEO.syncValues().then(function() {
-                EEO.waitUntilReady().then(function() {
+        EEO.waitUntilReady().then(function () {
+            EEO.syncValues().then(function () {
+                EEO.waitUntilReady().then(function () {
                     EEO._changed = false;
                     EEO.activate();
                 }).catch();
-            }).catch()
+            }).catch();
         }).catch();
 
         this.integratedObjects[EEO.fullName] = EEO;
+
         return EEO;
     },
-    initPersonServices: function(
+    initPersonServices: function (
         prefix = '',
-        options= {
+        options = {
             postfixCollection: {},
             name: 'default'
         }
@@ -760,9 +781,10 @@ const EnderecoIntegrator = {
         }
 
         var EPO = new EnderecoPersonObject(config);
+
         EPO.fullName = options.name + '_' + EPO.name;
         EPO._awaits++;
-        EPO.waitForAllExtension().then( function() {
+        EPO.waitForAllExtension().then(function () {
             // Add subscribers.
             if (
                 $self.dispatchEvent('endereco.ps.before-adding-subscribers')
@@ -773,26 +795,28 @@ const EnderecoIntegrator = {
                     $self.dispatchEvent('endereco.ps.before-adding-salutation-subscriber')
                 ) {
                     var salutationSubscriberOptions = {};
+
                     if (!!$self.resolvers.salutationWrite) {
-                        salutationSubscriberOptions['writeFilterCb'] = function(value, subscriber) {
+                        salutationSubscriberOptions['writeFilterCb'] = function (value, subscriber) {
                             return $self.resolvers.salutationWrite(value, subscriber);
-                        }
+                        };
                     }
                     if (!!$self.resolvers.salutationRead) {
-                        salutationSubscriberOptions['readFilterCb'] = function(value, subscriber) {
+                        salutationSubscriberOptions['readFilterCb'] = function (value, subscriber) {
                             return $self.resolvers.salutationRead(value, subscriber);
-                        }
+                        };
                     }
                     if (!!$self.resolvers.salutationSetValue) {
-                        salutationSubscriberOptions['customSetValue'] = function(subscriber, value) {
+                        salutationSubscriberOptions['customSetValue'] = function (subscriber, value) {
                             return $self.resolvers.salutationSetValue(subscriber, value);
-                        }
+                        };
                     }
                     var salutationSubscriber = new EnderecoSubscriber(
                         'salutation',
                         document.querySelector($self.getSelector(prefix + postfix.salutation)),
                         salutationSubscriberOptions
-                    )
+                    );
+
                     EPO.addSubscriber(salutationSubscriber);
 
                     $self.dispatchEvent('endereco.ps.after-adding-salutation-subscriber'); // Add after hook.
@@ -806,113 +830,120 @@ const EnderecoIntegrator = {
                         'firstName',
                         document.querySelector($self.getSelector(prefix + postfix.firstName)),
                         {
-                            writeFilterCb: function(value, subscriber) {
+                            writeFilterCb: function (value, subscriber) {
                                 if (!!$self.resolvers.firstNameWrite) {
                                     return $self.resolvers.firstNameWrite(value, subscriber);
                                 } else {
-                                    return new EPO.util.Promise(function(resolve, reject) {
+                                    return new EPO.util.Promise(function (resolve, reject) {
                                         resolve(value);
                                     });
                                 }
                             },
-                            readFilterCb: function(value, subscriber) {
+                            readFilterCb: function (value, subscriber) {
                                 if (!!$self.resolvers.firstNameRead) {
                                     return $self.resolvers.firstNameRead(value, subscriber);
                                 } else {
-                                    return new EPO.util.Promise(function(resolve, reject) {
+                                    return new EPO.util.Promise(function (resolve, reject) {
                                         resolve(value);
                                     });
                                 }
                             }
                         }
-                    )
+                    );
+
                     EPO.addSubscriber(firstNameSubscriber);
 
                     $self.dispatchEvent('endereco.ps.after-adding-first-name-subscriber'); // Add after hook.
                 }
                 if (
-                  document.querySelector($self.getSelector(prefix + postfix.lastName)) &&
+                    document.querySelector($self.getSelector(prefix + postfix.lastName)) &&
                   $self.dispatchEvent('endereco.ps.before-adding-last-name-subscriber')
                 ) {
                     var lastNameSubscriberOptions = {};
+
                     if (!!$self.resolvers.lastNameWrite) {
-                        lastNameSubscriberOptions['writeFilterCb'] = function(value, subscriber) {
+                        lastNameSubscriberOptions['writeFilterCb'] = function (value, subscriber) {
                             return $self.resolvers.lastNameWrite(value, subscriber);
-                        }
+                        };
                     }
                     if (!!$self.resolvers.lastNameRead) {
-                        lastNameSubscriberOptions['readFilterCb'] = function(value, subscriber) {
+                        lastNameSubscriberOptions['readFilterCb'] = function (value, subscriber) {
                             return $self.resolvers.lastNameRead(value, subscriber);
-                        }
+                        };
                     }
                     if (!!$self.resolvers.lastNameSetValue) {
-                        lastNameSubscriberOptions['customSetValue'] = function(subscriber, value) {
+                        lastNameSubscriberOptions['customSetValue'] = function (subscriber, value) {
                             return $self.resolvers.lastNameSetValue(subscriber, value);
-                        }
+                        };
                     }
                     var lastNameSubscriber = new EnderecoSubscriber(
-                      'lastName',
-                      document.querySelector($self.getSelector(prefix + postfix.lastName)),
-                      lastNameSubscriberOptions
-                    )
+                        'lastName',
+                        document.querySelector($self.getSelector(prefix + postfix.lastName)),
+                        lastNameSubscriberOptions
+                    );
+
                     EPO.addSubscriber(lastNameSubscriber);
 
                     $self.dispatchEvent('endereco.ps.after-adding-last-name-subscriber'); // Add after hook.
                 }
                 if (
-                  document.querySelector($self.getSelector(prefix + postfix.title)) &&
+                    document.querySelector($self.getSelector(prefix + postfix.title)) &&
                   $self.dispatchEvent('endereco.ps.before-adding-title-subscriber')
                 ) {
                     var titleSubscriberOptions = {};
+
                     if (!!$self.resolvers.titleWrite) {
-                        titleSubscriberOptions['writeFilterCb'] = function(value, subscriber) {
+                        titleSubscriberOptions['writeFilterCb'] = function (value, subscriber) {
                             return $self.resolvers.titleWrite(value, subscriber);
-                        }
+                        };
                     }
                     if (!!$self.resolvers.titleRead) {
-                        titleSubscriberOptions['readFilterCb'] = function(value, subscriber) {
+                        titleSubscriberOptions['readFilterCb'] = function (value, subscriber) {
                             return $self.resolvers.titleRead(value, subscriber);
-                        }
+                        };
                     }
                     if (!!$self.resolvers.titleSetValue) {
-                        titleSubscriberOptions['customSetValue'] = function(subscriber, value) {
+                        titleSubscriberOptions['customSetValue'] = function (subscriber, value) {
                             return $self.resolvers.titleSetValue(subscriber, value);
-                        }
+                        };
                     }
                     var titleSubscriber = new EnderecoSubscriber(
-                      'title',
-                      document.querySelector($self.getSelector(prefix + postfix.title)),
-                      titleSubscriberOptions
-                    )
+                        'title',
+                        document.querySelector($self.getSelector(prefix + postfix.title)),
+                        titleSubscriberOptions
+                    );
+
                     EPO.addSubscriber(titleSubscriber);
 
                     $self.dispatchEvent('endereco.ps.after-adding-title-subscriber'); // Add after hook.
                 }
                 if (
-                  document.querySelector($self.getSelector(prefix + postfix.nameScore)) &&
+                    document.querySelector($self.getSelector(prefix + postfix.nameScore)) &&
                   $self.dispatchEvent('endereco.ps.before-adding-name-score-subscriber')
                 ) {
                     var nameScoreSubscriberOptions = {};
+
                     if (!!$self.resolvers.nameScoreWrite) {
-                        nameScoreSubscriberOptions['writeFilterCb'] = function(value, subscriber) {
+                        nameScoreSubscriberOptions['writeFilterCb'] = function (value, subscriber) {
                             return $self.resolvers.nameScoreWrite(value, subscriber);
-                        }
+                        };
                     }
                     if (!!$self.resolvers.nameScoreRead) {
-                        nameScoreSubscriberOptions['readFilterCb'] = function(value, subscriber) {
+                        nameScoreSubscriberOptions['readFilterCb'] = function (value, subscriber) {
                             return $self.resolvers.nameScoreRead(value, subscriber);
-                        }
+                        };
                     }
                     if (!!$self.resolvers.nameScoreSetValue) {
-                        nameScoreSubscriberOptions['customSetValue'] = function(subscriber, value) {
+                        nameScoreSubscriberOptions['customSetValue'] = function (subscriber, value) {
                             return $self.resolvers.nameScoreSetValue(subscriber, value);
-                        }
+                        };
                     }
                     var nameScoreSubscriber = new EnderecoSubscriber(
-                      'nameScore',
-                      document.querySelector($self.getSelector(prefix + postfix.nameScore)),
-                      nameScoreSubscriberOptions
-                    )
+                        'nameScore',
+                        document.querySelector($self.getSelector(prefix + postfix.nameScore)),
+                        nameScoreSubscriberOptions
+                    );
+
                     EPO.addSubscriber(nameScoreSubscriber);
 
                     $self.dispatchEvent('endereco.ps.after-adding-name-score-subscriber'); // Add after hook.
@@ -922,63 +953,68 @@ const EnderecoIntegrator = {
             EPO._awaits--;
         });
 
-        EPO.waitUntilReady().then(function() {
-            EPO.syncValues().then(function() {
-                EPO.waitUntilReady().then(function() {
+        EPO.waitUntilReady().then(function () {
+            EPO.syncValues().then(function () {
+                EPO.waitUntilReady().then(function () {
                     // Start setting default values.
                     EPO._changed = false;
                     EPO.activate();
                 }).catch();
-            }).catch()
+            }).catch();
         }).catch();
 
         this.integratedObjects[EPO.fullName] = EPO;
+
         return EPO;
     },
-    waitUntilReady: function() {
+    waitUntilReady: function () {
         var $self = this;
-        return new Promise(function(resolve, reject) {
-            var interval = setInterval(function() {
+
+        return new Promise(function (resolve, reject) {
+            var interval = setInterval(function () {
                 if (window.EnderecoIntegrator.ready) {
                     clearInterval(interval);
                     resolve();
                 }
             }, 100);
-        })
+        });
     },
-    getSelector: function(possibleSelector) {
+    getSelector: function (possibleSelector) {
         var selector = '';
-        if  (!possibleSelector) {
+
+        if (!possibleSelector) {
             selector = null;
         } else if (
             (possibleSelector.indexOf('#') === -1) &&
             (possibleSelector.indexOf('.') === -1) &&
             (possibleSelector.indexOf('=') === -1)
         ) {
-            selector = '[name="'+possibleSelector+'"]';
+            selector = '[name="' + possibleSelector + '"]';
         } else {
             selector = possibleSelector;
         }
+
         return selector;
     },
     integratedObjects: {},
     asyncCallbacks: [],
     addCss: function () {
-
         // Clean up beforehand (just in case)
         var stylesDOM = document.getElementById('#endereco-styles-include');
+
         if (stylesDOM) {
             stylesDOM.remove();
         }
 
         if (this.config.ux.useStandardCss) {
-            if(!this.css && !this.config.ux.cssFilePath){
+            if (!this.css && !this.config.ux.cssFilePath) {
                 return;
             }
 
             const cssLink = this.config.ux.cssFilePath || 'data:text/css;charset=UTF-8,' + encodeURIComponent(this.css);
             var head = document.querySelector('head');
             var linkElement = document.createElement('link');
+
             linkElement.setAttribute('id', 'endereco-styles-include');
             linkElement.setAttribute('rel', 'stylesheet');
             linkElement.setAttribute('type', 'text/css');
@@ -986,27 +1022,28 @@ const EnderecoIntegrator = {
             head.appendChild(linkElement);
         }
     },
-    addBodyClass: function() {
+    addBodyClass: function () {
         if (!!this.themeName) {
-            document.querySelector('body').classList.add('endereco-theme--'+this.themeName);
+            document.querySelector('body').classList.add('endereco-theme--' + this.themeName);
         } else {
             document.querySelector('body').classList.add('endereco-theme--current-theme');
         }
     },
-    dispatchEvent: function(event) {
+    dispatchEvent: function (event) {
         return true;
     },
-    _createParentLine: function(fieldName, collector, collection) {
+    _createParentLine: function (fieldName, collector, collection) {
         if (document.querySelector((this.getSelector(collection[fieldName])))) {
             collector[fieldName] = {
                 commonElementIndex: 0,
                 rowElementIndex: 0,
                 columnElementIndex: 0,
                 parentLine: [document.querySelector((this.getSelector(collection[fieldName])))]
-            }
+            };
             while (1) {
-                if (collector[fieldName].parentLine[collector[fieldName].parentLine.length-1].parentNode) {
-                    var temp = collector[fieldName].parentLine[collector[fieldName].parentLine.length-1].parentNode;
+                if (collector[fieldName].parentLine[collector[fieldName].parentLine.length - 1].parentNode) {
+                    var temp = collector[fieldName].parentLine[collector[fieldName].parentLine.length - 1].parentNode;
+
                     collector[fieldName].parentLine.push(temp);
                 } else {
                     break;
@@ -1014,7 +1051,7 @@ const EnderecoIntegrator = {
             }
         }
     },
-    _firstBeforeSecond: function(firstFieldName, secondFieldName, collector) {
+    _firstBeforeSecond: function (firstFieldName, secondFieldName, collector) {
         if (
             !collector[firstFieldName] ||
             !collector[secondFieldName]
@@ -1028,42 +1065,44 @@ const EnderecoIntegrator = {
         var secondFieldData = collector[secondFieldName];
         var secondFieldIndex = 0;
         var commonParentDOM = undefined;
+
         if (firstFieldData.parentLine && secondFieldData.parentLine) {
-            firstFieldData.parentLine.forEach( function(firstFieldParentDOM) {
+            firstFieldData.parentLine.forEach(function (firstFieldParentDOM) {
                 if (commonParentDOM) {
                     return;
                 }
                 secondFieldIndex = 0;
-                secondFieldData.parentLine.forEach( function(secondFieldParentDOM) {
+                secondFieldData.parentLine.forEach(function (secondFieldParentDOM) {
                     if (commonParentDOM) {
                         return;
                     }
                     if (firstFieldParentDOM === secondFieldParentDOM) {
                         commonParentDOM = firstFieldParentDOM;
                         firstFieldData.commonElementIndex = firstFieldIndex;
-                        firstFieldData.rowElementIndex = Math.max(firstFieldIndex-1, 0);
-                        firstFieldData.columnElementIndex =  Math.max(firstFieldIndex-2, 0);
+                        firstFieldData.rowElementIndex = Math.max(firstFieldIndex - 1, 0);
+                        firstFieldData.columnElementIndex = Math.max(firstFieldIndex - 2, 0);
                         secondFieldData.commonElementIndex = secondFieldIndex;
-                        secondFieldData.rowElementIndex =  Math.max(secondFieldIndex-1, 0);
-                        secondFieldData.columnElementIndex =  Math.max(secondFieldIndex-2, 0);
+                        secondFieldData.rowElementIndex = Math.max(secondFieldIndex - 1, 0);
+                        secondFieldData.columnElementIndex = Math.max(secondFieldIndex - 2, 0);
                     }
                     secondFieldIndex++;
-                })
+                });
 
                 firstFieldIndex++;
-            })
+            });
 
             if (commonParentDOM) {
                 commonParentDOM.insertBefore(
                     firstFieldData.parentLine[firstFieldData.rowElementIndex],
                     secondFieldData.parentLine[secondFieldData.rowElementIndex]
-                )
+                );
             }
         }
     },
     _test: {},
-    changeFieldsOrder: function(collection, fieldNamesOrder = ['countryCode', 'subdivisionCode', 'postalCode', 'locality', 'streetFull', 'streetName','buildingNumber', 'additionalInfo']) {
+    changeFieldsOrder: function (collection, fieldNamesOrder = ['countryCode', 'subdivisionCode', 'postalCode', 'locality', 'streetFull', 'streetName', 'buildingNumber', 'additionalInfo']) {
         var myStructure = {};
+
         // Create parent line for additional info if it exists.
         this._createParentLine('additionalInfo', this._test, collection);
         this._createParentLine('buildingNumber', this._test, collection);
@@ -1075,8 +1114,9 @@ const EnderecoIntegrator = {
         this._createParentLine('subdivisionCode', this._test, collection);
 
         // Ensure position.
-        var reversedArray = new Array;
-        for(var i = fieldNamesOrder.length-1; i >= 0; i--) {
+        var reversedArray = new Array();
+
+        for (var i = fieldNamesOrder.length - 1; i >= 0; i--) {
             // Filterout if not existing.
             if (
                 document.querySelector(
@@ -1088,13 +1128,13 @@ const EnderecoIntegrator = {
         }
 
         // Change positions in the DOM.
-        for (var j=0; j<(reversedArray.length-1); j++) {
-            this._firstBeforeSecond(reversedArray[j+1], reversedArray[j], this._test);
+        for (var j = 0; j < (reversedArray.length - 1); j++) {
+            this._firstBeforeSecond(reversedArray[j + 1], reversedArray[j], this._test);
         }
     }
-}
+};
 
-EnderecoIntegrator.waitUntilReady().then( function() {
+EnderecoIntegrator.waitUntilReady().then(function () {
     if (window.EnderecoIntegrator.config) {
         EnderecoIntegrator.config = merge(EnderecoIntegrator.config, window.EnderecoIntegrator.config);
     }

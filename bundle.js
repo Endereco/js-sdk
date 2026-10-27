@@ -33,28 +33,30 @@ EnderecoIntegrator.resolvers.countryCodeWrite = function (value, subscriber) {
     return new Promise(function (resolve, reject) {
         resolve(value);
     });
-}
-EnderecoIntegrator.resolvers.countryCodeRead = function(value, subscriber) {
-    return new Promise(function(resolve, reject) {
+};
+EnderecoIntegrator.resolvers.countryCodeRead = function (value, subscriber) {
+    return new Promise(function (resolve, reject) {
         resolve(value);
     });
-}
-EnderecoIntegrator.resolvers.salutationWrite = function(value, subscriber) {
-    return new Promise(function(resolve, reject) {
+};
+EnderecoIntegrator.resolvers.salutationWrite = function (value, subscriber) {
+    return new Promise(function (resolve, reject) {
         resolve(value);
     });
-}
-EnderecoIntegrator.resolvers.salutationRead = function(value, subscriber) {
-    return new Promise(function(resolve, reject) {
+};
+EnderecoIntegrator.resolvers.salutationRead = function (value, subscriber) {
+    return new Promise(function (resolve, reject) {
         resolve(value);
     });
-}
+};
 
 EnderecoIntegrator.amsFilters.isAddressMetaStillRelevant.push((isStillRelevant, EAO) => {
     const invalidateAddressForm = document.querySelector('#invalidate-address-form');
+
     if (invalidateAddressForm && invalidateAddressForm.checked) {
         isStillRelevant = false;
     }
+
     return isStillRelevant;
 });
 
@@ -64,22 +66,22 @@ if (window.EnderecoIntegrator) {
     window.EnderecoIntegrator = EnderecoIntegrator;
 }
 
-window.EnderecoIntegrator.asyncCallbacks.forEach(function(cb) {
+window.EnderecoIntegrator.asyncCallbacks.forEach(function (cb) {
     cb();
 });
 window.EnderecoIntegrator.asyncCallbacks = [];
 
 const anExampleCallback = async (EAO) => {
-    console.log("Sleep for 5 sec");
+    console.log('Sleep for 5 sec');
     // Sleep logic
     await new Promise(resolve => setTimeout(resolve, 5000));
-    console.log("Now resolve anExampleCallback");
-}
+    console.log('Now resolve anExampleCallback');
+};
 
 window.EnderecoIntegrator.afterAMSActivation.push((EAO) => {
     EAO.onEditAddress.push((e) => {
         return anExampleCallback(e);
-    })
+    });
 });
 
 window.EnderecoIntegrator.isAddressFormStillValid = (EAO) => {
@@ -107,7 +109,7 @@ window.EnderecoIntegrator.isAddressFormStillValid = (EAO) => {
     }
 
     return true;
-}
+};
 
 window.EnderecoIntegrator.prepareDOMElement = (DOMElement, addressObject) => {
     // Check if the element has already been prepared
@@ -123,23 +125,26 @@ window.EnderecoIntegrator.prepareDOMElement = (DOMElement, addressObject) => {
 
         // Dispatch 'focus' and 'blur' events on the target element
         const prevActiveElement = document.activeElement;
+
         e.target.dispatchEvent(new CustomEvent('focus', { bubbles: true, cancelable: true }));
         e.target.dispatchEvent(new CustomEvent('blur', { bubbles: true, cancelable: true }));
         prevActiveElement.dispatchEvent(new CustomEvent('focus', { bubbles: true, cancelable: true }));
-    }
+    };
 
     DOMElement.addEventListener('endereco-blur', enderecoBlurListener);
 
     // Mark the element as prepared
     DOMElement._enderecoBlurListenerAttached = true;
-}
+};
 
 // Custom submit button handler for data-form-target pattern
 window.EnderecoIntegrator.customSubmitButtonHandlers.push((form, triggerValidation) => {
     // Handle buttons with data-form-target attribute pointing to this form's data-form-identifier
     const formIdentifier = form.getAttribute('data-form-identifier');
+
     if (formIdentifier) {
         const customButtons = document.querySelectorAll(`[data-form-target="${formIdentifier}"]`);
+
         customButtons.forEach(button => {
             button.addEventListener('click', triggerValidation);
         });
@@ -151,15 +156,16 @@ window.EnderecoIntegrator.customFormReferenceResolvers.push((e, submitType) => {
     // Handle buttons with data-form-target attribute
     if (e.target && e.target.hasAttribute('data-form-target')) {
         const formIdentifier = e.target.getAttribute('data-form-target');
+
         return document.querySelector(`[data-form-identifier="${formIdentifier}"]`);
     }
+
     return null;
 });
 
-var $waitForConfig = setInterval( function() {
-    if(typeof enderecoLoadAMSConfig === 'function'){
+var $waitForConfig = setInterval(function () {
+    if (typeof enderecoLoadAMSConfig === 'function') {
         enderecoLoadAMSConfig();
         clearInterval($waitForConfig);
     }
 }, 1);
-
