@@ -90,7 +90,12 @@ function EnderecoBase () {
                     clearTimeout(timeoutObject);
                     clearInterval(intervalObject);
                     console.log('Timeout!');
-                    reject();
+
+                    const missingExtensions = extensions.filter(function (extensionName) {
+                        return !$self.hasLoadedExtension(extensionName);
+                    });
+
+                    reject(new Error(`Timeout while waiting for extensions: ${missingExtensions.join(', ')}`));
                 }, timeout * 1000); // Transform seconds to milliseconds.
             });
         },
@@ -114,7 +119,16 @@ function EnderecoBase () {
                     clearInterval(intervalObject);
                     console.log('Timeout!');
                     $self._awaits--;
-                    reject($self);
+
+                    const missingExtensions = $self.extensions
+                        .map(function (extension) {
+                            return extension.name;
+                        })
+                        .filter(function (extensionName) {
+                            return !$self.hasLoadedExtension(extensionName);
+                        });
+
+                    reject(new Error(`Timeout while waiting for extensions: ${missingExtensions.join(', ')}`));
                 }, timeout * 1000); // Transform seconds to milliseconds.
             });
         },
