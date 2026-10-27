@@ -324,12 +324,11 @@ const EnderecoIntegrator = {
             name: 'default'
         }
     ) {
-        $self = this;
         if (!this.activeServices.phs) {
             return;
         }
 
-        var $self = this;
+        const $self = this;
         let config = JSON.parse(JSON.stringify(this.config));
 
         if (options.config) {
@@ -759,12 +758,11 @@ const EnderecoIntegrator = {
             name: 'default'
         }
     ) {
-        $self = this;
         if (!this.activeServices.personService) {
             return;
         }
 
-        var $self = this;
+        const $self = this;
         let config = JSON.parse(JSON.stringify(this.config));
 
         if (options.config) {
