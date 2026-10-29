@@ -42,7 +42,7 @@ This starts both the Express server (localhost:8888) and BrowserSync (localhost:
 Every commit must meet these requirements:
 
 1. **Stable State**: Each commit should leave the codebase in a working, stable state
-2. **ESLint Compliance**: Code must pass ESLint checks without errors if the code in the files passed them before your modifications
+2. **ESLint Compliance**: `npm run lint` must report 0 errors
 3. **Build Success**: All build scripts must complete without errors
 4. **Demo Functionality**: Changes must not break existing demo cases
 5. **Browser Compatibility**: Ensure compatibility with supported browsers (>1%, last 2 versions, not IE ≤9)
@@ -70,26 +70,14 @@ When contributing code, follow these principles:
 ### Running Code Quality Checks
 
 ```bash
-# Check code style (project should have this command)
+# Check code style
 npm run lint
 
 # Build project to verify no errors
 npm run build
-
-# Check specific file with targeted linting
-npx eslint modules/integrator.js
 ```
 
-**Important**: Because we still have many existing lint issues in the codebase, you should use targeted linting to check only the files you've modified. There should be no more lint issues after your changes than there were before. If a file passed lint before your modification, it must pass lint after your modification in every commit.
-
-Example of checking a specific file:
-```bash
-# Check only the file you modified
-npx eslint modules/extensions/fields/YourNewExtension.js
-
-# Check multiple specific files
-npx eslint modules/integrator.js modules/ams.js
-```
+**Important**: Lint must report 0 errors. This applies to every commit and to the whole codebase, not only to the files you modified.
 
 ## Git Workflow
 
