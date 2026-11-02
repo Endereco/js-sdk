@@ -326,6 +326,57 @@ function EnderecoBase () {
                 } else {
                     element.textContent = content;
                 }
+            },
+            /**
+             * Computes a hex-encoded HMAC-SHA256 signature over a message, using the
+             * browser's Web Crypto API.
+             * @param {string} message - The exact message that will be sent
+             * @param {string} secret - The signing secret (config.requestSigningSecret)
+             * @returns {Promise<string>} - The hex-encoded signature
+             */
+            signRequestPayload: async function (message, secret) {
+                const encoder = new TextEncoder();
+                const cryptoKey = await window.crypto.subtle.importKey(
+                    'raw',
+                    encoder.encode(secret),
+                    { name: 'HMAC', hash: 'SHA-256' },
+                    false,
+                    ['sign']
+                );
+                const signatureBuffer = await window.crypto.subtle.sign('HMAC', cryptoKey, encoder.encode(message));
+
+                return Array.from(new Uint8Array(signatureBuffer))
+                    .map((byte) => byte.toString(16).padStart(2, '0'))
+                    .join('');
+            },
+            /**
+             * Signs a request body if a secret is given. The body is serialized to JSON once
+             * and that exact string is returned for sending, so the signed bytes match the
+             * sent bytes. Without a secret, or without Web Crypto (only available in secure
+             * contexts), body and headers are returned unchanged - whether an unsigned request
+             * is accepted is up to the backend.
+             * @param {*} body - The request body, as it would otherwise be passed to axios
+             * @param {object} headers - The headers, as they would otherwise be passed to axios
+             * @param {string|undefined} secret - config.requestSigningSecret, or falsy to skip signing
+             * @returns {Promise<{body: *, headers: object}>}
+             */
+            signRequestIfNeeded: async function (body, headers, secret) {
+                if (!secret || !window.crypto?.subtle) {
+                    return { body, headers };
+                }
+
+                const serializedBody = JSON.stringify(body);
+                const timestamp = Math.floor(Date.now() / 1000).toString();
+                const signature = await this.signRequestPayload(`${serializedBody}|${timestamp}`, secret);
+
+                return {
+                    body: serializedBody,
+                    headers: Object.assign({}, headers, {
+                        'Content-Type': 'application/json',
+                        'X-Signature': signature,
+                        'X-Timestamp': timestamp
+                    })
+                };
             }
         },
 
@@ -337,13 +388,24 @@ function EnderecoBase () {
             const $self = this;
 
             return {
-                sendRequestToAPI: function (body, headers) {
+                /**
+                 * Sends body/headers to config.apiUrl. If config.requestSigningSecret is set,
+                 * the request is signed first. The SDK only signs;
+                 * validating/enforcing the signature is up to the backend.
+                 */
+                sendRequestToAPI: async function (body, headers) {
+                    const signed = await $self.util.signRequestIfNeeded(
+                        body,
+                        headers,
+                        $self.config.requestSigningSecret
+                    );
+
                     return $self.util.axios.post(
                         $self.config.apiUrl,
-                        body,
+                        signed.body,
                         {
                             timeout: $self.config.ux.requestTimeout,
-                            headers
+                            headers: signed.headers
                         }
                     );
                 }

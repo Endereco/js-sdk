@@ -132,6 +132,7 @@
             window.EnderecoIntegrator.themeName = 'my-theme';
             window.EnderecoIntegrator.defaultCountrySelect = true; // Feature "Preselect country"
             window.EnderecoIntegrator.config.apiUrl = 'http://localhost:8888/proxyfile';
+			window.EnderecoIntegrator.config.requestSigningSecret = 'test-secret';
 			window.EnderecoIntegrator.config.apiKey = sessionStorage.getItem('apiKey') ?? ''; // Hier kommt Dein API Key.
             window.EnderecoIntegrator.config.showDebugInfo = false;
 			window.EnderecoIntegrator.config.remoteApiUrl = localStorage.getItem('remoteApiUrl') || 'endereco-service.de';

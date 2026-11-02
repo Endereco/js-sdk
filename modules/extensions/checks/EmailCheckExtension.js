@@ -139,15 +139,21 @@ const EmailCheckExtension = {
 
                         // Send user data to remote server for validation.
                         ExtendableObject._awaits++;
-                        ExtendableObject.util.axios.post(ExtendableObject.config.apiUrl, message, {
-                            timeout: 6000,
-                            headers: {
+                        ExtendableObject.util.signRequestIfNeeded(
+                            message,
+                            {
                                 'X-Auth-Key': ExtendableObject.config.apiKey,
                                 'X-Agent': ExtendableObject.config.agentName,
                                 'X-Remote-Api-Url': ExtendableObject.config.remoteApiUrl,
                                 'X-Transaction-Referer': window.location.href,
                                 'X-Transaction-Id': (ExtendableObject.hasLoadedExtension('SessionExtension')) ? ExtendableObject.sessionId : 'not_required'
-                            }
+                            },
+                            ExtendableObject.config.requestSigningSecret
+                        ).then(function (signed) {
+                            return ExtendableObject.util.axios.post(ExtendableObject.config.apiUrl, signed.body, {
+                                timeout: 6000,
+                                headers: signed.headers
+                            });
                         })
                             .then(function (response) {
                                 if (undefined !== response.data.result) {
