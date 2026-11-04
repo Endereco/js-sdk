@@ -9,6 +9,7 @@
     "copy-styles": "copyfiles -u 1 ./dist/endereco.min.css ./demo/assets",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "prepare": "git config core.hooksPath .githooks || exit 0",
     "demo": "nodemon -e js,mjs,cjs,json,html demo/app.js & browser-sync start --proxy 'localhost:8888' --files 'demo/**/*.js, demo/**/*.css, demo/**/*.html' --open"
   },
   "dependencies": {
