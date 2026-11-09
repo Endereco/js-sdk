@@ -42,7 +42,7 @@ This starts both the Express server (localhost:8888) and BrowserSync (localhost:
 Every commit must meet these requirements:
 
 1. **Stable State**: Each commit should leave the codebase in a working, stable state
-2. **ESLint Compliance**: `npm run lint` must report 0 errors
+2. **ESLint Compliance**: `npm run lint` must report 0 errors and 0 warnings
 3. **Build Success**: All build scripts must complete without errors
 4. **Demo Functionality**: Changes must not break existing demo cases
 5. **Browser Compatibility**: Ensure compatibility with supported browsers (>1%, last 2 versions, not IE ≤9)
@@ -77,7 +77,7 @@ npm run lint
 npm run build
 ```
 
-**Important**: Lint must report 0 errors. This applies to every commit and to the whole codebase, not only to the files you modified.
+**Important**: Lint must report 0 errors and 0 warnings. This applies to every commit and to the whole codebase, not only to the files you modified.
 
 ## Git Workflow
 
@@ -227,7 +227,7 @@ For changes that might break existing integrations:
 Before submitting your PR:
 
 1. ✅ All commits follow the message guidelines above
-2. ✅ Code passes ESLint without errors
+2. ✅ Code passes ESLint without errors or warnings
 3. ✅ All build scripts complete successfully
 4. ✅ Demo environment works correctly
 5. ✅ Feature branch created from `master` branch

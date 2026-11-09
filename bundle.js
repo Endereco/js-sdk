@@ -4,6 +4,8 @@ import merge from 'lodash.merge';
 import EnderecoIntegrator from './modules/integrator';
 import css from './themes/default-theme.scss';
 
+const EXAMPLE_CALLBACK_DELAY = 5000; // Simulated delay (ms) in example callback
+
 if ('NodeList' in window && !NodeList.prototype.forEach) {
     NodeList.prototype.forEach = function (callback, thisArg) {
         thisArg = thisArg || window;
@@ -75,7 +77,7 @@ window.EnderecoIntegrator.asyncCallbacks = [];
 const anExampleCallback = async (EAO) => {
     console.log('Sleep for 5 sec');
     // Sleep logic
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    await new Promise(resolve => setTimeout(resolve, EXAMPLE_CALLBACK_DELAY));
     console.log('Now resolve anExampleCallback');
 };
 

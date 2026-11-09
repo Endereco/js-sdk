@@ -8,15 +8,20 @@ const host = 'localhost';
 const port = 8888;
 const syncPort = 3000;
 
+const HTTP_OK = 200;
+const HTTP_NO_CONTENT = 204;
+const HTTP_NOT_FOUND = 404;
+const HTTP_INTERNAL_SERVER_ERROR = 500;
+
 // Helper function to read a file
 async function readFile (filePath, res, contentType) {
     try {
         const contents = await fs.readFile(filePath);
 
         res.setHeader('Content-Type', contentType);
-        res.status(200).send(contents);
+        res.status(HTTP_OK).send(contents);
     } catch (error) {
-        res.status(404).send('Datei nicht gefunden');
+        res.status(HTTP_NOT_FOUND).send('Datei nicht gefunden');
     }
 }
 
@@ -34,7 +39,7 @@ app.options('/proxyfile', (req, res) => {
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Agent, X-Auth-Key, X-Remote-Api-Url, X-Transaction-Id, X-Transaction-Referer');
     res.setHeader('Cache-Control', 'no-cache');
-    res.sendStatus(204); // No Content
+    res.sendStatus(HTTP_NO_CONTENT);
 });
 
 // Serve static files from the "assets" directory
@@ -97,13 +102,13 @@ router.post('/proxyfile', (req, res) => {
         });
         proxyRes.on('end', function () {
             res.setHeader('Content-Type', 'application/json');
-            res.status(200).send(body);
+            res.status(HTTP_OK).send(body);
         });
     });
 
     proxyReq.on('error', error => {
         console.error(error);
-        res.status(500).send('Internal Server Error');
+        res.status(HTTP_INTERNAL_SERVER_ERROR).send('Internal Server Error');
     });
 
     proxyReq.write(JSON.stringify(postData));
@@ -121,7 +126,7 @@ app.use('/', router);
 // Handle errors
 app.use((err, req, res, next) => {
     console.error(err.stack);
-    res.status(err.status || 500).send(err.message || 'Internal Server Error');
+    res.status(err.status || HTTP_INTERNAL_SERVER_ERROR).send(err.message || 'Internal Server Error');
 });
 
 // Start server

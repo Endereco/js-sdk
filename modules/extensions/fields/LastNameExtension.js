@@ -1,3 +1,5 @@
+const ON_BLUR_CHECK_DELAY = 300; // Delay (ms) before checking after blur
+
 const LastNameExtension = {
     name: 'LastNameExtension',
     extend: function (ExtendableObject) {
@@ -27,7 +29,7 @@ const LastNameExtension = {
                                         ExtendableObject._changed = false;
                                     });
                             }
-                        }, 300);
+                        }, ON_BLUR_CHECK_DELAY);
                     }).catch();
                 };
             };

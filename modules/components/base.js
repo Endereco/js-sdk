@@ -6,6 +6,10 @@ import merge from 'lodash.merge';
 import isEqual from 'lodash.isequal';
 import { v4 as uuidv4 } from 'uuid';
 
+const EXTENSION_WAIT_TIMEOUT = 10; // Default timeout (s) when waiting for extensions to load
+const POLL_INTERVAL = 100; // Interval (ms) for polling extension/await state
+const MILLISECONDS_IN_SECOND = 1000; // Conversion factor seconds -> milliseconds
+
 function EnderecoBase () {
     const BaseObject = {
         id: uuidv4(),
@@ -62,7 +66,7 @@ function EnderecoBase () {
 
         _awaits: 0,
         _activePredictionApplications: [],
-        waitForExtension: function (extensions, timeout = 10) {
+        waitForExtension: function (extensions, timeout = EXTENSION_WAIT_TIMEOUT) {
             const $self = this;
 
             return new Promise(function (resolve, reject) {
@@ -84,7 +88,7 @@ function EnderecoBase () {
                         clearInterval(intervalObject);
                         resolve();
                     }
-                }, 100);
+                }, POLL_INTERVAL);
 
                 const timeoutObject = setTimeout(function () {
                     clearTimeout(timeoutObject);
@@ -96,10 +100,10 @@ function EnderecoBase () {
                     });
 
                     reject(new Error(`Timeout while waiting for extensions: ${missingExtensions.join(', ')}`));
-                }, timeout * 1000); // Transform seconds to milliseconds.
+                }, timeout * MILLISECONDS_IN_SECOND);
             });
         },
-        waitForAllExtension: function (timeout = 10) {
+        waitForAllExtension: function (timeout = EXTENSION_WAIT_TIMEOUT) {
             const $self = this;
 
             this._awaits++;
@@ -112,7 +116,7 @@ function EnderecoBase () {
                         $self._awaits--;
                         resolve($self);
                     }
-                }, 100);
+                }, POLL_INTERVAL);
 
                 const timeoutObject = setTimeout(function () {
                     clearTimeout(timeoutObject);
@@ -129,7 +133,7 @@ function EnderecoBase () {
                         });
 
                     reject(new Error(`Timeout while waiting for extensions: ${missingExtensions.join(', ')}`));
-                }, timeout * 1000); // Transform seconds to milliseconds.
+                }, timeout * MILLISECONDS_IN_SECOND);
             });
         },
         waitForActive: function () {
@@ -141,7 +145,7 @@ function EnderecoBase () {
                         clearInterval(intervalObject);
                         resolve();
                     }
-                }, 100);
+                }, POLL_INTERVAL);
             });
         },
         waitUntilReady: function () {
@@ -153,7 +157,7 @@ function EnderecoBase () {
                         clearInterval(waitForAwaits);
                         resolve();
                     }
-                }, 100);
+                }, POLL_INTERVAL);
             });
         },
         waitForPredictionApplication: function () {
@@ -271,6 +275,7 @@ function EnderecoBase () {
 
                     if (attempts >= maxAttempts) {
                         console.warn('Max attempts reached generating unique ID, using timestamp fallback');
+                        // eslint-disable-next-line no-magic-numbers -- base36 radix and random suffix length
                         id = `${prefix}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
                         break;
                     }
@@ -346,6 +351,7 @@ function EnderecoBase () {
                 const signatureBuffer = await window.crypto.subtle.sign('HMAC', cryptoKey, encoder.encode(message));
 
                 return Array.from(new Uint8Array(signatureBuffer))
+                    // eslint-disable-next-line no-magic-numbers -- hex radix
                     .map((byte) => byte.toString(16).padStart(2, '0'))
                     .join('');
             },
@@ -366,7 +372,7 @@ function EnderecoBase () {
                 }
 
                 const serializedBody = JSON.stringify(body);
-                const timestamp = Math.floor(Date.now() / 1000).toString();
+                const timestamp = Math.floor(Date.now() / MILLISECONDS_IN_SECOND).toString();
                 const signature = await this.signRequestPayload(`${serializedBody}|${timestamp}`, secret);
 
                 return {

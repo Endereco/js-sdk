@@ -2,6 +2,10 @@ import merge from 'lodash.merge';
 import Promise from 'promise-polyfill';
 import 'custom-event-polyfill';
 
+const VALUE_CHANGE_CHECK_INTERVAL = 300; // Interval (ms) for polling value changes
+const FOCUS_CHECK_INTERVAL = 10; // Interval (ms) for polling input/focus state
+const DETACHED_CHECK_INTERVAL = 100; // Interval (ms) for checking if element was removed from DOM
+
 function EnderecoSubscriber (propertyName, observableObject, options = {}) {
     const defaultOptions = {
         valueContainer: 'value', // value, classList, innerHTML
@@ -30,7 +34,7 @@ function EnderecoSubscriber (propertyName, observableObject, options = {}) {
 
     options = merge(defaultOptions, options);
 
-    function setupValueChangeDetection (subscriber, callback, interval = 300) {
+    function setupValueChangeDetection (subscriber, callback, interval = VALUE_CHANGE_CHECK_INTERVAL) {
         const element = subscriber.object;
 
         subscriber.lastValue = subscriber.getDOMValue();
@@ -69,7 +73,7 @@ function EnderecoSubscriber (propertyName, observableObject, options = {}) {
         return () => cleanup(observer, intervalId);
     }
 
-    function setupValueInputDetection (subscriber, callback, interval = 10) {
+    function setupValueInputDetection (subscriber, callback, interval = FOCUS_CHECK_INTERVAL) {
         const element = subscriber.object;
 
         subscriber.lastValue = subscriber.getDOMValue();
@@ -95,7 +99,7 @@ function EnderecoSubscriber (propertyName, observableObject, options = {}) {
         return () => cleanup(observer, intervalId);
     }
 
-    function setupBlurDetection (subscriber, callback, interval = 10) {
+    function setupBlurDetection (subscriber, callback, interval = FOCUS_CHECK_INTERVAL) {
         const element = subscriber.object;
         let isFocused = (document.activeElement === element);
         const checkForBlur = () => {
@@ -234,6 +238,7 @@ function EnderecoSubscriber (propertyName, observableObject, options = {}) {
                 subscriber.options.displayAutocompleteDropdown
             ) {
                 if (/chrom(e|ium)/.test(navigator.userAgent.toLowerCase())) {
+                    // eslint-disable-next-line no-magic-numbers -- base36 radix
                     this.object.setAttribute('autocomplete', `autocomplete_${Math.random().toString(36).substring(2)}${Date.now()}`);
                 } else {
                     this.object.setAttribute('autocomplete', 'off');
@@ -245,7 +250,7 @@ function EnderecoSubscriber (propertyName, observableObject, options = {}) {
                     selfRef.cleanupResources();
                     clearInterval(cleanupInterval);
                 }
-            }, 100);
+            }, DETACHED_CHECK_INTERVAL);
 
             // Skip for hidden type inputs.
             if (this.object && (this.object.type !== 'hidden')) {

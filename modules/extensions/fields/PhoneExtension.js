@@ -1,3 +1,5 @@
+const ON_BLUR_CHECK_DELAY = 300; // Delay (ms) before checking after blur
+
 const PhoneExtension = {
     name: 'PhoneExtension',
     extend: function (ExtendableObject) {
@@ -38,7 +40,11 @@ const PhoneExtension = {
                             let newStatus;
                             const flagActive = ExtendableObject.isFlagActive && ExtendableObject.isFlagActive();
 
-                            if (!ExtendableObject.anyActive() && !flagActive && ExtendableObject.util.shouldBeChecked() && !window.EnderecoIntegrator.hasSubmit) {
+                            if (!ExtendableObject.anyActive() &&
+                                !flagActive &&
+                                ExtendableObject.util.shouldBeChecked() &&
+                                !window.EnderecoIntegrator.hasSubmit
+                            ) {
                                 // Second. Check Address.
                                 clearTimeout(ExtendableObject.onBlurTimeout);
                                 ExtendableObject.onBlurTimeout = null;
@@ -93,7 +99,7 @@ const PhoneExtension = {
                                     });
                                 }
                             }
-                        }, 300);
+                        }, ON_BLUR_CHECK_DELAY);
                     }).catch();
                 };
             };

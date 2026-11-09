@@ -9,6 +9,8 @@ import 'core-js/fn/promise/finally';
 import { attachSubmitListenersToForm } from '../src/helper/form';
 import ProcessQueue from '../src/services/ProcessQueue';
 
+const READY_CHECK_INTERVAL = 100; // Interval (ms) for polling integrator readiness
+
 const bindFieldsToAddressObject = (addressObject, fieldSelectors, EnderecoIntegrator) => {
     const autocompletableFields = ['postalCode', 'locality', 'streetName', 'streetFull'];
 
@@ -973,7 +975,7 @@ const EnderecoIntegrator = {
                     clearInterval(interval);
                     resolve();
                 }
-            }, 100);
+            }, READY_CHECK_INTERVAL);
         });
     },
     getSelector: function (possibleSelector) {
