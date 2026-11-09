@@ -3,6 +3,11 @@ const fs = require('fs').promises;
 const host = 'localhost';
 const port = 8000;
 
+const HTTP_OK = 200;
+const HTTP_FOUND = 302;
+const HTTP_NOT_FOUND = 404;
+const HTTP_INTERNAL_SERVER_ERROR = 500;
+
 const requestListener = async function (req, res) {
     try {
         // Serve files based on URL
@@ -12,7 +17,7 @@ const requestListener = async function (req, res) {
             // Handle POST request
             await processPostRequest(req, res);
             // Redirect to the same page after processing the POST request
-            res.writeHead(302, { Location: '/' });
+            res.writeHead(HTTP_FOUND, { Location: '/' });
             res.end();
 
             return;
@@ -33,11 +38,11 @@ const requestListener = async function (req, res) {
             break;
         default:
             // Handle 404 Not Found
-            res.writeHead(404);
+            res.writeHead(HTTP_NOT_FOUND);
             res.end('404 Not Found');
         }
     } catch (error) {
-        res.writeHead(500);
+        res.writeHead(HTTP_INTERNAL_SERVER_ERROR);
         res.end('Internal Server Error');
         console.error(error);
     }
@@ -47,7 +52,7 @@ async function serveFile (res, filePath, contentType) {
     const contents = await fs.readFile(__dirname + filePath);
 
     res.setHeader('Content-Type', contentType);
-    res.writeHead(200);
+    res.writeHead(HTTP_OK);
     res.end(contents);
 }
 
@@ -87,14 +92,14 @@ function handleProxyRequest (req, res) {
             });
             proxyRes.on('end', function () {
                 res.setHeader('Content-Type', 'application/json');
-                res.writeHead(200);
+                res.writeHead(HTTP_OK);
                 res.end(body);
             });
         });
 
         proxyReq.on('error', error => {
             console.error(error);
-            res.writeHead(500);
+            res.writeHead(HTTP_INTERNAL_SERVER_ERROR);
             res.end('Internal Server Error');
         });
 

@@ -16,13 +16,16 @@ export default [
     {
         rules: {
             // Ilja's preference (discussable)
+            // eslint-disable-next-line no-magic-numbers -- rule option
             indent: ['error', 4],
             semi: ['error', 'always'],
 
             // Code quality rules
+            // eslint-disable-next-line no-magic-numbers -- rule option
             'max-depth': ['error', 4], // Prevent deeply nested code
+            // eslint-disable-next-line no-magic-numbers -- rule option
             'max-params': ['error', 4], // Limit function parameters
-            'no-magic-numbers': ['warn', { // Discourage unexplained numbers
+            'no-magic-numbers': ['error', { // Discourage unexplained numbers
                 ignore: [-1, 0, 1, 2],
                 ignoreArrayIndexes: true
             }],

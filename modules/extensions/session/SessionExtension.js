@@ -1,6 +1,8 @@
 import EnderecoSubscriber from './../../subscriber';
 import { v4 as uuidv4 } from 'uuid';
 
+const SESSION_FIELDS_CHECK_INTERVAL = 500; // Interval (ms) for adding session fields to newly registered forms
+
 const SessionExtension = {
     name: 'SessionExtension',
     extend: function (ExtendableObject) {
@@ -104,7 +106,7 @@ function processFormsInterval (ExtendableObject) {
                 // TODO: we need a handling logic, for when the session fields already exist in a form (from server side template)
             });
         }
-    }, 500);
+    }, SESSION_FIELDS_CHECK_INTERVAL);
 }
 
 function addInputIfNotExists (form, name, ExtendableObject) {
