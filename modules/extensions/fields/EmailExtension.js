@@ -58,7 +58,13 @@ const EmailExtension = {
                                     ExtendableObject.emailStatus = [];
                                 } else {
                                     ExtendableObject.util.checkEmail().then(function (data) {
-                                        ExtendableObject.emailStatus = Array.isArray(data.status) ? data.status : [];
+                                        // The API still sends the legacy code A1000 alongside email_correct when the
+                                        // extended check is disabled. Drop legacy A-codes until the API stops sending them.
+                                        ExtendableObject.emailStatus = Array.isArray(data.status)
+                                            ? data.status.filter(function (code) {
+                                                return !/^A\d{4}$/.test(code);
+                                            })
+                                            : [];
                                     }).catch(function (e) {
                                         ExtendableObject.emailStatus = [];
                                         console.log('Failed checking email', e, ExtendableObject);
