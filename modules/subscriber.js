@@ -34,6 +34,23 @@ function EnderecoSubscriber (propertyName, observableObject, options = {}) {
 
     options = merge(defaultOptions, options);
 
+    /**
+     * Compares two DOM values. A classList with several status classes is read as a
+     * new array on every call, so arrays are compared by content instead of reference.
+     * @param {*} a - First value
+     * @param {*} b - Second value
+     * @returns {boolean} - True if both values are equal
+     */
+    function isSameDOMValue (a, b) {
+        if (Array.isArray(a) && Array.isArray(b)) {
+            return a.length === b.length && a.every(function (item, index) {
+                return item === b[index];
+            });
+        }
+
+        return a === b;
+    }
+
     function setupValueChangeDetection (subscriber, callback, interval = VALUE_CHANGE_CHECK_INTERVAL) {
         const element = subscriber.object;
 
@@ -52,12 +69,12 @@ function EnderecoSubscriber (propertyName, observableObject, options = {}) {
                     callback();
                 }
             } else if (subscriber.object.type === 'checkbox') {
-                if (currentValue !== subscriber.lastValue && document.activeElement !== element) {
+                if (!isSameDOMValue(currentValue, subscriber.lastValue) && document.activeElement !== element) {
                     subscriber.lastValue = currentValue;
                     callback();
                 }
             } else {
-                if (currentValue !== subscriber.lastValue && document.activeElement !== element) {
+                if (!isSameDOMValue(currentValue, subscriber.lastValue) && document.activeElement !== element) {
                     subscriber.lastValue = currentValue;
                     callback();
                 }
