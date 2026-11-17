@@ -15,10 +15,26 @@ const PhoneExtension = {
                 });
             };
 
+            // Clears the phone check result, unless it is already empty.
+            const resetPhoneStatus = function () {
+                if (!ExtendableObject.active || !ExtendableObject.hasLoadedExtension('PhoneCheckExtension')) {
+                    return;
+                }
+
+                const status = ExtendableObject.phoneStatus;
+
+                if (!status || status.length === 0) {
+                    return;
+                }
+
+                ExtendableObject.phoneStatus = [];
+            };
+
             const updatePhone = function (subscriber) {
                 return function () {
                     ExtendableObject.phone = subscriber.value;
                     ExtendableObject._changed = true;
+                    resetPhoneStatus();
                 };
             };
 
