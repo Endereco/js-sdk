@@ -15,19 +15,15 @@ const PhoneExtension = {
                 });
             };
 
-            ExtendableObject.cb.phoneChange = function (subscriber) {
-                return function (e) {
+            const updatePhone = function (subscriber) {
+                return function () {
                     ExtendableObject.phone = subscriber.value;
                     ExtendableObject._changed = true;
                 };
             };
 
-            ExtendableObject.cb.phoneInput = function (subscriber) {
-                return function (e) {
-                    ExtendableObject.phone = subscriber.value;
-                    ExtendableObject._changed = true;
-                };
-            };
+            ExtendableObject.cb.phoneChange = updatePhone;
+            ExtendableObject.cb.phoneInput = updatePhone;
 
             ExtendableObject.cb.phoneBlur = function (subscriber) {
                 return function (subscriber) {
