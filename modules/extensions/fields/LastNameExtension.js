@@ -10,6 +10,26 @@ const LastNameExtension = {
             ExtendableObject._lastName = '';
             ExtendableObject._subscribers.lastName = [];
 
+            const invalidateNameMeta = function () {
+                if (ExtendableObject.hasLoadedExtension('NameCheckExtension')) {
+                    ExtendableObject.util.invalidateNameMeta();
+                }
+            };
+
+            // Value changed without focus (e.g. autofill): take it over, so a name check started
+            // from another name field uses it.
+            ExtendableObject.cb.lastNameChange = function (subscriber) {
+                return function () {
+                    ExtendableObject.lastName = subscriber.value;
+                    invalidateNameMeta();
+                };
+            };
+
+            // While typing only the check result is cleared; the value is taken over on blur.
+            ExtendableObject.cb.lastNameInput = function () {
+                return invalidateNameMeta;
+            };
+
             // Add change event hadler.
             ExtendableObject.cb.lastNameBlur = function (subscriber) {
                 return function (e) {

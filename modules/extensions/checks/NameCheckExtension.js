@@ -265,6 +265,35 @@ const NameCheckExtension = {
                     return true;
                 };
 
+                // Clears the outdated name check result once the user edits a name field.
+                // All statuses go together, because one nameCheck request sets all of them.
+                // _nameCorrected is kept on purpose: names are auto-corrected only once.
+                ExtendableObject.util.invalidateNameMeta = function () {
+                    if (!ExtendableObject.active) {
+                        return;
+                    }
+
+                    const isEmpty = function (status) {
+                        return !status || status.length === 0;
+                    };
+
+                    if (!isEmpty(ExtendableObject.salutationStatus)) {
+                        ExtendableObject.salutationStatus = [];
+                    }
+                    if (!isEmpty(ExtendableObject.firstNameStatus)) {
+                        ExtendableObject.firstNameStatus = [];
+                    }
+                    if (!isEmpty(ExtendableObject.lastNameStatus)) {
+                        ExtendableObject.lastNameStatus = [];
+                    }
+                    if (!isEmpty(ExtendableObject.titleStatus)) {
+                        ExtendableObject.titleStatus = [];
+                    }
+                    if (ExtendableObject.nameScore !== '') {
+                        ExtendableObject.nameScore = '';
+                    }
+                };
+
                 // Copy the predicted title, if the title field is in use.
                 const applyPredictedTitle = function (prediction) {
                     if (!ExtendableObject.isTitleRelevant()) {

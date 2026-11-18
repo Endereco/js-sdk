@@ -13,7 +13,21 @@ const SalutationExtension = {
             // Add change event hadler.
             ExtendableObject.cb.salutationChange = function (subscriber) {
                 return function (e) {
+                    const previousSalutation = ExtendableObject.salutation;
+
                     ExtendableObject.salutation = subscriber.value;
+
+                    // Clears the outdated name check result once the user picks another salutation.
+                    // Unlike text fields, the salutation can be a radio input, which fires this callback
+                    // repeatedly and after SDK writes. Compare with the model to react only to real changes.
+                    ExtendableObject.util.Promise.resolve(subscriber.value).then(function (salutation) {
+                        if (salutation !== previousSalutation &&
+                            ExtendableObject.hasLoadedExtension('NameCheckExtension')
+                        ) {
+                            ExtendableObject.util.invalidateNameMeta();
+                        }
+                    }).catch();
+
                     ExtendableObject.waitUntilReady().then(function () {
                         if (ExtendableObject.onBlurTimeout) {
                             clearTimeout(ExtendableObject.onBlurTimeout);

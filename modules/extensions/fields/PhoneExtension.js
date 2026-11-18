@@ -15,19 +15,31 @@ const PhoneExtension = {
                 });
             };
 
-            ExtendableObject.cb.phoneChange = function (subscriber) {
-                return function (e) {
+            // Clears the phone check result, unless it is already empty.
+            const resetPhoneStatus = function () {
+                if (!ExtendableObject.active || !ExtendableObject.hasLoadedExtension('PhoneCheckExtension')) {
+                    return;
+                }
+
+                const status = ExtendableObject.phoneStatus;
+
+                if (!status || status.length === 0) {
+                    return;
+                }
+
+                ExtendableObject.phoneStatus = [];
+            };
+
+            const updatePhone = function (subscriber) {
+                return function () {
                     ExtendableObject.phone = subscriber.value;
                     ExtendableObject._changed = true;
+                    resetPhoneStatus();
                 };
             };
 
-            ExtendableObject.cb.phoneInput = function (subscriber) {
-                return function (e) {
-                    ExtendableObject.phone = subscriber.value;
-                    ExtendableObject._changed = true;
-                };
-            };
+            ExtendableObject.cb.phoneChange = updatePhone;
+            ExtendableObject.cb.phoneInput = updatePhone;
 
             ExtendableObject.cb.phoneBlur = function (subscriber) {
                 return function (subscriber) {

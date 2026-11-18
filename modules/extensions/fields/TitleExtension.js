@@ -10,6 +10,26 @@ const TitleExtension = {
             ExtendableObject._title = '';
             ExtendableObject._subscribers.title = [];
 
+            const invalidateNameMeta = function () {
+                if (ExtendableObject.hasLoadedExtension('NameCheckExtension')) {
+                    ExtendableObject.util.invalidateNameMeta();
+                }
+            };
+
+            // Value changed without focus (e.g. autofill): take it over, so a name check started
+            // from another name field uses it.
+            ExtendableObject.cb.titleChange = function (subscriber) {
+                return function () {
+                    ExtendableObject.title = subscriber.value;
+                    invalidateNameMeta();
+                };
+            };
+
+            // While typing only the check result is cleared; the value is taken over on blur.
+            ExtendableObject.cb.titleInput = function () {
+                return invalidateNameMeta;
+            };
+
             // Add change event hadler.
             ExtendableObject.cb.titleBlur = function (subscriber) {
                 return function (e) {
